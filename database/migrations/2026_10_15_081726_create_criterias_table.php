@@ -13,14 +13,15 @@ return new class extends Migration
     {
         Schema::create('criterias', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('agency_id');
-            $table->string('code')->unique();
+            $table->foreignUuid('agency_id')->constrained('agencies')->onDelete('restrict'); // <-- Tambahkan ini kembali
+            $table->string('code');
             $table->string('name');
             $table->integer('sequence')->default(1);
             $table->timestamps();
 
-            $table->foreign('agency_id')->references('id')->on('agencies')->onDelete('restrict');
+            $table->unique(['agency_id', 'code']); // <-- Mencegah bentrok kode kriteria antar agency
         });
+
     }
 
     /**

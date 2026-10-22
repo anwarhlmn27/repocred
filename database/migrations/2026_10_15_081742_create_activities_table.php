@@ -13,22 +13,20 @@ return new class extends Migration
     {
         Schema::create('activities', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('criteria_id');
-            $table->uuid('prodi_id');
+            $table->foreignUuid('session_id')->nullable()->constrained('accreditation_sessions')->cascadeOnDelete(); // <-- Tambahkan ini
+            $table->foreignUuid('criteria_id')->constrained('criterias')->cascadeOnDelete();
+            $table->foreignUuid('prodi_id')->constrained('prodis')->restrictOnDelete();
             $table->string('title_activity');
             $table->text('description')->nullable();
-            $table->uuid('academicyear_id');
-            $table->uuid('created_by')->nullable();
-            $table->uuid('updated_by')->nullable();
+
+            // Tambahkan kolom ini:
+            $table->foreignUuid('academicyear_id')->nullable()->constrained('academicyears')->nullOnDelete();
+            $table->foreignUuid('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignUuid('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->enum('status', ['draft', 'published', 'rejected'])->default('draft');
             $table->timestamps();
-
-            $table->foreign('criteria_id')->references('id')->on('criterias')->onDelete('cascade');
-            $table->foreign('prodi_id')->references('id')->on('prodis')->onDelete('restrict');
-            $table->foreign('academicyear_id')->references('id')->on('academicyears')->onDelete('restrict');
-            $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('updated_by')->references('id')->on('users')->onDelete('set null');
         });
+
     }
 
     /**

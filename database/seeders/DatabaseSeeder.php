@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\AcademicYear;
+use App\Models\AccreditationSession;
 use App\Models\Activity;
 use App\Models\Agency;
 use App\Models\Criteria;
@@ -33,11 +34,10 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Academic Year
-        $academicYear2024 = AcademicYear::firstOrCreate(
-            ['year' => 2024],
-            ['is_active' => true]
-        );
+        // Academic Years (Tahun Referensi Kegiatan untuk TS, TS-1, TS-2)
+        $academicYear2024 = AcademicYear::firstOrCreate(['year' => 2024]);
+        $academicYear2023 = AcademicYear::firstOrCreate(['year' => 2023]);
+        $academicYear2022 = AcademicYear::firstOrCreate(['year' => 2022]);
 
         // Univ
         $univ = Univ::firstOrCreate(
@@ -71,11 +71,40 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Prodi
+        // Agencies (Lembaga Akreditasi Nasional & Internasional)
+        $banPt = Agency::firstOrCreate(
+            ['code' => 'BAN-PT'],
+            [
+                'name' => 'Badan Akreditasi Nasional Perguruan Tinggi',
+                'type' => 'nasional',
+                'level' => 'univs',
+            ]
+        );
+
+        $lamInfo = Agency::firstOrCreate(
+            ['code' => 'LAM-INFOKOM'],
+            [
+                'name' => 'Lembaga Akreditasi Mandiri Informatika dan Komputer',
+                'type' => 'nasional',
+                'level' => 'prodi',
+            ]
+        );
+
+        $lamEmba = Agency::firstOrCreate(
+            ['code' => 'LAMEMBA'],
+            [
+                'name' => 'Lembaga Akreditasi Mandiri Ekonomi Manajemen Bisnis dan Akuntansi',
+                'type' => 'nasional',
+                'level' => 'prodi',
+            ]
+        );
+
+        // Prodi (Terhubung ke Fakultas dan Agency)
         $prodiTi = Prodi::firstOrCreate(
             ['code' => '55201'],
             [
                 'faculty_id' => $fik->id,
+                'agency_id' => $lamInfo->id,
                 'name' => 'Teknik Informatika',
                 'acronym' => 'TI',
                 'is_active' => true,
@@ -86,6 +115,7 @@ class DatabaseSeeder extends Seeder
             ['code' => '57201'],
             [
                 'faculty_id' => $fik->id,
+                'agency_id' => $lamInfo->id,
                 'name' => 'Sistem Informasi',
                 'acronym' => 'SI',
                 'is_active' => true,
@@ -96,21 +126,11 @@ class DatabaseSeeder extends Seeder
             ['code' => '61201'],
             [
                 'faculty_id' => $feb->id,
+                'agency_id' => $lamEmba->id,
                 'name' => 'Manajemen',
                 'acronym' => 'MNJ',
                 'is_active' => true,
             ]
-        );
-
-        // Agencies
-        $banPt = Agency::firstOrCreate(
-            ['code' => 'BAN-PT'],
-            ['name' => 'Badan Akreditasi Nasional Perguruan Tinggi']
-        );
-
-        $lamInfo = Agency::firstOrCreate(
-            ['code' => 'LAM-INFOKOM'],
-            ['name' => 'Lembaga Akreditasi Mandiri Informatika dan Komputer']
         );
 
         // BAN-PT 4 Criterias
@@ -146,7 +166,7 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        // PPEPP
+        // PPEPP 5 Siklus Penjaminan Mutu
         $ppeppList = [
             [1, 'Penetapan (P)'],
             [2, 'Pelaksanaan (P)'],
@@ -161,31 +181,52 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        // Sample Activities
+        // Sesi Akreditasi (Periode 5 Tahunan S1 Teknik Informatika)
+        $sessionTi = AccreditationSession::firstOrCreate(
+            [
+                'prodi_id' => $prodiTi->id,
+                'name' => 'Akreditasi S1 Teknik Informatika 2024–2029',
+            ],
+            [
+                'agency_id' => $lamInfo->id,
+                'year_start' => 2024,
+                'year_end' => 2029,
+                'ts_count' => 3,
+                'ts_year' => 2024,
+                'status' => 'draft',
+                'is_active' => true,
+            ]
+        );
+
+        // Sample Activities:
+        // 1. Kriteria 1 VMTS (Berlaku untuk Semua TS / null academicyear)
         $crit1 = Criteria::where('agency_id', $lamInfo->id)->where('code', 'LAM-1')->first();
         if ($crit1) {
             Activity::firstOrCreate(
                 ['title_activity' => 'Penyusunan & Sosialisasi VMTS Prodi S1 Teknik Informatika'],
                 [
+                    'session_id' => $sessionTi->id,
                     'criteria_id' => $crit1->id,
                     'prodi_id' => $prodiTi->id,
-                    'description' => 'Kegiatan workshop peninjauan dan sosialisasi visi keilmuan program studi.',
-                    'academicyear_id' => $academicYear2024->id,
+                    'description' => 'Kegiatan workshop peninjauan dan sosialisasi visi keilmuan program studi (Berlaku Siklus 5 Tahun).',
+                    'academicyear_id' => null, // Semua TS
                     'created_by' => $admin->id,
                     'status' => 'published',
                 ]
             );
         }
 
+        // 2. Kriteria 6 Kurikulum OBE (Spesifik Tahun TS 2024)
         $crit6 = Criteria::where('agency_id', $lamInfo->id)->where('code', 'LAM-6')->first();
         if ($crit6) {
             Activity::firstOrCreate(
-                ['title_activity' => 'Review Kurikulum OBE Berbasis Standar ACM/IEEE'],
+                ['title_activity' => 'Review Kurikulum OBE Berbasis Standar ACM/IEEE (TS 2024)'],
                 [
+                    'session_id' => $sessionTi->id,
                     'criteria_id' => $crit6->id,
                     'prodi_id' => $prodiTi->id,
-                    'description' => 'Penyelarasan kurikulum OBE dengan stakeholder industri.',
-                    'academicyear_id' => $academicYear2024->id,
+                    'description' => 'Penyelarasan kurikulum OBE dengan stakeholder industri tahun akademik berjalan.',
+                    'academicyear_id' => $academicYear2024->id, // TS
                     'created_by' => $admin->id,
                     'status' => 'published',
                 ]

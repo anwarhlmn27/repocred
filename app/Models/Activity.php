@@ -13,6 +13,7 @@ class Activity extends Model
     protected $table = 'activities';
 
     protected $fillable = [
+        'session_id',
         'criteria_id',
         'prodi_id',
         'title_activity',
@@ -23,6 +24,11 @@ class Activity extends Model
         'updated_by',
         'status',
     ];
+
+    public function session()
+    {
+        return $this->belongsTo(AccreditationSession::class, 'session_id');
+    }
 
     public function academicYear()
     {

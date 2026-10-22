@@ -14,7 +14,6 @@ class AcademicYear extends Model
 
     protected $fillable = [
         'year',
-        'is_active',
     ];
 
     public function activities()

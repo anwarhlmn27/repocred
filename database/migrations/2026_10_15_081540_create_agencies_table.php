@@ -15,6 +15,8 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('code')->unique();
             $table->string('name');
+            $table->enum('type', ['nasional', 'internasional']);
+            $table->enum('level', ['univs', 'prodi']);
             $table->timestamps();
         });
     }

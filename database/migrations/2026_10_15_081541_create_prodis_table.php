@@ -18,9 +18,11 @@ return new class extends Migration
             $table->string('name');
             $table->string('acronym')->unique();
             $table->boolean('is_active')->default(true);
+            $table->uuid('agency_id')->nullable();
             $table->timestamps();
 
             $table->foreign('faculty_id')->references('id')->on('faculties')->onDelete('restrict');
+            $table->foreign('agency_id')->references('id')->on('agencies')->nullOnDelete();
         });
     }
 

@@ -16,10 +16,22 @@ class Agency extends Model
         'code',
         'name',
         'name_agency',
+        'type',
+        'level',
     ];
 
     public function criterias()
     {
         return $this->hasMany(Criteria::class, 'agency_id');
+    }
+
+    public function prodis()
+    {
+        return $this->hasMany(Prodi::class, 'agency_id');
+    }
+
+    public function sessions()
+    {
+        return $this->hasMany(AccreditationSession::class, 'agency_id');
     }
 }
