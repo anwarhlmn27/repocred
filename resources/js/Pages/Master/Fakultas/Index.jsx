@@ -2,6 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import { useState } from 'react';
 import { Landmark, Plus, Edit2, Trash2, Search, X, Building2, GraduationCap } from 'lucide-react';
+import { confirmAlert, toastSuccess } from '@/Utils/alert';
 
 const defaultUnivs = [
     { id: 'u-1', name_univ: 'Universitas Teknologi Digital Indonesia' },
@@ -94,9 +95,16 @@ export default function FakultasIndex({ faculties = [], univs = [] }) {
         closeModal();
     };
 
-    const handleDelete = (id, name) => {
-        if (confirm(`Apakah Anda yakin ingin menghapus "${name}"? (Mode Preview UI)`)) {
+    const handleDelete = async (id, name) => {
+        const confirmed = await confirmAlert({
+            title: 'Hapus Fakultas?',
+            text: `Apakah Anda yakin ingin menghapus "${name}"?`,
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal',
+        });
+        if (confirmed) {
             setItems(items.filter((it) => it.id !== id));
+            toastSuccess(`Fakultas "${name}" berhasil dihapus.`);
         }
     };
 
@@ -112,9 +120,9 @@ export default function FakultasIndex({ faculties = [], univs = [] }) {
 
             <div className="space-y-6">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 border border-slate-200 shadow-xs">
                     <div>
-                        <div className="flex items-center gap-2 text-indigo-600 font-semibold text-xs tracking-wider uppercase mb-1">
+                        <div className="flex items-center gap-2 text-indigo-700 font-semibold text-xs tracking-wider uppercase mb-1">
                             <Landmark className="w-4 h-4" />
                             <span>Master Data</span>
                         </div>
@@ -125,7 +133,7 @@ export default function FakultasIndex({ faculties = [], univs = [] }) {
                     </div>
                     <button
                         onClick={openAddModal}
-                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white text-sm font-semibold shadow-lg shadow-indigo-500/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors cursor-pointer"
                     >
                         <Plus className="w-4 h-4" />
                         <span>Tambah Fakultas</span>
@@ -141,7 +149,7 @@ export default function FakultasIndex({ faculties = [], univs = [] }) {
                             placeholder="Cari fakultas atau universitas..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white"
+                            className="w-full pl-10 pr-4 py-2 text-sm border border-slate-200 focus:outline-none focus:border-indigo-600 bg-white"
                         />
                     </div>
                     <span className="text-xs font-medium text-slate-500">
@@ -150,40 +158,40 @@ export default function FakultasIndex({ faculties = [], univs = [] }) {
                 </div>
 
                 {/* Table Data */}
-                <div className="rounded-2xl bg-white border border-slate-200/80 shadow-sm overflow-hidden">
+                <div className="bg-white border border-slate-200 shadow-xs overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm text-slate-600">
-                            <thead className="bg-slate-50 text-xs uppercase text-slate-500 font-semibold border-b border-slate-200">
+                            <thead className="bg-slate-100 text-xs uppercase text-slate-600 font-bold border-b border-slate-200">
                                 <tr>
-                                    <th className="px-5 py-3.5 w-16">No</th>
-                                    <th className="px-5 py-3.5">Nama Fakultas</th>
-                                    <th className="px-5 py-3.5">Perguruan Tinggi Induk</th>
-                                    <th className="px-5 py-3.5 text-center">Jumlah Prodi</th>
-                                    <th className="px-5 py-3.5 text-right">Aksi</th>
+                                    <th className="px-5 py-3 w-16 border-r border-slate-200">No</th>
+                                    <th className="px-5 py-3 border-r border-slate-200">Nama Fakultas</th>
+                                    <th className="px-5 py-3 border-r border-slate-200">Perguruan Tinggi Induk</th>
+                                    <th className="px-5 py-3 text-center border-r border-slate-200">Jumlah Prodi</th>
+                                    <th className="px-5 py-3 text-right">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
                                 {filteredItems.map((fac, index) => (
                                     <tr key={fac.id} className="hover:bg-slate-50/70 transition-colors">
-                                        <td className="px-5 py-4 font-medium text-slate-400">{index + 1}</td>
-                                        <td className="px-5 py-4">
+                                        <td className="px-5 py-4 font-medium text-slate-400 border-r border-slate-100">{index + 1}</td>
+                                        <td className="px-5 py-4 border-r border-slate-100">
                                             <div className="font-bold text-slate-800 flex items-center gap-2">
-                                                <Landmark className="w-4 h-4 text-indigo-500 shrink-0" />
+                                                <Landmark className="w-4 h-4 text-indigo-600 shrink-0" />
                                                 {fac.name_faculty}
                                             </div>
                                             <div className="text-xs text-slate-400 font-mono mt-0.5 ml-6">
                                                 ID: {fac.id}
                                             </div>
                                         </td>
-                                        <td className="px-5 py-4">
-                                            <span className="inline-flex items-center gap-1.5 text-xs text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg">
+                                        <td className="px-5 py-4 border-r border-slate-100">
+                                            <span className="inline-flex items-center gap-1.5 text-xs text-slate-700 bg-slate-100 px-2.5 py-1 border border-slate-200">
                                                 <Building2 className="w-3.5 h-3.5 text-slate-500" />
                                                 {fac.univ?.name_univ || 'Tidak terhubung'}
                                             </span>
                                         </td>
-                                        <td className="px-5 py-4 text-center">
-                                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                                                <GraduationCap className="w-3 h-3" />
+                                        <td className="px-5 py-4 text-center border-r border-slate-100">
+                                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-300">
+                                                <GraduationCap className="w-3.5 h-3.5" />
                                                 {fac.prodis_count ?? 0} Prodi
                                             </span>
                                         </td>
@@ -191,17 +199,17 @@ export default function FakultasIndex({ faculties = [], univs = [] }) {
                                             <div className="inline-flex items-center gap-1">
                                                 <button
                                                     onClick={() => openEditModal(fac)}
-                                                    className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                                    className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 border border-transparent hover:border-slate-200 transition-colors cursor-pointer"
                                                     title="Edit"
                                                 >
-                                                    <Edit2 className="w-4 h-4" />
+                                                    <Edit2 className="w-3.5 h-3.5" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(fac.id, fac.name_faculty)}
-                                                    className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                                                    className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-slate-100 border border-transparent hover:border-slate-200 transition-colors cursor-pointer"
                                                     title="Hapus"
                                                 >
-                                                    <Trash2 className="w-4 h-4" />
+                                                    <Trash2 className="w-3.5 h-3.5" />
                                                 </button>
                                             </div>
                                         </td>
@@ -215,13 +223,13 @@ export default function FakultasIndex({ faculties = [], univs = [] }) {
 
             {/* Modal Dialog Form */}
             {isOpenModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100">
-                        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
+                    <div className="bg-white max-w-lg w-full p-6 shadow-2xl border border-slate-300">
+                        <div className="flex items-center justify-between pb-4 border-b border-slate-200">
                             <h3 className="text-lg font-bold text-slate-800">
                                 {editingItem ? 'Edit Fakultas' : 'Tambah Fakultas Baru'}
                             </h3>
-                            <button onClick={closeModal} className="p-1 text-slate-400 hover:text-slate-600 rounded-lg">
+                            <button onClick={closeModal} className="p-1 text-slate-400 hover:text-slate-600 border border-transparent hover:border-slate-200 cursor-pointer">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -234,7 +242,7 @@ export default function FakultasIndex({ faculties = [], univs = [] }) {
                                 <select
                                     value={formState.univ_id}
                                     onChange={(e) => setFormState({ ...formState, univ_id: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white"
+                                    className="w-full px-3.5 py-2 text-sm border border-slate-300 focus:outline-none focus:border-indigo-600 bg-white"
                                     required
                                 >
                                     {univList.map((u) => (
@@ -254,22 +262,22 @@ export default function FakultasIndex({ faculties = [], univs = [] }) {
                                     value={formState.name_faculty}
                                     onChange={(e) => setFormState({ ...formState, name_faculty: e.target.value })}
                                     placeholder="Contoh: Fakultas Ilmu Komputer"
-                                    className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                    className="w-full px-3.5 py-2 text-sm border border-slate-300 focus:outline-none focus:border-indigo-600"
                                     required
                                 />
                             </div>
 
-                            <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
+                            <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-200">
                                 <button
                                     type="button"
                                     onClick={closeModal}
-                                    className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+                                    className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 transition-colors cursor-pointer"
                                 >
                                     Batal
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-5 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md shadow-indigo-500/20 transition-all"
+                                    className="px-5 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors cursor-pointer"
                                 >
                                     {editingItem ? 'Simpan Perubahan' : 'Tambah Fakultas'}
                                 </button>

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { toastInfo } from '@/Utils/alert';
 import {
     Folder,
     FolderOpen,
@@ -158,9 +159,9 @@ export default function PpeppFolderExplorer({
     }, [activities, selectedGridActivityId]);
 
     return (
-        <div className="bg-slate-50/70 p-3 sm:p-4 rounded-xl border border-slate-200/80 space-y-3">
+        <div className="bg-slate-50/70 p-3 sm:p-4  border border-slate-200/80 space-y-3">
             {/* Windows File Explorer Toolbar */}
-            <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2 border-b border-slate-200/80 bg-white/60 p-2.5 rounded-lg border">
+            <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2 border-b border-slate-200/80 bg-white/60 p-2.5  border">
                 {/* Search / Filter input */}
                 <div className="relative flex-1 min-w-[200px] max-w-xs sm:max-w-sm">
                     <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -169,7 +170,7 @@ export default function PpeppFolderExplorer({
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Cari kegiatan atau nama file..."
-                        className={`w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 ${ringTheme} text-slate-700 placeholder:text-slate-400`}
+                        className={`w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200  focus:outline-none focus:ring-2 ${ringTheme} text-slate-700 placeholder:text-slate-400`}
                     />
                     {searchQuery && (
                         <button
@@ -189,7 +190,7 @@ export default function PpeppFolderExplorer({
                     </span>
 
                     {/* Expand/Collapse All Buttons */}
-                    <div className="flex items-center bg-white border border-slate-200 rounded-lg overflow-hidden shadow-xs">
+                    <div className="flex items-center bg-white border border-slate-200  overflow-hidden shadow-xs">
                         <button
                             type="button"
                             onClick={handleExpandAll}
@@ -209,11 +210,11 @@ export default function PpeppFolderExplorer({
                     </div>
 
                     {/* View Switcher: List Ramping | Grid Folder | Nyaman */}
-                    <div className="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 shadow-xs">
+                    <div className="flex items-center bg-white border border-slate-200  p-0.5 shadow-xs">
                         <button
                             type="button"
                             onClick={() => setViewMode('compact')}
-                            className={`flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold transition-all ${
+                            className={`flex items-center gap-1 px-2 py-1  text-[11px] font-semibold transition-all ${
                                 viewMode === 'compact'
                                     ? `${bgThemeLight} ${textTheme} shadow-xs font-bold`
                                     : 'text-slate-500 hover:text-slate-800'
@@ -227,7 +228,7 @@ export default function PpeppFolderExplorer({
                         <button
                             type="button"
                             onClick={() => setViewMode('grid')}
-                            className={`flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold transition-all ${
+                            className={`flex items-center gap-1 px-2 py-1  text-[11px] font-semibold transition-all ${
                                 viewMode === 'grid'
                                     ? `${bgThemeLight} ${textTheme} shadow-xs font-bold`
                                     : 'text-slate-500 hover:text-slate-800'
@@ -241,7 +242,7 @@ export default function PpeppFolderExplorer({
                         <button
                             type="button"
                             onClick={() => setViewMode('spacious')}
-                            className={`flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold transition-all ${
+                            className={`flex items-center gap-1 px-2 py-1  text-[11px] font-semibold transition-all ${
                                 viewMode === 'spacious'
                                     ? `${bgThemeLight} ${textTheme} shadow-xs font-bold`
                                     : 'text-slate-500 hover:text-slate-800'
@@ -257,14 +258,14 @@ export default function PpeppFolderExplorer({
 
             {/* Empty States */}
             {activities.length === 0 ? (
-                <div className="p-8 text-center bg-white rounded-xl border border-dashed border-slate-300">
+                <div className="p-8 text-center bg-white  border border-dashed border-slate-300">
                     <Folder className="w-10 h-10 text-slate-300 mx-auto mb-2" />
                     <p className="text-sm font-semibold text-slate-600">Belum ada kegiatan di Kriteria {critCode}</p>
                     <p className="text-xs text-slate-400 mt-0.5">Klik tombol Tambah Kegiatan untuk membuat folder kegiatan baru.</p>
                     <button
                         type="button"
                         onClick={onAddActivity}
-                        className={`mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white ${
+                        className={`mt-3 inline-flex items-center gap-1.5 px-3 py-1.5  text-xs font-semibold text-white ${
                             isEmerald ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-indigo-600 hover:bg-indigo-700'
                         } transition-colors shadow-xs`}
                     >
@@ -273,7 +274,7 @@ export default function PpeppFolderExplorer({
                     </button>
                 </div>
             ) : filteredActivities.length === 0 ? (
-                <div className="p-6 text-center bg-white rounded-xl border border-slate-200 text-xs text-slate-500">
+                <div className="p-6 text-center bg-white  border border-slate-200 text-xs text-slate-500">
                     Tidak ditemukan kegiatan atau berkas yang cocok dengan pencarian "{searchQuery}".
                     <button
                         type="button"
@@ -306,7 +307,7 @@ export default function PpeppFolderExplorer({
                         return (
                             <div
                                 key={act.id}
-                                className={`rounded-xl border transition-all duration-150 ${
+                                className={` border transition-all duration-150 ${
                                     isActOpen
                                         ? 'bg-white border-slate-300 shadow-xs'
                                         : 'bg-white/95 border-slate-200 hover:border-slate-300 hover:bg-white'
@@ -342,7 +343,7 @@ export default function PpeppFolderExplorer({
                                             <span className="text-xs sm:text-[13px] font-semibold text-slate-800 group-hover:text-indigo-600 transition-colors truncate">
                                                 {act.title_activity}
                                             </span>
-                                            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-100 text-slate-500 shrink-0 font-medium border border-slate-200/60">
+                                            <span className="text-[10px] font-mono px-1.5 py-0.2  bg-slate-100 text-slate-500 shrink-0 font-medium border border-slate-200/60">
                                                 Th. {act.academic_year}
                                             </span>
                                             <span className="text-[10px] text-slate-400 hidden lg:inline shrink-0">
@@ -363,7 +364,7 @@ export default function PpeppFolderExplorer({
                                                 return (
                                                     <span
                                                         key={stage.key}
-                                                        className={`w-1.5 h-3 rounded-xs ${
+                                                        className={`w-1.5 h-3  ${
                                                             hasF ? 'bg-emerald-500' : 'bg-slate-200'
                                                         }`}
                                                     />
@@ -372,7 +373,7 @@ export default function PpeppFolderExplorer({
                                         </div>
 
                                         <span
-                                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${
+                                            className={`inline-flex items-center gap-1 px-2 py-0.5  text-[11px] font-semibold border ${
                                                 isAllStagesComplete
                                                     ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                                     : 'bg-rose-50 text-rose-700 border-rose-200'
@@ -406,7 +407,7 @@ export default function PpeppFolderExplorer({
                                             return (
                                                 <div
                                                     key={stage.key}
-                                                    className={`rounded-lg border transition-all ${
+                                                    className={` border transition-all ${
                                                         hasFiles
                                                             ? 'bg-white border-slate-200/80 hover:border-slate-300'
                                                             : 'bg-rose-50/30 border-rose-200/80 hover:bg-rose-50/50'
@@ -457,7 +458,7 @@ export default function PpeppFolderExplorer({
                                                                     {stage.label}
                                                                 </span>
                                                                 <span
-                                                                    className={`text-[10px] px-1.5 py-0.2 rounded font-medium shrink-0 ${
+                                                                    className={`text-[10px] px-1.5 py-0.2  font-medium shrink-0 ${
                                                                         hasFiles
                                                                             ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
                                                                             : 'bg-rose-100 text-rose-700 font-bold'
@@ -482,7 +483,7 @@ export default function PpeppFolderExplorer({
                                                                     act.title_activity
                                                                 )
                                                             }
-                                                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold transition-all shrink-0 ${
+                                                            className={`inline-flex items-center gap-1 px-2 py-0.5  text-[11px] font-semibold transition-all shrink-0 ${
                                                                 hasFiles
                                                                     ? `${bgThemeLight} ${textTheme} ${bgThemeLightHover} border border-slate-200`
                                                                     : 'bg-rose-600 hover:bg-rose-700 text-white shadow-xs'
@@ -495,7 +496,7 @@ export default function PpeppFolderExplorer({
 
                                                     {/* Files List Inside Subfolder */}
                                                     {isFolderOpen && (
-                                                        <div className="ml-5 sm:ml-6 pl-3 border-l border-slate-200 py-1 pr-2 space-y-0.5 bg-slate-50/50 rounded-b-lg">
+                                                        <div className="ml-5 sm:ml-6 pl-3 border-l border-slate-200 py-1 pr-2 space-y-0.5 bg-slate-50/50 -lg">
                                                             {!hasFiles ? (
                                                                 <div className="py-1 px-2 text-[11px] text-rose-600 flex items-center justify-between">
                                                                     <span className="flex items-center gap-1.5">
@@ -522,14 +523,14 @@ export default function PpeppFolderExplorer({
                                                                 files.map((file) => (
                                                                     <div
                                                                         key={file.id}
-                                                                        className="py-1 px-2 rounded hover:bg-white flex items-center justify-between text-xs group transition-colors"
+                                                                        className="py-1 px-2  hover:bg-white flex items-center justify-between text-xs group transition-colors"
                                                                     >
                                                                         <div className="flex items-center gap-2 min-w-0 truncate">
                                                                             {getFileIcon(file.name)}
                                                                             <span
                                                                                 className="text-slate-700 font-medium truncate hover:text-indigo-600 cursor-pointer text-xs"
                                                                                 onClick={() =>
-                                                                                    alert(`Membuka berkas: ${file.name}`)
+                                                                                    toastInfo(`Membuka berkas: ${file.name}`)
                                                                                 }
                                                                                 title={file.name}
                                                                             >
@@ -544,9 +545,9 @@ export default function PpeppFolderExplorer({
                                                                             <button
                                                                                 type="button"
                                                                                 onClick={() =>
-                                                                                    alert(`Membuka berkas: ${file.name}`)
+                                                                                    toastInfo(`Membuka berkas: ${file.name}`)
                                                                                 }
-                                                                                className="p-1 text-slate-400 hover:text-indigo-600 rounded"
+                                                                                className="p-1 text-slate-400 hover:text-indigo-600 "
                                                                                 title="Lihat Berkas"
                                                                             >
                                                                                 <Eye className="w-3 h-3" />
@@ -562,7 +563,7 @@ export default function PpeppFolderExplorer({
                                                                                         file.name
                                                                                     )
                                                                                 }
-                                                                                className="p-1 text-slate-400 hover:text-rose-600 rounded"
+                                                                                className="p-1 text-slate-400 hover:text-rose-600 "
                                                                                 title="Hapus Berkas"
                                                                             >
                                                                                 <Trash2 className="w-3 h-3" />
@@ -602,7 +603,7 @@ export default function PpeppFolderExplorer({
                                 <div
                                     key={act.id}
                                     onClick={() => setSelectedGridActivityId(act.id)}
-                                    className={`p-2.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between gap-2 text-left group ${
+                                    className={`p-2.5  border transition-all cursor-pointer flex flex-col justify-between gap-2 text-left group ${
                                         isSelected
                                             ? `bg-white ${borderThemeLight} ring-2 ring-indigo-500/15 shadow-sm`
                                             : 'bg-white border-slate-200/90 hover:border-slate-300 hover:bg-slate-50/70'
@@ -643,7 +644,7 @@ export default function PpeppFolderExplorer({
                                                     return (
                                                         <span
                                                             key={stage.key}
-                                                            className={`w-1.5 h-2 rounded-xs ${
+                                                            className={`w-1.5 h-2  ${
                                                                 hasF ? 'bg-emerald-500' : 'bg-slate-200'
                                                             }`}
                                                         />
@@ -651,7 +652,7 @@ export default function PpeppFolderExplorer({
                                                 })}
                                             </div>
                                             <span
-                                                className={`font-semibold px-1.5 py-0.2 rounded-full ${
+                                                className={`font-semibold px-1.5 py-0.2  ${
                                                     isAllStagesComplete
                                                         ? 'bg-emerald-50 text-emerald-700'
                                                         : 'bg-rose-50 text-rose-700'
@@ -668,7 +669,7 @@ export default function PpeppFolderExplorer({
 
                     {/* Detail Pane untuk Folder yang Dipilih di Mode Grid */}
                     {selectedGridAct && (
-                        <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-4 shadow-xs space-y-3">
+                        <div className="bg-white  border border-slate-200 p-3 sm:p-4 shadow-xs space-y-3">
                             <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
                                 <div className="flex items-center gap-2">
                                     <FolderOpen className="w-5 h-5 text-amber-500 fill-amber-400/30" />
@@ -694,7 +695,7 @@ export default function PpeppFolderExplorer({
                                     return (
                                         <div
                                             key={stage.key}
-                                            className={`rounded-lg border transition-all ${
+                                            className={` border transition-all ${
                                                 hasFiles ? 'bg-slate-50/50 border-slate-200' : 'bg-rose-50/30 border-rose-200'
                                             }`}
                                         >
@@ -726,7 +727,7 @@ export default function PpeppFolderExplorer({
                                                         {stage.label}
                                                     </span>
                                                     <span
-                                                        className={`text-[10px] px-1.5 py-0.2 rounded font-medium shrink-0 ${
+                                                        className={`text-[10px] px-1.5 py-0.2  font-medium shrink-0 ${
                                                             hasFiles
                                                                 ? 'bg-emerald-50 text-emerald-700'
                                                                 : 'bg-rose-100 text-rose-700'
@@ -747,7 +748,7 @@ export default function PpeppFolderExplorer({
                                                             selectedGridAct.title_activity
                                                         )
                                                     }
-                                                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold ${
+                                                    className={`inline-flex items-center gap-1 px-2 py-0.5  text-[11px] font-semibold ${
                                                         hasFiles
                                                             ? `${bgThemeLight} ${textTheme} ${bgThemeLightHover}`
                                                             : 'bg-rose-600 hover:bg-rose-700 text-white shadow-xs'
@@ -759,7 +760,7 @@ export default function PpeppFolderExplorer({
                                             </div>
 
                                             {isFolderOpen && (
-                                                <div className="ml-5 sm:ml-6 pl-3 border-l border-slate-200 py-1 pr-2 space-y-0.5 bg-white rounded-b-lg">
+                                                <div className="ml-5 sm:ml-6 pl-3 border-l border-slate-200 py-1 pr-2 space-y-0.5 bg-white -lg">
                                                     {!hasFiles ? (
                                                         <div className="py-1 px-2 text-[11px] text-rose-600 flex items-center justify-between">
                                                             <span>Belum ada eviden berkas.</span>
@@ -783,14 +784,14 @@ export default function PpeppFolderExplorer({
                                                         files.map((file) => (
                                                             <div
                                                                 key={file.id}
-                                                                className="py-1 px-2 rounded hover:bg-slate-50 flex items-center justify-between text-xs group"
+                                                                className="py-1 px-2  hover:bg-slate-50 flex items-center justify-between text-xs group"
                                                             >
                                                                 <div className="flex items-center gap-2 min-w-0 truncate">
                                                                     {getFileIcon(file.name)}
                                                                     <span
                                                                         className="text-slate-700 font-medium truncate hover:text-indigo-600 cursor-pointer text-xs"
                                                                         onClick={() =>
-                                                                            alert(`Membuka berkas: ${file.name}`)
+                                                                            toastInfo(`Membuka berkas: ${file.name}`)
                                                                         }
                                                                     >
                                                                         {file.name}
@@ -804,9 +805,9 @@ export default function PpeppFolderExplorer({
                                                                     <button
                                                                         type="button"
                                                                         onClick={() =>
-                                                                            alert(`Membuka berkas: ${file.name}`)
+                                                                            toastInfo(`Membuka berkas: ${file.name}`)
                                                                         }
-                                                                        className="p-1 text-slate-400 hover:text-indigo-600 rounded"
+                                                                        className="p-1 text-slate-400 hover:text-indigo-600 "
                                                                         title="Lihat Berkas"
                                                                     >
                                                                         <Eye className="w-3 h-3" />
@@ -822,7 +823,7 @@ export default function PpeppFolderExplorer({
                                                                                 file.name
                                                                             )
                                                                         }
-                                                                        className="p-1 text-slate-400 hover:text-rose-600 rounded"
+                                                                        className="p-1 text-slate-400 hover:text-rose-600 "
                                                                         title="Hapus Berkas"
                                                                     >
                                                                         <Trash2 className="w-3 h-3" />
@@ -857,7 +858,7 @@ export default function PpeppFolderExplorer({
                         return (
                             <div
                                 key={act.id}
-                                className="rounded-xl bg-white border border-slate-200/90 shadow-xs overflow-hidden"
+                                className=" bg-white border border-slate-200/90 shadow-xs overflow-hidden"
                             >
                                 <div className="p-3.5 flex items-center justify-between border-b border-slate-100 bg-white hover:bg-slate-50/50 transition-colors">
                                     <button
@@ -872,7 +873,7 @@ export default function PpeppFolderExplorer({
                                                 <ChevronRight className="w-4 h-4 text-slate-400" />
                                             )}
                                         </div>
-                                        <div className="p-2 rounded-lg bg-amber-50 text-amber-600 border border-amber-200/60 shrink-0">
+                                        <div className="p-2  bg-amber-50 text-amber-600 border border-amber-200/60 shrink-0">
                                             {isActOpen ? (
                                                 <FolderOpen className="w-5 h-5 text-amber-500" />
                                             ) : (
@@ -884,7 +885,7 @@ export default function PpeppFolderExplorer({
                                                 <span className="text-xs sm:text-sm font-bold text-slate-800">
                                                     {act.title_activity}
                                                 </span>
-                                                <span className="text-[10px] font-mono px-2 py-0.2 rounded bg-slate-100 text-slate-600">
+                                                <span className="text-[10px] font-mono px-2 py-0.2  bg-slate-100 text-slate-600">
                                                     Th. {act.academic_year}
                                                 </span>
                                             </div>
@@ -898,7 +899,7 @@ export default function PpeppFolderExplorer({
 
                                     <div className="flex items-center gap-2 shrink-0">
                                         <span
-                                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                                            className={`inline-flex items-center gap-1.5 px-2.5 py-1  text-xs font-semibold ${
                                                 isAllStagesComplete
                                                     ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                                     : 'bg-rose-50 text-rose-700 border border-rose-200'
@@ -925,7 +926,7 @@ export default function PpeppFolderExplorer({
                                             return (
                                                 <div
                                                     key={stage.key}
-                                                    className={`rounded-xl border transition-all ${
+                                                    className={` border transition-all ${
                                                         hasFiles
                                                             ? 'bg-white border-slate-200 shadow-xs'
                                                             : 'bg-rose-50/40 border-rose-200 shadow-xs'
@@ -945,7 +946,7 @@ export default function PpeppFolderExplorer({
                                                                 )}
                                                             </div>
                                                             <div
-                                                                className={`p-1 rounded-md ${
+                                                                className={`p-1  ${
                                                                     hasFiles ? bgThemeLight : 'bg-rose-100'
                                                                 }`}
                                                             >
@@ -964,7 +965,7 @@ export default function PpeppFolderExplorer({
                                                                     {stage.label}
                                                                 </span>
                                                                 <span
-                                                                    className={`ml-2 text-[10px] font-bold px-1.5 py-0.2 rounded-full ${
+                                                                    className={`ml-2 text-[10px] font-bold px-1.5 py-0.2  ${
                                                                         hasFiles
                                                                             ? 'bg-emerald-100 text-emerald-800'
                                                                             : 'bg-rose-100 text-rose-700'
@@ -988,7 +989,7 @@ export default function PpeppFolderExplorer({
                                                                     act.title_activity
                                                                 )
                                                             }
-                                                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold ${
+                                                            className={`inline-flex items-center gap-1 px-2.5 py-1  text-xs font-semibold ${
                                                                 hasFiles
                                                                     ? 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                                                                     : 'bg-rose-600 hover:bg-rose-700 text-white'
@@ -1004,7 +1005,7 @@ export default function PpeppFolderExplorer({
                                                             {files.map((file) => (
                                                                 <div
                                                                     key={file.id}
-                                                                    className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-200/70 text-xs"
+                                                                    className="flex items-center justify-between p-2  bg-slate-50 border border-slate-200/70 text-xs"
                                                                 >
                                                                     <div className="flex items-center gap-2 truncate">
                                                                         {getFileIcon(file.name)}
@@ -1019,9 +1020,9 @@ export default function PpeppFolderExplorer({
                                                                         <button
                                                                             type="button"
                                                                             onClick={() =>
-                                                                                alert(`Membuka berkas: ${file.name}`)
+                                                                                toastInfo(`Membuka berkas: ${file.name}`)
                                                                             }
-                                                                            className="p-1 text-slate-400 hover:text-indigo-600 rounded"
+                                                                            className="p-1 text-slate-400 hover:text-indigo-600 "
                                                                         >
                                                                             <Eye className="w-3.5 h-3.5" />
                                                                         </button>
@@ -1036,7 +1037,7 @@ export default function PpeppFolderExplorer({
                                                                                     file.name
                                                                                 )
                                                                             }
-                                                                            className="p-1 text-slate-400 hover:text-rose-600 rounded"
+                                                                            className="p-1 text-slate-400 hover:text-rose-600 "
                                                                         >
                                                                             <Trash2 className="w-3.5 h-3.5" />
                                                                         </button>

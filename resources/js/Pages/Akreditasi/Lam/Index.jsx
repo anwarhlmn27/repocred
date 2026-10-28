@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import { useState, useMemo } from 'react';
+import { confirmAlert, toastSuccess, toastInfo } from '@/Utils/alert';
 import {
     Award,
     Filter,
@@ -477,8 +478,14 @@ export default function LamIndex({ prodis = defaultProdis }) {
     };
 
     // Hapus Folder TS dari Kriteria (Hanya jika folder kosong)
-    const handleDeleteTsFolder = (critId, tsKey, tsLabel) => {
-        if (!confirm(`Hapus folder ${tsLabel} dari kriteria ini?`)) return;
+    const handleDeleteTsFolder = async (critId, tsKey, tsLabel) => {
+        const confirmed = await confirmAlert({
+            title: 'Hapus Folder TS?',
+            text: `Apakah Anda yakin ingin menghapus folder ${tsLabel} dari kriteria ini?`,
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal',
+        });
+        if (!confirmed) return;
 
         setCriterias((prev) =>
             prev.map((crit) => {
@@ -572,8 +579,14 @@ export default function LamIndex({ prodis = defaultProdis }) {
     };
 
     // Hapus File Dokumen
-    const handleDeleteFile = (critId, activityId, stageKey, fileId, fileName) => {
-        if (!confirm(`Hapus file "${fileName}" dari tahap PPEPP?`)) return;
+    const handleDeleteFile = async (critId, activityId, stageKey, fileId, fileName) => {
+        const confirmed = await confirmAlert({
+            title: 'Hapus Berkas PPEPP?',
+            text: `Apakah Anda yakin ingin menghapus file "${fileName}" dari tahap PPEPP?`,
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal',
+        });
+        if (!confirmed) return;
 
         setCriterias((prev) =>
             prev.map((crit) => {
@@ -593,11 +606,18 @@ export default function LamIndex({ prodis = defaultProdis }) {
                 };
             })
         );
+        toastSuccess(`File "${fileName}" berhasil dihapus.`);
     };
 
     // Hapus Kegiatan
-    const handleDeleteActivity = (critId, actId, title) => {
-        if (!confirm(`Hapus seluruh kegiatan "${title}" beserta semua dokumen PPEPP di dalamnya?`)) return;
+    const handleDeleteActivity = async (critId, actId, title) => {
+        const confirmed = await confirmAlert({
+            title: 'Hapus Kegiatan?',
+            text: `Apakah Anda yakin ingin menghapus seluruh kegiatan "${title}" beserta semua dokumen PPEPP di dalamnya?`,
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal',
+        });
+        if (!confirmed) return;
 
         setCriterias((prev) =>
             prev.map((crit) => {
@@ -608,6 +628,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                 };
             })
         );
+        toastSuccess(`Kegiatan "${title}" berhasil dihapus.`);
     };
 
     // Total kegiatan di seluruh kriteria
@@ -619,7 +640,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
 
             <div className="space-y-6">
                 {/* Header Utama Halaman */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6  border border-slate-200/80 shadow-sm">
                     <div>
                         <div className="flex items-center gap-2 text-emerald-600 font-bold text-xs tracking-wider uppercase mb-1">
                             <Layers className="w-4 h-4" />
@@ -632,13 +653,13 @@ export default function LamIndex({ prodis = defaultProdis }) {
                     </div>
 
                     {/* Indikator Folder */}
-                    <div className="flex flex-wrap items-center gap-3 bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200 text-xs shrink-0">
+                    <div className="flex flex-wrap items-center gap-3 bg-slate-50 px-4 py-2.5  border border-slate-200 text-xs shrink-0">
                         <span className="font-semibold text-slate-700">Indikator PPEPP:</span>
                         <div className="flex items-center gap-1.5 text-slate-600 font-medium">
-                            <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" />
+                            <span className="w-3 h-3  bg-emerald-500 inline-block" />
                             <span>Lengkap</span>
                         </div>
-                        <div className="flex items-center gap-1.5 text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200">
+                        <div className="flex items-center gap-1.5 text-rose-600 font-bold bg-rose-50 px-2 py-0.5  border border-rose-200">
                             <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
                             <span>Belum Ada File</span>
                         </div>
@@ -646,7 +667,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                 </div>
 
                 {/* Filter Bar: Hanya Berbasis Prodi */}
-                <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="bg-white p-4 sm:p-5  border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
                         <div className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wide">
                             <Filter className="w-4 h-4 text-emerald-600" />
@@ -659,7 +680,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                 id="lam-filter-prodi"
                                 value={selectedProdi}
                                 onChange={(e) => handleSelectProdi(e.target.value)}
-                                className="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-300 bg-slate-50 hover:bg-white text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all cursor-pointer shadow-xs"
+                                className="w-full px-4 py-2.5 text-sm  border border-slate-300 bg-slate-50 hover:bg-white text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all cursor-pointer shadow-xs"
                             >
                                 <option value="">-- Silakan Pilih Program Studi --</option>
                                 {prodiList.map((p) => (
@@ -674,7 +695,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                             <button
                                 type="button"
                                 onClick={() => setSelectedProdi('')}
-                                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-xl border border-slate-200 transition-colors"
+                                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-600 hover:text-rose-600 hover:bg-rose-50  border border-slate-200 transition-colors"
                             >
                                 <RotateCcw className="w-3.5 h-3.5" />
                                 <span>Reset Filter</span>
@@ -684,7 +705,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
 
                     <div className="text-xs text-slate-500 flex items-center gap-2">
                         {selectedProdi ? (
-                            <span className="inline-flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200/60 font-medium">
+                            <span className="inline-flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-3 py-1.5  border border-emerald-200/60 font-medium">
                                 <Check className="w-3.5 h-3.5" />
                                 Prodi Aktif: <strong className="font-bold">{activeProdi?.name_prodi}</strong> ({activeProdi?.agency_code})
                             </span>
@@ -698,12 +719,12 @@ export default function LamIndex({ prodis = defaultProdis }) {
                 {/* KONDISI 1: JIKA BELUM PILIH PRODI (EMPTY STATE BERSIH)   */}
                 {/* ======================================================== */}
                 {!selectedProdi ? (
-                    <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-white p-8 sm:p-12 text-center shadow-xs">
-                        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 text-emerald-600 mb-4 shadow-sm">
+                    <div className=" border-2 border-dashed border-slate-200 bg-white p-8 sm:p-12 text-center shadow-xs">
+                        <div className="mx-auto flex h-16 w-16 items-center justify-center  bg-gradient-to-br from-emerald-100 to-teal-100 text-emerald-600 mb-4 shadow-sm">
                             <GraduationCap className="w-8 h-8" />
                         </div>
 
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold mb-2 border border-emerald-200/60">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1  bg-emerald-50 text-emerald-700 text-xs font-bold mb-2 border border-emerald-200/60">
                             <Sparkles className="w-3.5 h-3.5" />
                             <span>Pilih Program Studi Terlebih Dahulu</span>
                         </div>
@@ -728,14 +749,14 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                         key={p.id}
                                         type="button"
                                         onClick={() => handleSelectProdi(p.id)}
-                                        className="group p-4 rounded-xl border border-slate-200 hover:border-emerald-400 bg-slate-50/50 hover:bg-emerald-50/30 text-left transition-all duration-200 shadow-xs hover:shadow-md cursor-pointer flex flex-col justify-between"
+                                        className="group p-4  border border-slate-200 hover:border-emerald-400 bg-slate-50/50 hover:bg-emerald-50/30 text-left transition-all duration-200 shadow-xs hover:shadow-md cursor-pointer flex flex-col justify-between"
                                     >
                                         <div>
                                             <div className="flex items-center justify-between mb-2">
-                                                <span className="px-2 py-0.5 rounded text-[11px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800">
+                                                <span className="px-2 py-0.5  text-[11px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800">
                                                     {p.degree} {p.acronym}
                                                 </span>
-                                                <span className="text-[10px] px-1.5 py-0.2 rounded font-bold bg-slate-200 text-slate-700">
+                                                <span className="text-[10px] px-1.5 py-0.2  font-bold bg-slate-200 text-slate-700">
                                                     {p.agency_code}
                                                 </span>
                                             </div>
@@ -759,15 +780,15 @@ export default function LamIndex({ prodis = defaultProdis }) {
                     /* ======================================================== */
                     <div className="space-y-4 animate-fade-in">
                         {/* Panel Sesi Akreditasi & Konfigurasi Rentang TS */}
-                        <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 text-white p-5 sm:p-6 rounded-2xl shadow-md border border-emerald-800/40 space-y-4">
+                        <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 text-white p-5 sm:p-6  shadow-md border border-emerald-800/40 space-y-4">
                             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                                 <div className="flex items-start sm:items-center gap-3.5">
-                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 shadow-inner">
+                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center  bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 shadow-inner">
                                         <GraduationCap className="w-6 h-6" />
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2 flex-wrap">
-                                            <span className="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                                            <span className="px-2 py-0.5  text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
                                                 Lembaga: {activeProdi?.agency_code}
                                             </span>
                                             <span className="text-xs text-slate-300">• {activeProdi?.faculty}</span>
@@ -780,11 +801,11 @@ export default function LamIndex({ prodis = defaultProdis }) {
 
                                 {/* Statistik Cepat */}
                                 <div className="flex items-center gap-2.5 text-xs">
-                                    <div className="bg-white/10 backdrop-blur-sm px-3.5 py-1.5 rounded-xl border border-white/10 text-emerald-100">
+                                    <div className="bg-white/10 backdrop-blur-sm px-3.5 py-1.5  border border-white/10 text-emerald-100">
                                         <span>Tahun Acuan TS: </span>
                                         <strong className="text-white font-bold">{tsYear}</strong>
                                     </div>
-                                    <div className="bg-white/10 backdrop-blur-sm px-3.5 py-1.5 rounded-xl border border-white/10 text-emerald-100">
+                                    <div className="bg-white/10 backdrop-blur-sm px-3.5 py-1.5  border border-white/10 text-emerald-100">
                                         <span>Total: </span>
                                         <strong className="text-white font-bold">{totalAllActivities} Kegiatan</strong>
                                     </div>
@@ -800,11 +821,11 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                     </span>
 
                                     {/* Selector Rentang TS */}
-                                    <div className="inline-flex rounded-xl bg-slate-800/80 p-0.5 border border-slate-700/80">
+                                    <div className="inline-flex  bg-slate-800/80 p-0.5 border border-slate-700/80">
                                         <button
                                             type="button"
                                             onClick={() => setTsCount(3)}
-                                            className={`px-3 py-1 rounded-lg font-semibold transition-all ${
+                                            className={`px-3 py-1  font-semibold transition-all ${
                                                 tsCount === 3 ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
                                             }`}
                                             title="Standar LAMEMBA (3 Tahun Terakhir: TS, TS-1, TS-2)"
@@ -814,7 +835,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                         <button
                                             type="button"
                                             onClick={() => setTsCount(5)}
-                                            className={`px-3 py-1 rounded-lg font-semibold transition-all ${
+                                            className={`px-3 py-1  font-semibold transition-all ${
                                                 tsCount === 5 ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
                                             }`}
                                             title="Standar LAM-TEKNIK / BAN-PT (5 Tahun Terakhir: TS s/d TS-4)"
@@ -824,7 +845,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                     </div>
 
                                     {activeProdi?.agency_code === 'LAMEMBA' && (
-                                        <span className="text-[11px] text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-md border border-amber-400/30">
+                                        <span className="text-[11px] text-amber-300 bg-amber-500/20 px-2 py-0.5  border border-amber-400/30">
                                             Direkomendasikan 3 Tahun untuk {activeProdi.agency_code}
                                         </span>
                                     )}
@@ -836,7 +857,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                         type="checkbox"
                                         checked={hideEmptyTs}
                                         onChange={(e) => setHideEmptyTs(e.target.checked)}
-                                        className="rounded border-slate-700 text-emerald-600 focus:ring-emerald-500/20 bg-slate-800"
+                                        className=" border-slate-700 text-emerald-600 focus:ring-emerald-500/20 bg-slate-800"
                                     />
                                     <span>Sembunyikan Folder TS Kosong</span>
                                 </label>
@@ -874,7 +895,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                 return (
                                     <div
                                         key={crit.id}
-                                        className={`rounded-xl bg-white border transition-all duration-200 overflow-hidden shadow-xs ${
+                                        className={` bg-white border transition-all duration-200 overflow-hidden shadow-xs ${
                                             isCritExpanded ? 'border-emerald-300 ring-2 ring-emerald-500/10' : 'border-slate-200/80 hover:border-slate-300'
                                         }`}
                                     >
@@ -885,12 +906,12 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                 onClick={() => toggleCrit(crit.id)}
                                                 className="flex items-center gap-3 text-left flex-1 min-w-0 mr-2 cursor-pointer"
                                             >
-                                                <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-600 to-teal-700 text-white font-extrabold text-xs sm:text-sm shadow-xs">
+                                                <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center  bg-gradient-to-br from-emerald-600 to-teal-700 text-white font-extrabold text-xs sm:text-sm shadow-xs">
                                                     C{crit.code_criteria}
                                                 </div>
                                                 <div className="min-w-0">
                                                     <div className="flex items-center gap-1.5 flex-wrap">
-                                                        <span className="px-1.5 py-0.2 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                                                        <span className="px-1.5 py-0.2  text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/60">
                                                             Kriteria {crit.code_criteria}
                                                         </span>
                                                         <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">• LAM Standar Mutu OBE</span>
@@ -909,7 +930,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                 <button
                                                     type="button"
                                                     onClick={() => setAddTsFolderModal({ isOpen: true, critId: crit.id, critCode: crit.code_criteria, critTitle: crit.title_criteria })}
-                                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+                                                    className="inline-flex items-center gap-1 px-2.5 py-1  text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
                                                     title="Tambah Folder TS Baru ke Kriteria Ini"
                                                 >
                                                     <FolderPlus className="w-3.5 h-3.5 text-slate-600" />
@@ -920,7 +941,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                 <button
                                                     type="button"
                                                     onClick={() => handleOpenAddActivity(crit.id, crit.code_criteria, crit.title_criteria, 'all')}
-                                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition-colors"
+                                                    className="inline-flex items-center gap-1 px-2.5 py-1  text-xs font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition-colors"
                                                 >
                                                     <Plus className="w-3.5 h-3.5" />
                                                     <span className="hidden sm:inline">Tambah Kegiatan</span>
@@ -929,7 +950,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                 <button
                                                     type="button"
                                                     onClick={() => toggleCrit(crit.id)}
-                                                    className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                                                    className="p-1 sm:p-1.5  text-slate-400 hover:text-slate-600 hover:bg-slate-100"
                                                 >
                                                     {isCritExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                                                 </button>
@@ -940,7 +961,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                         {isCritExpanded && (
                                             <div className="p-3 sm:p-4 bg-slate-50/60 space-y-3">
                                                 {visibleTsList.length === 0 ? (
-                                                    <div className="py-6 text-center text-xs text-slate-400 bg-white rounded-xl border border-dashed border-slate-200">
+                                                    <div className="py-6 text-center text-xs text-slate-400 bg-white  border border-dashed border-slate-200">
                                                         Tidak ada folder TS yang aktif atau memiliki kegiatan.
                                                     </div>
                                                 ) : (
@@ -956,7 +977,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                         return (
                                                             <div
                                                                 key={tsOpt.key}
-                                                                className={`rounded-xl border transition-all duration-200 bg-white overflow-hidden shadow-xs ${
+                                                                className={` border transition-all duration-200 bg-white overflow-hidden shadow-xs ${
                                                                     isTsFolderOpen ? 'border-slate-300 ring-1 ring-slate-200' : 'border-slate-200/80 hover:border-slate-300'
                                                                 }`}
                                                             >
@@ -975,7 +996,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
 
                                                                         <div className="min-w-0">
                                                                             <div className="flex items-center gap-2">
-                                                                                <span className={`px-2 py-0.5 rounded text-[10px] font-black tracking-wide uppercase ${
+                                                                                <span className={`px-2 py-0.5  text-[10px] font-black tracking-wide uppercase ${
                                                                                     tsOpt.key === 'all'
                                                                                         ? 'bg-purple-100 text-purple-700'
                                                                                         : tsOpt.key === 'ts-0'
@@ -999,7 +1020,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                                         <button
                                                                             type="button"
                                                                             onClick={() => handleOpenAddActivity(crit.id, crit.code_criteria, crit.title_criteria, tsOpt.key)}
-                                                                            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors"
+                                                                            className="inline-flex items-center gap-1 px-2 py-1  text-[11px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors"
                                                                             title={`Tambah Kegiatan di ${tsOpt.short}`}
                                                                         >
                                                                             <Plus className="w-3 h-3" />
@@ -1011,7 +1032,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                                             <button
                                                                                 type="button"
                                                                                 onClick={() => handleDeleteTsFolder(crit.id, tsOpt.key, tsOpt.short)}
-                                                                                className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                                                                className="p-1  text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                                                                                 title="Hapus Folder TS Kosong Ini"
                                                                             >
                                                                                 <Trash2 className="w-3.5 h-3.5" />
@@ -1021,7 +1042,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                                         <button
                                                                             type="button"
                                                                             onClick={() => toggleTsFolder(folderKey)}
-                                                                            className="p-1 rounded-md text-slate-400 hover:text-slate-600"
+                                                                            className="p-1  text-slate-400 hover:text-slate-600"
                                                                         >
                                                                             {isTsFolderOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                                                                         </button>
@@ -1032,7 +1053,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                                 {isTsFolderOpen && (
                                                                     <div className="p-3 sm:p-4 space-y-3 bg-white">
                                                                         {actCount === 0 ? (
-                                                                            <div className="py-4 px-3 text-center rounded-lg bg-slate-50 border border-dashed border-slate-200 text-xs text-slate-400 flex flex-col items-center justify-center gap-1.5">
+                                                                            <div className="py-4 px-3 text-center  bg-slate-50 border border-dashed border-slate-200 text-xs text-slate-400 flex flex-col items-center justify-center gap-1.5">
                                                                                 <span>Belum ada kegiatan pada {tsOpt.label}.</span>
                                                                                 <button
                                                                                     type="button"
@@ -1050,7 +1071,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                                                 return (
                                                                                     <div
                                                                                         key={act.id}
-                                                                                        className="rounded-lg border border-slate-200/90 overflow-hidden bg-slate-50/40"
+                                                                                        className=" border border-slate-200/90 overflow-hidden bg-slate-50/40"
                                                                                     >
                                                                                         {/* Header Kegiatan */}
                                                                                         <div className="px-3 py-2 flex items-center justify-between bg-white border-b border-slate-100">
@@ -1098,7 +1119,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                                                                     return (
                                                                                                         <div
                                                                                                             key={stage.key}
-                                                                                                            className="rounded-md border border-slate-200/80 bg-white overflow-hidden text-xs"
+                                                                                                            className=" border border-slate-200/80 bg-white overflow-hidden text-xs"
                                                                                                         >
                                                                                                             {/* Header Tahap PPEPP */}
                                                                                                             <div className="px-2.5 py-1.5 flex items-center justify-between bg-white hover:bg-slate-50">
@@ -1107,7 +1128,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                                                                                     onClick={() => togglePpepp(ppeppKey)}
                                                                                                                     className="flex items-center gap-2 text-left flex-1 min-w-0"
                                                                                                                 >
-                                                                                                                    <span className={`w-2 h-2 rounded-full shrink-0 ${hasDocs ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                                                                                                                    <span className={`w-2 h-2  shrink-0 ${hasDocs ? 'bg-emerald-500' : 'bg-rose-500'}`} />
                                                                                                                     <span className="font-bold text-slate-700 truncate">
                                                                                                                         {stage.label}
                                                                                                                     </span>
@@ -1120,7 +1141,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                                                                                     <button
                                                                                                                         type="button"
                                                                                                                         onClick={() => handleOpenUpload(crit.id, act.id, stage.key, stage.label, act.title_activity)}
-                                                                                                                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100"
+                                                                                                                        className="inline-flex items-center gap-1 px-1.5 py-0.5  text-[10px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100"
                                                                                                                     >
                                                                                                                         <Plus className="w-2.5 h-2.5" />
                                                                                                                         <span>Upload</span>
@@ -1147,7 +1168,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                                                                                         stageDocs.map((doc) => (
                                                                                                                             <div
                                                                                                                                 key={doc.id}
-                                                                                                                                className="flex items-center justify-between p-1.5 rounded bg-white border border-slate-200/60 hover:border-slate-300 text-[11px]"
+                                                                                                                                className="flex items-center justify-between p-1.5  bg-white border border-slate-200/60 hover:border-slate-300 text-[11px]"
                                                                                                                             >
                                                                                                                                 <div className="flex items-center gap-2 min-w-0 mr-2">
                                                                                                                                     <FileSpreadsheet className="w-3.5 h-3.5 text-slate-500 shrink-0" />
@@ -1162,8 +1183,8 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                                                                                                 <div className="flex items-center gap-1 shrink-0">
                                                                                                                                     <button
                                                                                                                                         type="button"
-                                                                                                                                        onClick={() => alert(`Preview file: ${doc.name}`)}
-                                                                                                                                        className="p-1 text-slate-400 hover:text-emerald-600 rounded"
+                                                                                                                                        onClick={() => toastInfo(`Preview file: ${doc.name}`)}
+                                                                                                                                        className="p-1 text-slate-400 hover:text-emerald-600 "
                                                                                                                                         title="Lihat / Unduh Dokumen"
                                                                                                                                     >
                                                                                                                                         <Eye className="w-3.5 h-3.5" />
@@ -1171,7 +1192,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                                                                                                     <button
                                                                                                                                         type="button"
                                                                                                                                         onClick={() => handleDeleteFile(crit.id, act.id, stage.key, doc.id, doc.name)}
-                                                                                                                                        className="p-1 text-slate-400 hover:text-rose-600 rounded"
+                                                                                                                                        className="p-1 text-slate-400 hover:text-rose-600 "
                                                                                                                                         title="Hapus Dokumen"
                                                                                                                                     >
                                                                                                                                         <Trash2 className="w-3.5 h-3.5" />
@@ -1212,7 +1233,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
             {/* ======================================================== */}
             {newActivityModal.isOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100">
+                    <div className="bg-white  max-w-lg w-full p-6 shadow-2xl border border-slate-100">
                         <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                             <div>
                                 <h3 className="text-base font-bold text-slate-800">
@@ -1224,7 +1245,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                             </div>
                             <button
                                 onClick={() => setNewActivityModal({ isOpen: false, critId: null, critCode: null, critTitle: '', presetTsKey: 'all' })}
-                                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg"
+                                className="p-1 text-slate-400 hover:text-slate-600 "
                             >
                                 <X className="w-5 h-5" />
                             </button>
@@ -1239,7 +1260,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                 <select
                                     value={formSelectedTsKey}
                                     onChange={(e) => setFormSelectedTsKey(e.target.value)}
-                                    className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-semibold"
+                                    className="w-full px-3.5 py-2.5 text-sm  border border-slate-300 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-semibold"
                                 >
                                     {allPossibleTsOptions.map((opt) => (
                                         <option key={opt.key} value={opt.key}>
@@ -1262,7 +1283,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                     value={formTitleActivity}
                                     onChange={(e) => setFormTitleActivity(e.target.value)}
                                     placeholder="Contoh: Lokakarya Evaluasi Kurikulum OBE & Pemetaan CPL"
-                                    className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                                    className="w-full px-3.5 py-2.5 text-sm  border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                                     required
                                     autoFocus
                                 />
@@ -1275,13 +1296,13 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                 <button
                                     type="button"
                                     onClick={() => setNewActivityModal({ isOpen: false, critId: null, critCode: null, critTitle: '', presetTsKey: 'all' })}
-                                    className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+                                    className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100  transition-colors"
                                 >
                                     Batal
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-5 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md shadow-emerald-500/20 transition-all"
+                                    className="px-5 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700  shadow-md shadow-emerald-500/20 transition-all"
                                 >
                                     Simpan Kegiatan
                                 </button>
@@ -1296,7 +1317,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
             {/* ======================================================== */}
             {addTsFolderModal.isOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
+                    <div className="bg-white  max-w-md w-full p-6 shadow-2xl border border-slate-100">
                         <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                             <div>
                                 <h3 className="text-base font-bold text-slate-800">
@@ -1308,7 +1329,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                             </div>
                             <button
                                 onClick={() => setAddTsFolderModal({ isOpen: false, critId: null, critCode: null, critTitle: '' })}
-                                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg"
+                                className="p-1 text-slate-400 hover:text-slate-600 "
                             >
                                 <X className="w-5 h-5" />
                             </button>
@@ -1322,7 +1343,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                 <select
                                     value={selectedNewTsKey}
                                     onChange={(e) => setSelectedNewTsKey(e.target.value)}
-                                    className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-semibold"
+                                    className="w-full px-3.5 py-2.5 text-sm  border border-slate-300 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-semibold"
                                 >
                                     {allPossibleTsOptions.map((opt) => (
                                         <option key={opt.key} value={opt.key}>
@@ -1339,13 +1360,13 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                 <button
                                     type="button"
                                     onClick={() => setAddTsFolderModal({ isOpen: false, critId: null, critCode: null, critTitle: '' })}
-                                    className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+                                    className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100  transition-colors"
                                 >
                                     Batal
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-5 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md shadow-emerald-500/20 transition-all"
+                                    className="px-5 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700  shadow-md shadow-emerald-500/20 transition-all"
                                 >
                                     Tambahkan Folder
                                 </button>
@@ -1360,7 +1381,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
             {/* ======================================================== */}
             {uploadModal.isOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100">
+                    <div className="bg-white  max-w-lg w-full p-6 shadow-2xl border border-slate-100">
                         <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                             <div>
                                 <h3 className="text-base font-bold text-slate-800">
@@ -1372,14 +1393,14 @@ export default function LamIndex({ prodis = defaultProdis }) {
                             </div>
                             <button
                                 onClick={() => setUploadModal({ isOpen: false, critId: null, activityId: null, stageKey: null, stageLabel: null, activityTitle: '' })}
-                                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg"
+                                className="p-1 text-slate-400 hover:text-slate-600 "
                             >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
                         <form onSubmit={handleConfirmUpload} className="mt-4 space-y-4">
-                            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs">
+                            <div className="p-3  bg-slate-50 border border-slate-200/80 text-xs">
                                 <span className="text-slate-400 block font-medium">Kegiatan Terkait:</span>
                                 <span className="font-bold text-slate-800">{uploadModal.activityTitle}</span>
                             </div>
@@ -1393,7 +1414,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                     value={fileNameInput}
                                     onChange={(e) => setFileNameInput(e.target.value)}
                                     placeholder="Contoh: Dokumen_RPS_OBE_Standar_ACM.pdf"
-                                    className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                                    className="w-full px-3.5 py-2.5 text-sm  border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                                     required
                                     autoFocus
                                 />
@@ -1402,7 +1423,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                 </p>
                             </div>
 
-                            <div className="p-5 border-2 border-dashed border-emerald-200 hover:border-emerald-400 rounded-xl bg-emerald-50/30 text-center cursor-pointer transition-colors">
+                            <div className="p-5 border-2 border-dashed border-emerald-200 hover:border-emerald-400  bg-emerald-50/30 text-center cursor-pointer transition-colors">
                                 <UploadCloud className="w-8 h-8 text-emerald-600 mx-auto mb-1" />
                                 <p className="text-xs font-semibold text-emerald-800">Pilih berkas dari komputer atau drag & drop</p>
                                 <p className="text-[10px] text-slate-400 mt-0.5">Ukuran maksimal file 25 MB</p>
@@ -1412,13 +1433,13 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                 <button
                                     type="button"
                                     onClick={() => setUploadModal({ isOpen: false, critId: null, activityId: null, stageKey: null, stageLabel: null, activityTitle: '' })}
-                                    className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+                                    className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100  transition-colors"
                                 >
                                     Batal
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-5 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md shadow-emerald-500/20 transition-all"
+                                    className="px-5 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700  shadow-md shadow-emerald-500/20 transition-all"
                                 >
                                     Upload & Simpan
                                 </button>

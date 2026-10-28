@@ -2,313 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
-/* =============================================
-   NAVBAR STYLES
-   ============================================= */
+/* ==========================================================================
+   Zero Border-Radius Override (Flat / Sharp Design System)
+   Menjaga seluruh shape, form, card, button, dan modal agar tidak memiliki radius
+   ========================================================================== */
 
-/* ── Navbar container ── */
-.app-navbar {
-    @apply sticky top-0 z-50 w-full;
-    background: linear-gradient(90deg, #1e1b4b 0%, #312e81 55%, #1e3a5f 100%);
-    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+*,
+*::before,
+*::after {
+    border-radius: 0 !important;
 }
 
-.navbar-inner {
-    @apply mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8 max-w-screen-2xl;
-    gap: 1.5rem;
-}
-
-/* ── Brand ── */
-.navbar-brand {
-    @apply flex items-center gap-2.5 no-underline flex-shrink-0;
-}
-
-.navbar-brand-icon {
-    @apply flex items-center justify-center w-8 h-8 rounded-lg text-white flex-shrink-0;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    box-shadow: 0 3px 10px rgba(99, 102, 241, 0.5);
-}
-
-.navbar-brand-name {
-    @apply text-white font-bold text-lg tracking-wide;
-}
-
-/* ── Desktop menu ── */
-.navbar-menu {
-    @apply hidden sm:flex items-center gap-1 flex-1;
-}
-
-/* Generic nav item */
-.nav-item {
-    @apply relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer select-none whitespace-nowrap;
-    color: rgba(199, 210, 254, 0.85);
-    background: transparent;
-    border: none;
-    text-decoration: none;
-}
-
-.nav-item:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-}
-
-.nav-item--active {
-    background: rgba(99, 102, 241, 0.3) !important;
-    color: #fff !important;
-    box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.4);
-}
-
-.nav-item-btn {
-    @apply flex items-center gap-1.5;
-    background: transparent;
-    border: none;
-}
-
-.nav-item-icon {
-    @apply opacity-75 flex-shrink-0;
-}
-
-.nav-chevron {
-    @apply ml-0.5 transition-transform duration-200 opacity-60;
-}
-
-.nav-chevron--open {
-    transform: rotate(180deg);
-}
-
-/* ── Dropdown panel ── */
-.nav-dropdown {
-    @apply absolute top-full left-0 mt-2 w-52 rounded-xl overflow-hidden;
-    background: #fff;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0,0,0,0.06);
-    z-index: 60;
-    animation: dropdownIn 0.15s ease;
-}
-
-@keyframes dropdownIn {
-    from { opacity: 0; transform: translateY(-6px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-.nav-dropdown-item {
-    @apply flex items-center px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors duration-100;
-    text-decoration: none;
-    border-left: 3px solid transparent;
-}
-
-.nav-dropdown-item:hover {
-    @apply bg-indigo-50 text-indigo-700;
-    border-left-color: #6366f1;
-}
-
-.nav-dropdown-item--active {
-    @apply bg-indigo-50 text-indigo-700 font-semibold;
-    border-left-color: #6366f1;
-}
-
-/* ── Right side: user ── */
-.navbar-right {
-    @apply flex items-center gap-3 flex-shrink-0;
-}
-
-.navbar-user {
-    @apply hidden sm:flex items-center gap-2;
-}
-
-.navbar-avatar {
-    @apply flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold text-white flex-shrink-0;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
-}
-
-.navbar-username {
-    @apply text-sm font-medium;
-    color: rgba(199, 210, 254, 0.9);
-}
-
-.navbar-logout-btn {
-    @apply flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150;
-    color: rgba(199, 210, 254, 0.75);
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    cursor: pointer;
-    text-decoration: none;
-}
-
-.navbar-logout-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
-    color: #fff;
-}
-
-/* ── Hamburger ── */
-.navbar-hamburger {
-    @apply flex items-center justify-center w-9 h-9 rounded-lg transition-colors duration-150;
-    color: rgba(199, 210, 254, 0.85);
-    background: transparent;
-    border: none;
-    cursor: pointer;
-}
-
-.navbar-hamburger:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-}
-
-/* ── Mobile drawer ── */
-.mobile-menu {
-    @apply sm:hidden border-t px-3 py-3 flex flex-col gap-0.5;
-    border-color: rgba(255, 255, 255, 0.1);
-    background: rgba(30, 27, 75, 0.98);
-    animation: mobileIn 0.2s ease;
-}
-
-@keyframes mobileIn {
-    from { opacity: 0; transform: translateY(-4px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-.mobile-nav-item {
-    @apply flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150;
-    color: rgba(199, 210, 254, 0.85);
-    text-decoration: none;
-}
-
-.mobile-nav-item:hover,
-.mobile-nav-item--active {
-    background: rgba(99, 102, 241, 0.25);
-    color: #fff;
-}
-
-.mobile-nav-item-btn {
-    @apply justify-between;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-}
-
-.mobile-submenu {
-    @apply flex flex-col gap-0.5 ml-4 mt-0.5 border-l pl-3;
-    border-color: rgba(99, 102, 241, 0.3);
-}
-
-.mobile-submenu-item {
-    @apply block px-3 py-2 rounded-lg text-xs font-medium transition-colors duration-150;
-    color: rgba(199, 210, 254, 0.7);
-    text-decoration: none;
-}
-
-.mobile-submenu-item:hover,
-.mobile-submenu-item--active {
-    background: rgba(99, 102, 241, 0.2);
-    color: #c7d2fe;
-}
-
-/* ── User dropdown button ── */
-.navbar-user-btn {
-    @apply flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all duration-150 cursor-pointer;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    color: rgba(199, 210, 254, 0.9);
-}
-
-.navbar-user-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
-    color: #fff;
-}
-
-/* ── User dropdown panel ── */
-.user-dropdown {
-    @apply absolute top-full right-0 mt-2 w-56 rounded-xl overflow-hidden;
-    background: #fff;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0,0,0,0.06);
-    z-index: 60;
-    animation: dropdownIn 0.15s ease;
-}
-
-.user-dropdown-header {
-    @apply px-4 py-3;
-    background: linear-gradient(135deg, #f5f3ff, #ede9fe);
-}
-
-.user-dropdown-name {
-    @apply text-sm font-semibold text-gray-800 truncate;
-}
-
-.user-dropdown-email {
-    @apply text-xs text-gray-500 truncate mt-0.5;
-}
-
-.user-dropdown-divider {
-    @apply border-t border-gray-100;
-}
-
-.user-dropdown-item {
-    @apply flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-gray-700 transition-colors duration-100;
-    text-decoration: none;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    text-align: left;
-}
-
-.user-dropdown-item:hover {
-    @apply bg-indigo-50 text-indigo-700;
-}
-
-.user-dropdown-item--danger {
-    @apply text-red-600;
-}
-
-.user-dropdown-item--danger:hover {
-    @apply bg-red-50 text-red-700;
-}
-
-.user-dropdown-icon {
-    @apply opacity-70 flex-shrink-0;
-}
-
-/* ── Mobile menu footer ── */
-.mobile-menu-footer {
-    @apply flex flex-col gap-2 pt-3 mt-2 border-t;
-    border-color: rgba(255, 255, 255, 0.08);
-}
-
-.mobile-user-info {
-    @apply flex items-center gap-3 px-2 py-1;
-}
-
-.mobile-user-name {
-    @apply text-sm font-medium text-white;
-}
-
-.mobile-user-email {
-    @apply text-xs;
-    color: rgba(199, 210, 254, 0.55);
-}
-
-.mobile-footer-links {
-    @apply flex flex-col gap-0.5;
-}
-
-.mobile-footer-link {
-    @apply flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150;
-    color: rgba(199, 210, 254, 0.75);
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
-    background: transparent;
-}
-
-.mobile-footer-link:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #fff;
-}
-
-.mobile-footer-link--danger {
-    color: rgba(252, 165, 165, 0.85);
-}
-
-.mobile-footer-link--danger:hover {
-    background: rgba(239, 68, 68, 0.15);
-    color: #fca5a5;
+button,
+input,
+optgroup,
+select,
+textarea,
+.form-control,
+.form-select,
+.input-group,
+.input-group-text,
+.btn,
+.badge,
+.card,
+.card-header,
+.card-body,
+.card-footer,
+.modal-content,
+.modal-header,
+.modal-footer,
+.dropdown-menu,
+.dropdown-item,
+.nav-link,
+.nav-item,
+.table,
+.alert,
+.progress,
+.progress-bar {
+    border-radius: 0 !important;
 }

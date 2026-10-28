@@ -58,17 +58,17 @@ export default function Dashboard({ auth, stats = {}, recentActivities = [] }) {
 
     return (
         <AuthenticatedLayout>
-            <Head title="Dashboard Repocred" />
+            <Head title="Dashboard" />
 
             <div className="space-y-6">
                 {/* Hero / Welcome Banner */}
-                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-7 text-white shadow-xl border border-indigo-900/40">
-                    <div className="absolute -right-10 -bottom-10 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
-                    <div className="absolute top-0 right-1/4 h-32 w-32 rounded-full bg-blue-500/10 blur-2xl pointer-events-none" />
+                <div className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-7 text-white shadow-xl border border-indigo-900/40">
+                    <div className="absolute -right-10 -bottom-10 h-64 w-64 bg-indigo-500/10 blur-3xl pointer-events-none" />
+                    <div className="absolute top-0 right-1/4 h-32 w-32 bg-blue-500/10 blur-2xl pointer-events-none" />
                     
                     <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-medium mb-3 backdrop-blur-sm border border-indigo-500/30">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/20 text-indigo-300 text-xs font-medium mb-3 backdrop-blur-sm border border-indigo-500/30">
                                 <ShieldCheck className="w-3.5 h-3.5" />
                                 <span>Sistem Manajemen Dokumen & Akreditasi</span>
                             </div>
@@ -82,14 +82,14 @@ export default function Dashboard({ auth, stats = {}, recentActivities = [] }) {
                         <div className="flex flex-wrap gap-2.5">
                             <Link
                                 href="/kegiatan"
-                                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white text-sm font-semibold shadow-lg shadow-indigo-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+                                className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white text-sm font-semibold shadow-lg shadow-indigo-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
                             >
                                 <FileSpreadsheet className="w-4 h-4" />
                                 <span>Input Kegiatan</span>
                             </Link>
                             <Link
                                 href="/akreditasi/lam"
-                                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 text-sm font-medium border border-slate-700/60 backdrop-blur-sm transition-all"
+                                className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 text-sm font-medium border border-slate-700/60 backdrop-blur-sm transition-all"
                             >
                                 <Award className="w-4 h-4" />
                                 <span>Lihat Instrumen LAM</span>
@@ -106,10 +106,10 @@ export default function Dashboard({ auth, stats = {}, recentActivities = [] }) {
                             <Link
                                 key={idx}
                                 href={card.href}
-                                className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-sm border border-slate-200/80 hover:shadow-md hover:border-indigo-200 transition-all duration-300"
+                                className="group relative overflow-hidden bg-white p-5 shadow-sm border border-slate-200/80 hover:shadow-md hover:border-indigo-200 transition-all duration-300"
                             >
                                 <div className="flex items-center justify-between">
-                                    <div className={`p-3 rounded-xl ${card.bgColor} transition-transform group-hover:scale-110 duration-300`}>
+                                    <div className={`p-3 ${card.bgColor} transition-transform group-hover:scale-110 duration-300`}>
                                         <Icon className="w-6 h-6" />
                                     </div>
                                     <span className="text-slate-400 group-hover:text-indigo-600 transition-colors">
@@ -132,13 +132,13 @@ export default function Dashboard({ auth, stats = {}, recentActivities = [] }) {
                 {/* Two Column Layout: Status Chart & Quick Modules */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Status Ringkasan Eviden */}
-                    <div className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80">
+                    <div className="bg-white p-6 shadow-sm border border-slate-200/80">
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-base font-bold text-slate-800 flex items-center gap-2">
                                 <Clock className="w-4 h-4 text-indigo-600" />
                                 Status Kesiapan Eviden
                             </h2>
-                            <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+                            <span className="text-xs font-semibold px-2 py-0.5 bg-slate-100 text-slate-600">
                                 Total: {totalAct}
                             </span>
                         </div>
@@ -151,8 +151,8 @@ export default function Dashboard({ auth, stats = {}, recentActivities = [] }) {
                                     </span>
                                     <span className="text-slate-600 font-semibold">{stats.status_published ?? 0} ({pubPercent}%)</span>
                                 </div>
-                                <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
-                                    <div className="h-full rounded-full bg-emerald-500 transition-all duration-500" style={{ width: `${pubPercent}%` }} />
+                                <div className="h-2 w-full bg-slate-100 overflow-hidden">
+                                    <div className="h-full bg-emerald-500 transition-all duration-500" style={{ width: `${pubPercent}%` }} />
                                 </div>
                             </div>
 
@@ -163,8 +163,8 @@ export default function Dashboard({ auth, stats = {}, recentActivities = [] }) {
                                     </span>
                                     <span className="text-slate-600 font-semibold">{stats.status_draft ?? 0} ({draftPercent}%)</span>
                                 </div>
-                                <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
-                                    <div className="h-full rounded-full bg-amber-500 transition-all duration-500" style={{ width: `${draftPercent}%` }} />
+                                <div className="h-2 w-full bg-slate-100 overflow-hidden">
+                                    <div className="h-full bg-amber-500 transition-all duration-500" style={{ width: `${draftPercent}%` }} />
                                 </div>
                             </div>
 
@@ -175,8 +175,8 @@ export default function Dashboard({ auth, stats = {}, recentActivities = [] }) {
                                     </span>
                                     <span className="text-slate-600 font-semibold">{stats.status_rejected ?? 0} ({rejPercent}%)</span>
                                 </div>
-                                <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
-                                    <div className="h-full rounded-full bg-rose-500 transition-all duration-500" style={{ width: `${rejPercent}%` }} />
+                                <div className="h-2 w-full bg-slate-100 overflow-hidden">
+                                    <div className="h-full bg-rose-500 transition-all duration-500" style={{ width: `${rejPercent}%` }} />
                                 </div>
                             </div>
                         </div>
@@ -184,7 +184,7 @@ export default function Dashboard({ auth, stats = {}, recentActivities = [] }) {
                         <div className="mt-6 pt-5 border-t border-slate-100">
                             <Link
                                 href="/kegiatan"
-                                className="w-full flex items-center justify-center gap-2 py-2 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-colors"
+                                className="w-full flex items-center justify-center gap-2 py-2 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-colors"
                             >
                                 Kelola Semua Dokumen Eviden
                                 <ArrowUpRight className="w-3.5 h-3.5" />
@@ -193,7 +193,7 @@ export default function Dashboard({ auth, stats = {}, recentActivities = [] }) {
                     </div>
 
                     {/* Modul Akses Cepat */}
-                    <div className="lg:col-span-2 rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80">
+                    <div className="lg:col-span-2 bg-white p-6 shadow-sm border border-slate-200/80">
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-base font-bold text-slate-800 flex items-center gap-2">
                                 <FolderKanban className="w-4 h-4 text-indigo-600" />
@@ -205,10 +205,10 @@ export default function Dashboard({ auth, stats = {}, recentActivities = [] }) {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                             <Link
                                 href="/akreditasi/ban-pt"
-                                className="group p-4 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all"
+                                className="group p-4 border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all"
                             >
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2.5 rounded-lg bg-blue-100 text-blue-700 font-bold text-xs">
+                                    <div className="p-2.5 bg-blue-100 text-blue-700 font-bold text-xs">
                                         BAN-PT
                                     </div>
                                     <div>
@@ -222,10 +222,10 @@ export default function Dashboard({ auth, stats = {}, recentActivities = [] }) {
 
                             <Link
                                 href="/akreditasi/lam"
-                                className="group p-4 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all"
+                                className="group p-4 border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all"
                             >
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2.5 rounded-lg bg-emerald-100 text-emerald-700 font-bold text-xs">
+                                    <div className="p-2.5 bg-emerald-100 text-emerald-700 font-bold text-xs">
                                         LAM
                                     </div>
                                     <div>
@@ -239,10 +239,10 @@ export default function Dashboard({ auth, stats = {}, recentActivities = [] }) {
 
                             <Link
                                 href="/kegiatan"
-                                className="group p-4 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all"
+                                className="group p-4 border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all"
                             >
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2.5 rounded-lg bg-purple-100 text-purple-700 font-bold text-xs">
+                                    <div className="p-2.5 bg-purple-100 text-purple-700 font-bold text-xs">
                                         EVIDEN
                                     </div>
                                     <div>
@@ -256,10 +256,10 @@ export default function Dashboard({ auth, stats = {}, recentActivities = [] }) {
 
                             <Link
                                 href="/audit"
-                                className="group p-4 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all"
+                                className="group p-4 border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all"
                             >
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2.5 rounded-lg bg-amber-100 text-amber-700 font-bold text-xs">
+                                    <div className="p-2.5 bg-amber-100 text-amber-700 font-bold text-xs">
                                         AUDIT
                                     </div>
                                     <div>
@@ -275,7 +275,7 @@ export default function Dashboard({ auth, stats = {}, recentActivities = [] }) {
                 </div>
 
                 {/* Kegiatan Terbaru */}
-                <div className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80">
+                <div className="bg-white p-6 shadow-sm border border-slate-200/80">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-base font-bold text-slate-800 flex items-center gap-2">
                             <FileSpreadsheet className="w-4 h-4 text-indigo-600" />
@@ -290,7 +290,7 @@ export default function Dashboard({ auth, stats = {}, recentActivities = [] }) {
                         <div className="py-10 text-center">
                             <FileSpreadsheet className="w-10 h-10 text-slate-300 mx-auto mb-2" />
                             <p className="text-sm text-slate-500">Belum ada kegiatan yang diunggah.</p>
-                            <Link href="/kegiatan" className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-50 text-indigo-600 hover:bg-indigo-100">
+                            <Link href="/kegiatan" className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-indigo-50 text-indigo-600 hover:bg-indigo-100">
                                 Tambah Kegiatan Pertama
                             </Link>
                         </div>
@@ -311,14 +311,14 @@ export default function Dashboard({ auth, stats = {}, recentActivities = [] }) {
                                         <tr key={act.id} className="hover:bg-slate-50/80 transition-colors">
                                             <td className="px-4 py-3 font-medium text-slate-800">{act.title_activity}</td>
                                             <td className="px-4 py-3 text-xs">
-                                                <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 font-medium">
+                                                <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 font-medium">
                                                     K-{act.criteria?.code_criteria}: {act.criteria?.title_criteria?.substring(0, 25)}...
                                                 </span>
                                             </td>
                                             <td className="px-4 py-3 text-xs">{act.prodi?.name_prodi || '-'}</td>
                                             <td className="px-4 py-3 text-xs font-mono">{act.academic_year}</td>
                                             <td className="px-4 py-3 text-center">
-                                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
+                                                <span className={`inline-flex items-center px-2 py-0.5 text-xs font-semibold ${
                                                     act.status === 'published' ? 'bg-emerald-100 text-emerald-800' :
                                                     act.status === 'draft' ? 'bg-amber-100 text-amber-800' :
                                                     'bg-rose-100 text-rose-800'

@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import React, { useState, useMemo } from 'react';
+import { confirmAlert, toastSuccess, toastWarning } from '@/Utils/alert';
 import {
     Calendar,
     CalendarDays,
@@ -65,8 +66,7 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
     const [formError, setFormError] = useState('');
 
     const showToast = (message) => {
-        setToastMessage(message);
-        setTimeout(() => setToastMessage(null), 3000);
+        toastSuccess(message);
     };
 
     // Filter Items
@@ -182,24 +182,28 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
         showToast(`Tahun Akademik ${item.year}/${item.year + 1} ditetapkan sebagai tahun aktif.`);
     };
 
-    const handleDelete = (item) => {
+    const handleDelete = async (item) => {
         if (item.is_active) {
-            alert('Tahun akademik yang sedang aktif tidak dapat dihapus. Silakan aktifkan tahun lain terlebih dahulu.');
+            toastWarning('Tahun akademik yang sedang aktif tidak dapat dihapus. Silakan aktifkan tahun lain terlebih dahulu.');
             return;
         }
 
+        let confirmMsg = `Hapus tahun akademik ${item.year}/${item.year + 1}?`;
         if (item.activities_count > 0) {
-            if (!confirm(`Tahun akademik ${item.year}/${item.year + 1} memiliki ${item.activities_count} data kegiatan terhubung. Yakin ingin menghapus?`)) {
-                return;
-            }
-        } else {
-            if (!confirm(`Hapus tahun akademik ${item.year}/${item.year + 1}?`)) {
-                return;
-            }
+            confirmMsg = `Tahun akademik ${item.year}/${item.year + 1} memiliki ${item.activities_count} data kegiatan terhubung. Yakin ingin menghapus?`;
         }
 
+        const confirmed = await confirmAlert({
+            title: 'Hapus Tahun Akademik?',
+            text: confirmMsg,
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal',
+        });
+
+        if (!confirmed) return;
+
         setItems(items.filter((it) => it.id !== item.id));
-        showToast(`Tahun Akademik ${item.year}/${item.year + 1} berhasil dihapus.`);
+        toastSuccess(`Tahun Akademik ${item.year}/${item.year + 1} berhasil dihapus.`);
     };
 
     return (
@@ -207,9 +211,9 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
             <Head title="Master Tahun Akademik - Repository Akreditasi" />
 
             <div className="space-y-4 pb-10">
-                {/* Toast Notification (rounded-[2px], smaller font) */}
+                {/* Toast Notification (, smaller font) */}
                 {toastMessage && (
-                    <div className="fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-[2px] bg-slate-900 px-3.5 py-2 text-[11px] font-medium text-white shadow-lg transition-all">
+                    <div className="fixed bottom-5 right-5 z-50 flex items-center gap-2 bg-slate-900 px-3.5 py-2 text-[11px] font-medium text-white shadow-lg transition-all">
                         <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
                         <span>{toastMessage}</span>
                     </div>
@@ -221,7 +225,7 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <div className="flex items-center gap-1.5">
-                            <span className="inline-flex items-center gap-1 rounded-[2px] bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700 ring-1 ring-blue-600/20">
+                            <span className="inline-flex items-center gap-1 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700 ring-1 ring-blue-600/20">
                                 <CalendarDays className="h-3 w-3" />
                                 Master Data Periode
                             </span>
@@ -236,7 +240,7 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
 
                     <button
                         onClick={openAddModal}
-                        className="inline-flex items-center justify-center gap-1.5 rounded-[2px] bg-blue-600 px-3 py-1.5 text-[11px] font-semibold text-white shadow-2xs hover:bg-blue-700 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors"
+                        className="inline-flex items-center justify-center gap-1.5 bg-blue-600 px-3 py-1.5 text-[11px] font-semibold text-white shadow-2xs hover:bg-blue-700 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors"
                     >
                         <Plus className="h-3.5 w-3.5" />
                         Tambah Tahun Akademik
@@ -244,16 +248,16 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
                 </div>
 
                 {/* ─────────────────────────────────────────────────────────
-                    2. Summary KPI Cards (rounded-[2px], fonts reduced 4px)
+                    2. Summary KPI Cards (, fonts reduced 4px)
                 ────────────────────────────────────────────────────────── */}
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                     {/* Card 1: Total Periode */}
-                    <div className="rounded-[2px] border border-slate-200 bg-white p-4 shadow-2xs">
+                    <div className="border border-slate-200 bg-white p-4 shadow-2xs">
                         <div className="flex items-center justify-between">
                             <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                                 Total Tahun Akademik
                             </span>
-                            <div className="flex h-8 w-8 items-center justify-center rounded-[2px] bg-blue-50 text-blue-600">
+                            <div className="flex h-8 w-8 items-center justify-center bg-blue-50 text-blue-600">
                                 <Calendar className="h-4 w-4" />
                             </div>
                         </div>
@@ -269,12 +273,12 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
                     </div>
 
                     {/* Card 2: Periode Aktif */}
-                    <div className="rounded-[2px] border border-slate-200 bg-white p-4 shadow-2xs">
+                    <div className="border border-slate-200 bg-white p-4 shadow-2xs">
                         <div className="flex items-center justify-between">
                             <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                                 Tahun Akademik Aktif
                             </span>
-                            <div className="flex h-8 w-8 items-center justify-center rounded-[2px] bg-emerald-50 text-emerald-600">
+                            <div className="flex h-8 w-8 items-center justify-center bg-emerald-50 text-emerald-600">
                                 <CheckCircle2 className="h-4 w-4" />
                             </div>
                         </div>
@@ -282,7 +286,7 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
                             <span className="text-[18px] font-extrabold text-emerald-700 leading-none">
                                 {activeYearItem ? `${activeYearItem.year}/${activeYearItem.year + 1}` : 'Belum Dipilih'}
                             </span>
-                            <span className="inline-flex items-center rounded-[2px] bg-emerald-100 px-1.5 py-0.2 text-[10px] font-semibold text-emerald-800">
+                            <span className="inline-flex items-center bg-emerald-100 px-1.5 py-0.2 text-[10px] font-semibold text-emerald-800">
                                 Aktif
                             </span>
                         </div>
@@ -292,12 +296,12 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
                     </div>
 
                     {/* Card 3: Total Kegiatan Terhubung */}
-                    <div className="rounded-[2px] border border-slate-200 bg-white p-4 shadow-2xs">
+                    <div className="border border-slate-200 bg-white p-4 shadow-2xs">
                         <div className="flex items-center justify-between">
                             <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                                 Kegiatan Tridharma Terkait
                             </span>
-                            <div className="flex h-8 w-8 items-center justify-center rounded-[2px] bg-indigo-50 text-indigo-600">
+                            <div className="flex h-8 w-8 items-center justify-center bg-indigo-50 text-indigo-600">
                                 <Layers className="h-4 w-4" />
                             </div>
                         </div>
@@ -314,9 +318,9 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
                 </div>
 
                 {/* ─────────────────────────────────────────────────────────
-                    3. Filter & Search Bar (rounded-[2px])
+                    3. Filter & Search Bar ()
                 ────────────────────────────────────────────────────────── */}
-                <div className="flex flex-col gap-2.5 rounded-[2px] border border-slate-200 bg-white p-3 shadow-2xs sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-2.5 border border-slate-200 bg-white p-3 shadow-2xs sm:flex-row sm:items-center sm:justify-between">
                     <div className="relative flex-1 max-w-md">
                         <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
                         <input
@@ -324,7 +328,7 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             placeholder="Cari tahun akademik (misal: 2025 atau 2025/2026)..."
-                            className="w-full rounded-[2px] border border-slate-300 bg-slate-50/50 pl-8 pr-7 py-1.5 text-[11px] font-medium text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:bg-white focus:outline-hidden focus:ring-1 focus:ring-blue-500"
+                            className="w-full border border-slate-300 bg-slate-50/50 pl-8 pr-7 py-1.5 text-[11px] font-medium text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:bg-white focus:outline-hidden focus:ring-1 focus:ring-blue-500"
                         />
                         {searchTerm && (
                             <button
@@ -338,10 +342,10 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
 
                     <div className="flex items-center gap-1.5">
                         <span className="text-[10px] font-medium text-slate-500">Status:</span>
-                        <div className="inline-flex rounded-[2px] border border-slate-200 bg-slate-50 p-0.5">
+                        <div className="inline-flex border border-slate-200 bg-slate-50 p-0.5">
                             <button
                                 onClick={() => setStatusFilter('ALL')}
-                                className={`rounded-[2px] px-2.5 py-1 text-[10px] font-medium transition-colors ${
+                                className={`px-2.5 py-1 text-[10px] font-medium transition-colors ${
                                     statusFilter === 'ALL'
                                         ? 'bg-white text-slate-900 shadow-2xs'
                                         : 'text-slate-600 hover:text-slate-900'
@@ -351,7 +355,7 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
                             </button>
                             <button
                                 onClick={() => setStatusFilter('ACTIVE')}
-                                className={`rounded-[2px] px-2.5 py-1 text-[10px] font-medium transition-colors ${
+                                className={`px-2.5 py-1 text-[10px] font-medium transition-colors ${
                                     statusFilter === 'ACTIVE'
                                         ? 'bg-white text-emerald-700 shadow-2xs'
                                         : 'text-slate-600 hover:text-slate-900'
@@ -361,7 +365,7 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
                             </button>
                             <button
                                 onClick={() => setStatusFilter('INACTIVE')}
-                                className={`rounded-[2px] px-2.5 py-1 text-[10px] font-medium transition-colors ${
+                                className={`px-2.5 py-1 text-[10px] font-medium transition-colors ${
                                     statusFilter === 'INACTIVE'
                                         ? 'bg-white text-slate-900 shadow-2xs'
                                         : 'text-slate-600 hover:text-slate-900'
@@ -374,9 +378,9 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
                 </div>
 
                 {/* ─────────────────────────────────────────────────────────
-                    4. Tabel Data Tahun Akademik (rounded-[2px])
+                    4. Tabel Data Tahun Akademik ()
                 ────────────────────────────────────────────────────────── */}
-                <div className="rounded-[2px] border border-slate-200 bg-white shadow-2xs overflow-hidden">
+                <div className="border border-slate-200 bg-white shadow-2xs overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-[11px] border-collapse">
                             <thead>
@@ -429,7 +433,7 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
                                             <td className="py-2.5 px-3">
                                                 <div className="flex items-center gap-2">
                                                     <div
-                                                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-[2px] font-bold text-[10px] ${
+                                                        className={`flex h-7 w-7 shrink-0 items-center justify-center font-bold text-[10px] ${
                                                             item.is_active
                                                                 ? 'bg-emerald-100 text-emerald-800'
                                                                 : 'bg-slate-100 text-slate-700'
@@ -450,7 +454,7 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
 
                                             {/* Tahun Awal */}
                                             <td className="py-2.5 px-3 font-medium text-slate-700">
-                                                <span className="rounded-[2px] bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-slate-800 border border-slate-200">
+                                                <span className="bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-slate-800 border border-slate-200">
                                                     {item.year}
                                                 </span>
                                             </td>
@@ -463,12 +467,12 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
                                             {/* Status Badge */}
                                             <td className="py-2.5 px-3 text-center">
                                                 {item.is_active ? (
-                                                    <span className="inline-flex items-center gap-1 rounded-[2px] bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 ring-1 ring-emerald-600/20">
-                                                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                    <span className="inline-flex items-center gap-1 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 ring-1 ring-emerald-600/20">
+                                                        <span className="h-1.5 w-1.5 bg-emerald-500 animate-pulse" />
                                                         Aktif Saat Ini
                                                     </span>
                                                 ) : (
-                                                    <span className="inline-flex items-center rounded-[2px] bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+                                                    <span className="inline-flex items-center bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
                                                         Tidak Aktif
                                                     </span>
                                                 )}
@@ -476,19 +480,19 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
 
                                             {/* Kegiatan Terkait */}
                                             <td className="py-2.5 px-3 text-center">
-                                                <span className="inline-flex items-center gap-1 rounded-[2px] bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700 border border-blue-100">
+                                                <span className="inline-flex items-center gap-1 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700 border border-blue-100">
                                                     <Layers className="h-3 w-3" />
                                                     {item.activities_count || 0} Kegiatan
                                                 </span>
                                             </td>
 
-                                            {/* Aksi (rounded-[2px], smaller buttons) */}
+                                            {/* Aksi (, smaller buttons) */}
                                             <td className="py-2.5 px-3 text-right">
                                                 <div className="flex items-center justify-end gap-1">
                                                     {!item.is_active && (
                                                         <button
                                                             onClick={() => handleToggleActive(item)}
-                                                            className="inline-flex items-center gap-1 rounded-[2px] border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors"
+                                                            className="inline-flex items-center gap-1 border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors"
                                                             title="Jadikan Tahun Akademik Aktif"
                                                         >
                                                             <Check className="h-2.5 w-2.5" />
@@ -498,7 +502,7 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
 
                                                     <button
                                                         onClick={() => openEditModal(item)}
-                                                        className="rounded-[2px] p-1 text-slate-500 hover:bg-slate-100 hover:text-blue-600 transition-colors"
+                                                        className="p-1 text-slate-500 hover:bg-slate-100 hover:text-blue-600 transition-colors"
                                                         title="Edit Tahun Akademik"
                                                     >
                                                         <Edit2 className="h-3.5 w-3.5" />
@@ -506,7 +510,7 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
 
                                                     <button
                                                         onClick={() => handleDelete(item)}
-                                                        className="rounded-[2px] p-1 text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors"
+                                                        className="p-1 text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors"
                                                         title="Hapus Tahun Akademik"
                                                     >
                                                         <Trash2 className="h-3.5 w-3.5" />
@@ -527,15 +531,15 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
                 </div>
 
                 {/* ─────────────────────────────────────────────────────────
-                    5. Modal Dialog Tambah / Edit Tahun Akademik (rounded-[2px])
+                    5. Modal Dialog Tambah / Edit Tahun Akademik ()
                 ────────────────────────────────────────────────────────── */}
                 {isOpenModal && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-900/60 p-4 backdrop-blur-2xs transition-opacity animate-fade-in">
-                        <div className="relative w-full max-w-sm transform overflow-hidden rounded-[2px] bg-white shadow-2xl transition-all border border-slate-200">
+                        <div className="relative w-full max-w-sm transform overflow-hidden bg-white shadow-2xl transition-all border border-slate-200">
                             {/* Header Modal */}
                             <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3">
                                 <div className="flex items-center gap-2">
-                                    <div className="flex h-7 w-7 items-center justify-center rounded-[2px] bg-blue-100 text-blue-700">
+                                    <div className="flex h-7 w-7 items-center justify-center bg-blue-100 text-blue-700">
                                         <Calendar className="h-4 w-4" />
                                     </div>
                                     <div>
@@ -549,7 +553,7 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
                                 </div>
                                 <button
                                     onClick={closeModal}
-                                    className="rounded-[2px] p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition-colors"
+                                    className="p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition-colors"
                                 >
                                     <X className="h-4 w-4" />
                                 </button>
@@ -558,7 +562,7 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
                             {/* Form Body */}
                             <form onSubmit={handleSave} className="p-4 space-y-3">
                                 {formError && (
-                                    <div className="flex items-start gap-1.5 rounded-[2px] bg-rose-50 border border-rose-200 p-2.5 text-[10px] text-rose-700">
+                                    <div className="flex items-start gap-1.5 bg-rose-50 border border-rose-200 p-2.5 text-[10px] text-rose-700">
                                         <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
                                         <span>{formError}</span>
                                     </div>
@@ -576,7 +580,7 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
                                         value={formState.year}
                                         onChange={(e) => setFormState({ ...formState, year: e.target.value })}
                                         placeholder="Contoh: 2025"
-                                        className="w-full rounded-[2px] border border-slate-300 px-2.5 py-1.5 text-xs font-semibold text-slate-900 focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
+                                        className="w-full border border-slate-300 px-2.5 py-1.5 text-xs font-semibold text-slate-900 focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
                                     />
                                     <p className="mt-1 text-[10px] text-slate-500">
                                         Masukkan tahun pembuka (4 digit angka).
@@ -584,7 +588,7 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
                                 </div>
 
                                 {/* Preview Card */}
-                                <div className="rounded-[2px] border border-blue-100 bg-blue-50/60 p-2.5">
+                                <div className="border border-blue-100 bg-blue-50/60 p-2.5">
                                     <span className="text-[9px] font-bold uppercase tracking-wider text-blue-700 block mb-0.5">
                                         Pratinjau Format Periode:
                                     </span>
@@ -597,13 +601,13 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
                                 </div>
 
                                 {/* Checkbox is_active */}
-                                <div className="flex items-start gap-2.5 rounded-[2px] border border-slate-200 bg-slate-50/50 p-2.5">
+                                <div className="flex items-start gap-2.5 border border-slate-200 bg-slate-50/50 p-2.5">
                                     <input
                                         type="checkbox"
                                         id="is_active_checkbox"
                                         checked={formState.is_active}
                                         onChange={(e) => setFormState({ ...formState, is_active: e.target.checked })}
-                                        className="mt-0.5 h-3.5 w-3.5 rounded-[2px] border-slate-300 text-blue-600 focus:ring-blue-500"
+                                        className="mt-0.5 h-3.5 w-3.5 border-slate-300 text-blue-600 focus:ring-blue-500"
                                     />
                                     <label htmlFor="is_active_checkbox" className="text-[10px] select-none">
                                         <span className="font-bold text-slate-800 block">
@@ -620,13 +624,13 @@ export default function TahunAkademikIndex({ academicYears = [] }) {
                                     <button
                                         type="button"
                                         onClick={closeModal}
-                                        className="rounded-[2px] border border-slate-300 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                                        className="border border-slate-300 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
                                     >
                                         Batal
                                     </button>
                                     <button
                                         type="submit"
-                                        className="rounded-[2px] bg-blue-600 px-3 py-1.5 text-[11px] font-semibold text-white shadow-2xs hover:bg-blue-700 transition-colors"
+                                        className="bg-blue-600 px-3 py-1.5 text-[11px] font-semibold text-white shadow-2xs hover:bg-blue-700 transition-colors"
                                     >
                                         {editingItem ? 'Simpan Perubahan' : 'Tambah Tahun Akademik'}
                                     </button>

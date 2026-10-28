@@ -4,7 +4,23 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        <title inertia>{{ config('app.name', 'RepoCred') }}</title>
+
+        <!-- Favicon icon -->
+        <link rel="icon" type="image/png" href="{{ asset('images/official/logo_icon.png') }}">
+        <link rel="shortcut icon" type="image/png" href="{{ asset('images/official/logo_icon.png') }}">
+
+        <!-- Edumin Vendor Styles -->
+        <link rel="stylesheet" href="{{ asset('vendor/bootstrap-select/dist/css/bootstrap-select.min.css') }}">
+        
+        <!-- Edumin Main Theme & Skin Styles (includes Bootstrap, FontAwesome, Flaticon, LineAwesome, Themify, etc.) -->
+        <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/skin.css') }}">
+
+        <!-- SweetAlert2 Styles & Core Script -->
+        <link rel="stylesheet" href="{{ asset('vendor/sweetalert2/dist/sweetalert2.min.css') }}">
+        <script src="{{ asset('vendor/sweetalert2/dist/sweetalert2.min.js') }}"></script>
+
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -16,8 +32,13 @@
         @vite(['resources/js/app.jsx', "resources/js/Pages/{$page['component']}.jsx"])
         @inertiaHead
     </head>
-    <body class="font-sans antialiased">
+    <body class="font-sans antialiased" data-theme-version="light" data-layout="vertical" data-nav-headerbg="color_1" data-headerbg="color_1" data-sidebar-style="full" data-sidebarbg="color_1" data-sidebar-position="fixed" data-header-position="fixed" data-container="wide" direction="ltr">
         @inertia
 
+        <!-- Edumin Vendor & Core Scripts -->
+        <script src="{{ asset('vendor/global/global.min.js') }}"></script>
+        <script src="{{ asset('vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
+        <script src="{{ asset('js/custom.min.js') }}"></script>
+        <script src="{{ asset('js/dlabnav-init.js') }}"></script>
     </body>
 </html>

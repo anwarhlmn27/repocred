@@ -1,16 +1,24 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Master\UnivController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// Route::get('/', function () {
+//     return Inertia::render('Welcome', [
+//         'canLogin' => Route::has('login'),
+//         'canRegister' => Route::has('register'),
+//         'laravelVersion' => Application::VERSION,
+//         'phpVersion' => PHP_VERSION,
+//     ]);
+// });
+
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
+    return Inertia::render('Auth/Login', [
+        'canResetPassword' => Route::has('password.request'),
+        'status' => session('status'),
     ]);
 });
 
@@ -46,13 +54,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Master Data
     Route::prefix('master')->name('master.')->group(function () {
-        Route::get('/univ', function () {
-            return Inertia::render('Master/Univ/Index');
-        })->name('univ.index');
+        Route::get('/univ', [UnivController::class, 'index'])->name('univ.index');
+        Route::post('/univ', [UnivController::class, 'store'])->name('univ.store');
+        Route::put('/univ/{univ}', [UnivController::class, 'update'])->name('univ.update');
+        Route::delete('/univ/{univ}', [UnivController::class, 'destroy'])->name('univ.destroy');
 
         Route::get('/fakultas', function () {
             return Inertia::render('Master/Fakultas/Index');
         })->name('fakultas.index');
+
+        Route::get('/agency', function () {
+            $agencies = \App\Models\Agency::withCount(['criterias', 'prodis', 'sessions'])->get();
+            return Inertia::render('Master/Agency/Index', [
+                'agencies' => $agencies,
+            ]);
+        })->name('agency.index');
 
         Route::get('/prodi', function () {
             return Inertia::render('Master/Prodi/Index');
@@ -61,6 +77,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/tahun-akademik', function () {
             return Inertia::render('Master/TahunAkademik/Index');
         })->name('tahun-akademik.index');
+
+        Route::get('/sesi-akreditasi', function () {
+            return Inertia::render('Master/SesiAkreditasi/Index');
+        })->name('sesi-akreditasi.index');
 
         Route::get('/kriteria', function () {
             return Inertia::render('Master/Kriteria/Index');

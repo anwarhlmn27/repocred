@@ -38,8 +38,10 @@ const menuItems = [
         children: [
             { title: 'Univ', path: '/master/univ' },
             { title: 'Fakultas', path: '/master/fakultas' },
+            { title: 'Agency', path: '/master/agency' },
             { title: 'Prodi', path: '/master/prodi' },
             { title: 'Tahun Akademik', path: '/master/tahun-akademik' },
+            { title: 'Sesi Akreditasi', path: '/master/sesi-akreditasi' },
             { title: 'Kriteria Akreditasi', path: '/master/kriteria' },
             { title: 'Pengguna', path: '/master/users' },
         ],

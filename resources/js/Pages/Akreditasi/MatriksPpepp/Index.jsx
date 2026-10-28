@@ -358,9 +358,9 @@ export default function MatriksPpeppIndex({
             <Head title="Matriks Kelengkapan PPEPP - Repository Akreditasi" />
 
             <div className="space-y-4 pb-10">
-                {/* Toast Notification (rounded-[2px], smaller font) */}
+                {/* Toast Notification (], smaller font) */}
                 {toastMessage && (
-                    <div className="fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-[2px] bg-slate-900 px-3.5 py-2 text-[11px] font-medium text-white shadow-lg transition-all">
+                    <div className="fixed bottom-5 right-5 z-50 flex items-center gap-2 ] bg-slate-900 px-3.5 py-2 text-[11px] font-medium text-white shadow-lg transition-all">
                         <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
                         <span>{toastMessage}</span>
                     </div>
@@ -372,11 +372,11 @@ export default function MatriksPpeppIndex({
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                     <div>
                         <div className="flex items-center gap-1.5">
-                            <span className="inline-flex items-center gap-1 rounded-[2px] bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700 ring-1 ring-blue-600/20">
+                            <span className="inline-flex items-center gap-1 ] bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700 ring-1 ring-blue-600/20">
                                 <ShieldCheck className="h-3 w-3" />
                                 Monitoring Penjaminan Mutu SPMI
                             </span>
-                            <span className="rounded-[2px] bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 ring-1 ring-emerald-600/20">
+                            <span className="] bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 ring-1 ring-emerald-600/20">
                                 Real-time Aggregation
                             </span>
                         </div>
@@ -391,21 +391,21 @@ export default function MatriksPpeppIndex({
                     <div className="flex flex-wrap items-center gap-2">
                         <button
                             onClick={() => window.print()}
-                            className="inline-flex items-center gap-1.5 rounded-[2px] border border-slate-300 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 transition-colors"
+                            className="inline-flex items-center gap-1.5 ] border border-slate-300 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 transition-colors"
                         >
                             <FileText className="h-3.5 w-3.5 text-slate-500" />
                             Cetak Laporan
                         </button>
                         <button
                             onClick={() => showToast('Mengekspor data matriks PPEPP ke Excel (.xlsx)...')}
-                            className="inline-flex items-center gap-1.5 rounded-[2px] border border-slate-300 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 transition-colors"
+                            className="inline-flex items-center gap-1.5 ] border border-slate-300 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 transition-colors"
                         >
                             <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-600" />
                             Export Excel
                         </button>
                         <Link
                             href="/kegiatan"
-                            className="inline-flex items-center gap-1.5 rounded-[2px] bg-blue-600 px-3.5 py-1.5 text-[11px] font-semibold text-white shadow-2xs hover:bg-blue-700 transition-colors"
+                            className="inline-flex items-center gap-1.5 ] bg-blue-600 px-3.5 py-1.5 text-[11px] font-semibold text-white shadow-2xs hover:bg-blue-700 transition-colors"
                         >
                             <UploadCloud className="h-3.5 w-3.5" />
                             Kelola Kegiatan
@@ -414,16 +414,16 @@ export default function MatriksPpeppIndex({
                 </div>
 
                 {/* ─────────────────────────────────────────────────────────
-                    2. Summary Cards (rounded-[2px], fonts reduced 4px)
+                    2. Summary Cards (], fonts reduced 4px)
                 ────────────────────────────────────────────────────────── */}
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     {/* Card 1: Total Kegiatan Terdaftar */}
-                    <div className="relative overflow-hidden rounded-[2px] border border-slate-200 bg-white p-4 shadow-2xs">
+                    <div className="relative overflow-hidden ] border border-slate-200 bg-white p-4 shadow-2xs">
                         <div className="flex items-center justify-between">
                             <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                                 Kegiatan Terdaftar
                             </span>
-                            <div className="flex h-8 w-8 items-center justify-center rounded-[2px] bg-blue-50 text-blue-600">
+                            <div className="flex h-8 w-8 items-center justify-center ] bg-blue-50 text-blue-600">
                                 <Layers className="h-4 w-4" />
                             </div>
                         </div>
@@ -442,12 +442,12 @@ export default function MatriksPpeppIndex({
                     </div>
 
                     {/* Card 2: Overall Completion Rate (%) */}
-                    <div className="relative overflow-hidden rounded-[2px] border border-slate-200 bg-white p-4 shadow-2xs">
+                    <div className="relative overflow-hidden ] border border-slate-200 bg-white p-4 shadow-2xs">
                         <div className="flex items-center justify-between">
                             <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                                 Kelengkapan PPEPP
                             </span>
-                            <div className="flex h-8 w-8 items-center justify-center rounded-[2px] bg-emerald-50 text-emerald-600">
+                            <div className="flex h-8 w-8 items-center justify-center ] bg-emerald-50 text-emerald-600">
                                 <TrendingUp className="h-4 w-4" />
                             </div>
                         </div>
@@ -455,25 +455,25 @@ export default function MatriksPpeppIndex({
                             <span className="text-[22px] font-extrabold text-slate-900 leading-none">
                                 {summaryData.overall_completion}%
                             </span>
-                            <span className="inline-flex items-center rounded-[2px] bg-emerald-100 px-1.5 py-0.2 text-[10px] font-semibold text-emerald-700">
+                            <span className="inline-flex items-center ] bg-emerald-100 px-1.5 py-0.2 text-[10px] font-semibold text-emerald-700">
                                 Cukup Baik
                             </span>
                         </div>
-                        <div className="mt-2.5 w-full bg-slate-100 rounded-[2px] h-1.5 overflow-hidden">
+                        <div className="mt-2.5 w-full bg-slate-100 ] h-1.5 overflow-hidden">
                             <div
-                                className="bg-emerald-500 h-1.5 rounded-[2px] transition-all duration-700"
+                                className="bg-emerald-500 h-1.5 ] transition-all duration-700"
                                 style={{ width: `${summaryData.overall_completion}%` }}
                             />
                         </div>
                     </div>
 
                     {/* Card 3: Kriteria Terpenuhi vs Belum Lengkap */}
-                    <div className="relative overflow-hidden rounded-[2px] border border-slate-200 bg-white p-4 shadow-2xs">
+                    <div className="relative overflow-hidden ] border border-slate-200 bg-white p-4 shadow-2xs">
                         <div className="flex items-center justify-between">
                             <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                                 Status Kriteria
                             </span>
-                            <div className="flex h-8 w-8 items-center justify-center rounded-[2px] bg-indigo-50 text-indigo-600">
+                            <div className="flex h-8 w-8 items-center justify-center ] bg-indigo-50 text-indigo-600">
                                 <FileCheck2 className="h-4 w-4" />
                             </div>
                         </div>
@@ -496,12 +496,12 @@ export default function MatriksPpeppIndex({
                     </div>
 
                     {/* Card 4: Lembaga & Tahun Aktif */}
-                    <div className="relative overflow-hidden rounded-[2px] border border-slate-200 bg-white p-4 shadow-2xs">
+                    <div className="relative overflow-hidden ] border border-slate-200 bg-white p-4 shadow-2xs">
                         <div className="flex items-center justify-between">
                             <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                                 Fokus Instrumen
                             </span>
-                            <div className="flex h-8 w-8 items-center justify-center rounded-[2px] bg-purple-50 text-purple-600">
+                            <div className="flex h-8 w-8 items-center justify-center ] bg-purple-50 text-purple-600">
                                 <Award className="h-4 w-4" />
                             </div>
                         </div>
@@ -521,9 +521,9 @@ export default function MatriksPpeppIndex({
                 </div>
 
                 {/* ─────────────────────────────────────────────────────────
-                    3. Filter Bar & Search Box (rounded-[2px])
+                    3. Filter Bar & Search Box (])
                 ────────────────────────────────────────────────────────── */}
-                <div className="rounded-[2px] border border-slate-200 bg-white p-3.5 shadow-2xs">
+                <div className="] border border-slate-200 bg-white p-3.5 shadow-2xs">
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                         {/* Dropdown Filters */}
                         <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3 flex-1">
@@ -536,7 +536,7 @@ export default function MatriksPpeppIndex({
                                 <select
                                     value={selectedAgency}
                                     onChange={(e) => setSelectedAgency(e.target.value)}
-                                    className="w-full rounded-[2px] border border-slate-300 bg-white px-2.5 py-1.5 text-[11px] font-medium text-slate-800 shadow-2xs focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
+                                    className="w-full ] border border-slate-300 bg-white px-2.5 py-1.5 text-[11px] font-medium text-slate-800 shadow-2xs focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
                                 >
                                     {agencyOptions.map((agency) => (
                                         <option key={agency.code} value={agency.code}>
@@ -553,14 +553,14 @@ export default function MatriksPpeppIndex({
                                         <GraduationCap className="h-3 w-3 text-blue-600" />
                                         Program Studi
                                     </span>
-                                    <span className="text-[9px] font-bold text-indigo-600 bg-indigo-50 px-1 py-0.2 rounded-[2px]">
+                                    <span className="text-[9px] font-bold text-indigo-600 bg-indigo-50 px-1 py-0.2 ]">
                                         LPM / Admin
                                     </span>
                                 </label>
                                 <select
                                     value={selectedProdi}
                                     onChange={(e) => setSelectedProdi(e.target.value)}
-                                    className="w-full rounded-[2px] border border-slate-300 bg-white px-2.5 py-1.5 text-[11px] font-medium text-slate-800 shadow-2xs focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
+                                    className="w-full ] border border-slate-300 bg-white px-2.5 py-1.5 text-[11px] font-medium text-slate-800 shadow-2xs focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
                                 >
                                     {prodiOptions.map((prodi) => (
                                         <option key={prodi.code} value={prodi.code}>
@@ -579,7 +579,7 @@ export default function MatriksPpeppIndex({
                                 <select
                                     value={selectedYear}
                                     onChange={(e) => setSelectedYear(e.target.value)}
-                                    className="w-full rounded-[2px] border border-slate-300 bg-white px-2.5 py-1.5 text-[11px] font-medium text-slate-800 shadow-2xs focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
+                                    className="w-full ] border border-slate-300 bg-white px-2.5 py-1.5 text-[11px] font-medium text-slate-800 shadow-2xs focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
                                 >
                                     {yearOptions.map((yr) => (
                                         <option key={yr} value={yr}>
@@ -599,7 +599,7 @@ export default function MatriksPpeppIndex({
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="Cari kode atau nama kriteria..."
-                                    className="w-full rounded-[2px] border border-slate-300 bg-slate-50/50 pl-8 pr-7 py-1.5 text-[11px] font-medium text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:bg-white focus:outline-hidden focus:ring-1 focus:ring-blue-500"
+                                    className="w-full ] border border-slate-300 bg-slate-50/50 pl-8 pr-7 py-1.5 text-[11px] font-medium text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:bg-white focus:outline-hidden focus:ring-1 focus:ring-blue-500"
                                 />
                                 {searchQuery && (
                                     <button
@@ -614,7 +614,7 @@ export default function MatriksPpeppIndex({
                             <button
                                 onClick={handleResetFilter}
                                 title="Reset Filter"
-                                className="inline-flex w-full sm:w-auto items-center justify-center gap-1 rounded-[2px] border border-slate-300 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 transition-colors"
+                                className="inline-flex w-full sm:w-auto items-center justify-center gap-1 ] border border-slate-300 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 transition-colors"
                             >
                                 <RotateCcw className="h-3 w-3 text-slate-500" />
                                 Reset
@@ -622,12 +622,12 @@ export default function MatriksPpeppIndex({
                         </div>
                     </div>
 
-                    {/* Status Pill Filters (rounded-[2px]) */}
+                    {/* Status Pill Filters (]) */}
                     <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-slate-100 pt-2.5 text-[10px]">
                         <span className="font-semibold text-slate-500 mr-1">Filter Status:</span>
                         <button
                             onClick={() => setStatusFilter('all')}
-                            className={`rounded-[2px] px-2.5 py-0.5 font-medium transition-colors ${
+                            className={`] px-2.5 py-0.5 font-medium transition-colors ${
                                 statusFilter === 'all'
                                     ? 'bg-slate-900 text-white'
                                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -637,7 +637,7 @@ export default function MatriksPpeppIndex({
                         </button>
                         <button
                             onClick={() => setStatusFilter('complete')}
-                            className={`rounded-[2px] px-2.5 py-0.5 font-medium transition-colors ${
+                            className={`] px-2.5 py-0.5 font-medium transition-colors ${
                                 statusFilter === 'complete'
                                     ? 'bg-emerald-600 text-white'
                                     : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
@@ -647,7 +647,7 @@ export default function MatriksPpeppIndex({
                         </button>
                         <button
                             onClick={() => setStatusFilter('incomplete')}
-                            className={`rounded-[2px] px-2.5 py-0.5 font-medium transition-colors ${
+                            className={`] px-2.5 py-0.5 font-medium transition-colors ${
                                 statusFilter === 'incomplete'
                                     ? 'bg-amber-600 text-white'
                                     : 'bg-amber-50 text-amber-700 hover:bg-amber-100'
@@ -657,7 +657,7 @@ export default function MatriksPpeppIndex({
                         </button>
                         <button
                             onClick={() => setStatusFilter('warning')}
-                            className={`rounded-[2px] px-2.5 py-0.5 font-medium transition-colors ${
+                            className={`] px-2.5 py-0.5 font-medium transition-colors ${
                                 statusFilter === 'warning'
                                     ? 'bg-rose-600 text-white'
                                     : 'bg-rose-50 text-rose-700 hover:bg-rose-100'
@@ -669,9 +669,9 @@ export default function MatriksPpeppIndex({
                 </div>
 
                 {/* ─────────────────────────────────────────────────────────
-                    4. Tabel Matriks Utama (rounded-[2px])
+                    4. Tabel Matriks Utama (])
                 ────────────────────────────────────────────────────────── */}
-                <div className="rounded-[2px] border border-slate-200 bg-white shadow-2xs overflow-hidden">
+                <div className="] border border-slate-200 bg-white shadow-2xs overflow-hidden">
                     <div className="border-b border-slate-200 bg-slate-50/70 px-4 py-2.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
                         <div className="flex items-center gap-1.5">
                             <FolderOpen className="h-3.5 w-3.5 text-blue-600" />
@@ -699,7 +699,7 @@ export default function MatriksPpeppIndex({
                                         >
                                             <div className="flex flex-col items-center">
                                                 <span className="text-slate-900 font-extrabold">{stage.title}</span>
-                                                <span className="text-[9px] font-semibold text-blue-700 bg-blue-100/70 px-1 py-0.2 rounded-[2px] mt-0.5">
+                                                <span className="text-[9px] font-semibold text-blue-700 bg-blue-100/70 px-1 py-0.2 ] mt-0.5">
                                                     {stage.code}
                                                 </span>
                                             </div>
@@ -719,7 +719,7 @@ export default function MatriksPpeppIndex({
                                             <p className="text-[10px] text-slate-500 mt-0.5">Coba sesuaikan kata kunci pencarian atau reset filter.</p>
                                             <button
                                                 onClick={handleResetFilter}
-                                                className="mt-2.5 inline-flex items-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2.5 py-1 text-[10px] font-semibold text-slate-700 hover:bg-slate-50"
+                                                className="mt-2.5 inline-flex items-center gap-1 ] border border-slate-300 bg-white px-2.5 py-1 text-[10px] font-semibold text-slate-700 hover:bg-slate-50"
                                             >
                                                 <RotateCcw className="h-3 w-3" />
                                                 Reset Filter
@@ -735,7 +735,7 @@ export default function MatriksPpeppIndex({
                                             {/* Kolom 1: Kode & Nama Kriteria (Sticky Left) */}
                                             <td className="sticky left-0 z-10 bg-white group-hover:bg-blue-50/40 py-2.5 px-3 border-r border-slate-200">
                                                 <div className="flex items-start gap-2">
-                                                    <span className="inline-flex shrink-0 items-center justify-center h-5 w-7 rounded-[2px] bg-slate-100 font-bold text-slate-800 text-[10px] border border-slate-200">
+                                                    <span className="inline-flex shrink-0 items-center justify-center h-5 w-7 ] bg-slate-100 font-bold text-slate-800 text-[10px] border border-slate-200">
                                                         {row.criteria_code}
                                                     </span>
                                                     <div>
@@ -749,7 +749,7 @@ export default function MatriksPpeppIndex({
                                                 </div>
                                             </td>
 
-                                            {/* Kolom 2-6: Sel Tahapan PPEPP (rounded-[2px]) */}
+                                            {/* Kolom 2-6: Sel Tahapan PPEPP (]) */}
                                             {PPEPP_STAGES_CONFIG.map((stage) => {
                                                 const cell = row.stages[stage.key] || { count: 0, status: 'empty' };
                                                 const isComplete = cell.status === 'complete' && cell.count > 0;
@@ -764,7 +764,7 @@ export default function MatriksPpeppIndex({
                                                         <button
                                                             type="button"
                                                             onClick={() => handleCellClick(row, stage.key)}
-                                                            className={`w-full group/btn relative inline-flex items-center justify-center gap-1 rounded-[2px] px-2 py-1.5 text-[10px] font-semibold transition-all duration-150 focus:outline-hidden focus:ring-1 focus:ring-blue-500 shadow-2xs ${
+                                                            className={`w-full group/btn relative inline-flex items-center justify-center gap-1 ] px-2 py-1.5 text-[10px] font-semibold transition-all duration-150 focus:outline-hidden focus:ring-1 focus:ring-blue-500 shadow-2xs ${
                                                                 isComplete
                                                                     ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
                                                                     : isWarning
@@ -815,9 +815,9 @@ export default function MatriksPpeppIndex({
                                                             {row.progress === 100 ? 'Lengkap' : `${Math.round((row.progress / 100) * 5)}/5 Tahap`}
                                                         </span>
                                                     </div>
-                                                    <div className="w-full bg-slate-100 rounded-[2px] h-1.5 overflow-hidden">
+                                                    <div className="w-full bg-slate-100 ] h-1.5 overflow-hidden">
                                                         <div
-                                                            className={`h-1.5 rounded-[2px] transition-all duration-500 ${
+                                                            className={`h-1.5 ] transition-all duration-500 ${
                                                                 row.progress === 100
                                                                     ? 'bg-emerald-500'
                                                                     : row.progress >= 60
@@ -842,15 +842,15 @@ export default function MatriksPpeppIndex({
                             <span className="font-semibold text-slate-800">Keterangan Indikator Sel:</span>
                             <div className="flex flex-wrap items-center gap-2.5">
                                 <span className="inline-flex items-center gap-1">
-                                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                                    <span className="h-2 w-2  bg-emerald-500" />
                                     <span>Ada Dokumen Lengkap (Hijau)</span>
                                 </span>
                                 <span className="inline-flex items-center gap-1">
-                                    <span className="h-2 w-2 rounded-full bg-amber-500" />
+                                    <span className="h-2 w-2  bg-amber-500" />
                                     <span>Draft / Butuh Perhatian (Kuning)</span>
                                 </span>
                                 <span className="inline-flex items-center gap-1">
-                                    <span className="h-2 w-2 rounded-full bg-rose-500" />
+                                    <span className="h-2 w-2  bg-rose-500" />
                                     <span>Kosong / Belum Diunggah (Merah)</span>
                                 </span>
                             </div>
@@ -863,16 +863,16 @@ export default function MatriksPpeppIndex({
                 </div>
 
                 {/* ─────────────────────────────────────────────────────────
-                    5. Kartu Penjelasan Siklus PPEPP (rounded-[2px])
+                    5. Kartu Penjelasan Siklus PPEPP (])
                 ────────────────────────────────────────────────────────── */}
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-2.5">
                     {PPEPP_STAGES_CONFIG.map((stage, idx) => (
                         <div
                             key={stage.key}
-                            className="rounded-[2px] border border-slate-200 bg-white p-3 shadow-2xs"
+                            className="] border border-slate-200 bg-white p-3 shadow-2xs"
                         >
                             <div className="flex items-center justify-between">
-                                <span className="inline-flex h-5 w-5 items-center justify-center rounded-[2px] bg-blue-100 text-blue-800 font-extrabold text-[10px]">
+                                <span className="inline-flex h-5 w-5 items-center justify-center ] bg-blue-100 text-blue-800 font-extrabold text-[10px]">
                                     {stage.code}
                                 </span>
                                 <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
@@ -891,16 +891,16 @@ export default function MatriksPpeppIndex({
             </div>
 
             {/* ─────────────────────────────────────────────────────────
-                6. Modal Dialog Interaktif: Daftar File Eviden Mutu PPEPP (rounded-[2px])
+                6. Modal Dialog Interaktif: Daftar File Eviden Mutu PPEPP (])
             ────────────────────────────────────────────────────────── */}
             {isModalOpen && selectedCell && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-900/60 p-4 backdrop-blur-2xs transition-opacity animate-fade-in">
-                    <div className="relative w-full max-w-xl transform overflow-hidden rounded-[2px] bg-white shadow-2xl transition-all border border-slate-200">
+                    <div className="relative w-full max-w-xl transform overflow-hidden ] bg-white shadow-2xl transition-all border border-slate-200">
                         {/* Header Modal */}
                         <div className="flex items-start justify-between border-b border-slate-200 bg-slate-50 px-5 py-3">
                             <div>
                                 <div className="flex items-center gap-1.5">
-                                    <span className="rounded-[2px] bg-blue-100 px-1.5 py-0.2 text-[10px] font-extrabold text-blue-800">
+                                    <span className="] bg-blue-100 px-1.5 py-0.2 text-[10px] font-extrabold text-blue-800">
                                         {selectedCell.criteria.criteria_code}
                                     </span>
                                     <span className="text-[10px] font-semibold text-slate-500">
@@ -909,14 +909,14 @@ export default function MatriksPpeppIndex({
                                 </div>
                                 <h3 className="mt-1 text-sm font-bold text-slate-900 flex items-center gap-1.5">
                                     <span>Dokumen Tahap {selectedCell.stageConfig.title}</span>
-                                    <span className="text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.2 rounded-[2px]">
+                                    <span className="text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.2 ]">
                                         {selectedCell.stageConfig.code}
                                     </span>
                                 </h3>
                             </div>
                             <button
                                 onClick={() => setIsModalOpen(false)}
-                                className="rounded-[2px] p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition-colors"
+                                className="] p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition-colors"
                             >
                                 <X className="h-4 w-4" />
                             </button>
@@ -934,7 +934,7 @@ export default function MatriksPpeppIndex({
                         <div className="max-h-[340px] overflow-y-auto px-5 py-3 space-y-2.5">
                             {selectedCell.files.length === 0 ? (
                                 <div className="py-6 text-center">
-                                    <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-[2px] bg-rose-50 text-rose-500">
+                                    <div className="mx-auto flex h-11 w-11 items-center justify-center ] bg-rose-50 text-rose-500">
                                         <AlertCircle className="h-5 w-5" />
                                     </div>
                                     <h4 className="mt-2 text-xs font-bold text-slate-800">
@@ -946,7 +946,7 @@ export default function MatriksPpeppIndex({
                                     <div className="mt-3">
                                         <Link
                                             href="/kegiatan"
-                                            className="inline-flex items-center gap-1.5 rounded-[2px] bg-blue-600 px-3 py-1.5 text-[10px] font-semibold text-white shadow-2xs hover:bg-blue-700 transition-colors"
+                                            className="inline-flex items-center gap-1.5 ] bg-blue-600 px-3 py-1.5 text-[10px] font-semibold text-white shadow-2xs hover:bg-blue-700 transition-colors"
                                         >
                                             <UploadCloud className="h-3.5 w-3.5" />
                                             Unggah Dokumen Eviden Sekarang
@@ -966,10 +966,10 @@ export default function MatriksPpeppIndex({
                                     {selectedCell.files.map((file) => (
                                         <div
                                             key={file.id}
-                                            className="group flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 rounded-[2px] border border-slate-200 bg-slate-50/50 p-2.5 hover:bg-white hover:border-blue-200 hover:shadow-2xs transition-all"
+                                            className="group flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 ] border border-slate-200 bg-slate-50/50 p-2.5 hover:bg-white hover:border-blue-200 hover:shadow-2xs transition-all"
                                         >
                                             <div className="flex items-start gap-2.5 min-w-0">
-                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[2px] bg-red-100 text-red-700 font-bold text-[10px]">
+                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center ] bg-red-100 text-red-700 font-bold text-[10px]">
                                                     PDF
                                                 </div>
                                                 <div className="min-w-0">
@@ -993,7 +993,7 @@ export default function MatriksPpeppIndex({
                                             <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
                                                 <button
                                                     onClick={() => showToast(`Membuka pratinjau ${file.name}...`)}
-                                                    className="inline-flex items-center gap-1 rounded-[2px] border border-slate-200 bg-white px-2 py-1 text-[10px] font-medium text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors"
+                                                    className="inline-flex items-center gap-1 ] border border-slate-200 bg-white px-2 py-1 text-[10px] font-medium text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors"
                                                     title="Pratinjau Dokumen"
                                                 >
                                                     <Eye className="h-3 w-3" />
@@ -1001,7 +1001,7 @@ export default function MatriksPpeppIndex({
                                                 </button>
                                                 <button
                                                     onClick={() => showToast(`Mengunduh file ${file.name}...`)}
-                                                    className="inline-flex items-center gap-1 rounded-[2px] border border-slate-200 bg-white px-2 py-1 text-[10px] font-medium text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors"
+                                                    className="inline-flex items-center gap-1 ] border border-slate-200 bg-white px-2 py-1 text-[10px] font-medium text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors"
                                                     title="Unduh Berkas"
                                                 >
                                                     <Download className="h-3 w-3" />
@@ -1022,14 +1022,14 @@ export default function MatriksPpeppIndex({
                             <div className="flex items-center gap-1.5">
                                 <Link
                                     href="/akreditasi/lam"
-                                    className="inline-flex items-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2.5 py-1.5 text-[10px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                                    className="inline-flex items-center gap-1 ] border border-slate-300 bg-white px-2.5 py-1.5 text-[10px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
                                 >
                                     <ExternalLink className="h-3 w-3 text-slate-500" />
                                     Buka Halaman Pohon Eviden
                                 </Link>
                                 <button
                                     onClick={() => setIsModalOpen(false)}
-                                    className="rounded-[2px] bg-slate-900 px-3 py-1.5 text-[10px] font-semibold text-white hover:bg-slate-800 transition-colors"
+                                    className="] bg-slate-900 px-3 py-1.5 text-[10px] font-semibold text-white hover:bg-slate-800 transition-colors"
                                 >
                                     Tutup
                                 </button>

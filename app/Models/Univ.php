@@ -19,10 +19,17 @@ class Univ extends Model
         'address',
         'logo',
         'is_active',
-        'name_univ',
-        'created_by',
-        'updated_by',
     ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
+    // Accessor untuk backward compatibility jika ada kode lama memanggil name_univ
+    public function getNameUnivAttribute()
+    {
+        return $this->attributes['name'] ?? null;
+    }
 
     public function faculties()
     {

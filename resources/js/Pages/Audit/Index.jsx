@@ -126,7 +126,7 @@ export default function AuditIndex() {
 
             <div className="space-y-6">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6  border border-slate-200/80 shadow-sm">
                     <div>
                         <div className="flex items-center gap-2 text-indigo-600 font-semibold text-xs tracking-wider uppercase mb-1">
                             <ClipboardCheck className="w-4 h-4" />
@@ -146,7 +146,7 @@ export default function AuditIndex() {
                         <select
                             value={selectedProdiId}
                             onChange={(e) => setSelectedProdiId(e.target.value)}
-                            className="px-3.5 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-indigo-50/50 text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                            className="px-3.5 py-2 text-xs font-bold  border border-slate-200 bg-indigo-50/50 text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                         >
                             {prodiList.map((p) => (
                                 <option key={p.id} value={p.id}>
@@ -159,21 +159,21 @@ export default function AuditIndex() {
 
                 {/* Scorecard Audit */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="rounded-2xl bg-gradient-to-br from-indigo-900 to-slate-900 p-5 text-white shadow-sm border border-indigo-900/40">
+                    <div className=" bg-gradient-to-br from-indigo-900 to-slate-900 p-5 text-white shadow-sm border border-indigo-900/40">
                         <span className="text-xs font-semibold uppercase text-indigo-300">Skor Kepatuhan Mutu</span>
                         <div className="mt-2 flex items-baseline gap-2">
                             <span className="text-3xl font-black">{complianceRate}%</span>
                             <span className="text-xs text-indigo-200">Kesiapan Dokumen</span>
                         </div>
-                        <div className="mt-3 h-1.5 w-full rounded-full bg-slate-800 overflow-hidden">
-                            <div className="h-full bg-indigo-400 rounded-full transition-all duration-700" style={{ width: `${complianceRate}%` }} />
+                        <div className="mt-3 h-1.5 w-full  bg-slate-800 overflow-hidden">
+                            <div className="h-full bg-indigo-400  transition-all duration-700" style={{ width: `${complianceRate}%` }} />
                         </div>
                     </div>
 
-                    <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-200/80">
+                    <div className=" bg-white p-5 shadow-sm border border-slate-200/80">
                         <div className="flex items-center justify-between">
                             <span className="text-xs font-semibold uppercase text-slate-500">Terpenuhi (Lengkap)</span>
-                            <span className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+                            <span className="p-2  bg-emerald-50 text-emerald-600">
                                 <CheckCircle2 className="w-4 h-4" />
                             </span>
                         </div>
@@ -181,10 +181,10 @@ export default function AuditIndex() {
                         <p className="text-xs text-emerald-600 mt-1 font-medium">Eviden valid & terverifikasi</p>
                     </div>
 
-                    <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-200/80">
+                    <div className=" bg-white p-5 shadow-sm border border-slate-200/80">
                         <div className="flex items-center justify-between">
                             <span className="text-xs font-semibold uppercase text-slate-500">Dalam Proses / Draft</span>
-                            <span className="p-2 rounded-lg bg-amber-50 text-amber-600">
+                            <span className="p-2  bg-amber-50 text-amber-600">
                                 <Clock className="w-4 h-4" />
                             </span>
                         </div>
@@ -192,10 +192,10 @@ export default function AuditIndex() {
                         <p className="text-xs text-amber-600 mt-1 font-medium">Memerlukan revisi dokumen</p>
                     </div>
 
-                    <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-200/80">
+                    <div className=" bg-white p-5 shadow-sm border border-slate-200/80">
                         <div className="flex items-center justify-between">
                             <span className="text-xs font-semibold uppercase text-slate-500">Temuan Belum Lengkap</span>
-                            <span className="p-2 rounded-lg bg-rose-50 text-rose-600">
+                            <span className="p-2  bg-rose-50 text-rose-600">
                                 <AlertCircle className="w-4 h-4" />
                             </span>
                         </div>
@@ -205,13 +205,13 @@ export default function AuditIndex() {
                 </div>
 
                 {/* Audit Checklist Table */}
-                <div className="rounded-2xl bg-white border border-slate-200/80 shadow-sm overflow-hidden">
+                <div className=" bg-white border border-slate-200/80 shadow-sm overflow-hidden">
                     <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
                             <h2 className="text-base font-bold text-slate-800">
                                 Matriks Checklist Audit Mutu
                             </h2>
-                            <span className="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700">
+                            <span className="text-xs font-semibold px-2 py-0.5  bg-indigo-50 text-indigo-700">
                                 {currentProdi.name_prodi}
                             </span>
                         </div>
@@ -223,7 +223,7 @@ export default function AuditIndex() {
                                 placeholder="Cari kriteria atau catatan..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                                className="w-full pl-9 pr-3 py-1.5 text-xs  border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                             />
                         </div>
                     </div>
@@ -258,19 +258,19 @@ export default function AuditIndex() {
                                         </td>
                                         <td className="px-5 py-4 text-center">
                                             {crit.status === 'fulfilled' && (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5  text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                                     <CheckCircle2 className="w-3 h-3" />
                                                     Terpenuhi
                                                 </span>
                                             )}
                                             {crit.status === 'in_progress' && (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5  text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
                                                     <Clock className="w-3 h-3" />
                                                     Revisi / Proses
                                                 </span>
                                             )}
                                             {crit.status === 'missing' && (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5  text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
                                                     <AlertCircle className="w-3 h-3" />
                                                     Temuan Mayor
                                                 </span>
