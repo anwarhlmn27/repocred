@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, useForm, router } from '@inertiajs/react';
 import React, { useState, useMemo } from 'react';
+import { confirmAlert } from '@/Utils/alert';
 import {
     Award,
     Globe,
@@ -15,91 +16,11 @@ import {
     Layers,
     Check,
     AlertCircle,
-    Info
+    Info,
+    CalendarCheck2
 } from 'lucide-react';
 
-const defaultAgencies = [
-    {
-        id: 'ag-1',
-        code: 'BAN-PT',
-        name: 'Badan Akreditasi Nasional Perguruan Tinggi',
-        type: 'nasional',
-        level: 'univs',
-        description: 'Lembaga akreditasi tingkat nasional untuk Perguruan Tinggi (AIPT) dan program studi non-LAM.',
-        prodis_count: 0,
-        criterias_count: 4,
-        sessions_count: 2,
-    },
-    {
-        id: 'ag-2',
-        code: 'LAM-INFOKOM',
-        name: 'Lembaga Akreditasi Mandiri Informatika dan Komputer',
-        type: 'nasional',
-        level: 'prodi',
-        description: 'Lembaga akreditasi mandiri rumpun Informatika, Sistem Informasi, dan Ilmu Komputer.',
-        prodis_count: 2,
-        criterias_count: 9,
-        sessions_count: 2,
-    },
-    {
-        id: 'ag-3',
-        code: 'LAMEMBA',
-        name: 'Lembaga Akreditasi Mandiri Ekonomi Manajemen Bisnis dan Akuntansi',
-        type: 'nasional',
-        level: 'prodi',
-        description: 'Lembaga akreditasi mandiri rumpun Ilmu Ekonomi, Manajemen, Bisnis, dan Akuntansi.',
-        prodis_count: 1,
-        criterias_count: 9,
-        sessions_count: 1,
-    },
-    {
-        id: 'ag-4',
-        code: 'LAM-TEKNIK',
-        name: 'Lembaga Akreditasi Mandiri Program Studi Keteknikan',
-        type: 'nasional',
-        level: 'prodi',
-        description: 'Lembaga akreditasi mandiri rumpun ilmu keteknikan dan rekayasa teknologi.',
-        prodis_count: 1,
-        criterias_count: 9,
-        sessions_count: 0,
-    },
-    {
-        id: 'ag-5',
-        code: 'LAMDIK',
-        name: 'Lembaga Akreditasi Mandiri Kependidikan',
-        type: 'nasional',
-        level: 'prodi',
-        description: 'Lembaga akreditasi mandiri untuk program studi rumpun pendidikan dan keguruan.',
-        prodis_count: 0,
-        criterias_count: 9,
-        sessions_count: 0,
-    },
-    {
-        id: 'ag-6',
-        code: 'ASIIN',
-        name: 'Akkreditierungsagentur für Studiengänge der Ingenieurwissenschaften',
-        type: 'internasional',
-        level: 'prodi',
-        description: 'Lembaga akreditasi internasional berbasis di Jerman untuk bidang Rekayasa, Informatika, dan MIPA.',
-        prodis_count: 1,
-        criterias_count: 7,
-        sessions_count: 0,
-    },
-    {
-        id: 'ag-7',
-        code: 'ABET',
-        name: 'Accreditation Board for Engineering and Technology',
-        type: 'internasional',
-        level: 'prodi',
-        description: 'Badan akreditasi internasional ternama berbasis di Amerika Serikat untuk Sains Terapan, Komputasi, dan Rekayasa.',
-        prodis_count: 0,
-        criterias_count: 8,
-        sessions_count: 0,
-    },
-];
-
 export default function AgencyIndex({ agencies = [] }) {
-    const [items, setItems] = useState(agencies.length > 0 ? agencies : defaultAgencies);
     const [searchTerm, setSearchTerm] = useState('');
     const [typeFilter, setTypeFilter] = useState('ALL'); // ALL | nasional | internasional
     const [levelFilter, setLevelFilter] = useState('ALL'); // ALL | univs | prodi
@@ -107,107 +28,106 @@ export default function AgencyIndex({ agencies = [] }) {
     // Modal State
     const [modalOpen, setModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
-    const [formData, setFormData] = useState({
+
+    // Form Inertia sesuai dengan tabel agencies (code, name, type, level)
+    const { data, setData, post, put, processing, errors, reset, clearErrors } = useForm({
         code: '',
         name: '',
         type: 'nasional',
         level: 'prodi',
-        description: '',
     });
 
-    // Statistik Cepat
+    // Statistik Cepat berdasarkan data real
     const stats = useMemo(() => {
-        const total = items.length;
-        const nasional = items.filter((a) => a.type === 'nasional').length;
-        const internasional = items.filter((a) => a.type === 'internasional').length;
-        const univs = items.filter((a) => a.level === 'univs').length;
-        const prodi = items.filter((a) => a.level === 'prodi').length;
+        const total = agencies.length;
+        const nasional = agencies.filter((a) => a.type === 'nasional').length;
+        const internasional = agencies.filter((a) => a.type === 'internasional').length;
+        const univs = agencies.filter((a) => a.level === 'univs').length;
+        const prodi = agencies.filter((a) => a.level === 'prodi').length;
         return { total, nasional, internasional, univs, prodi };
-    }, [items]);
+    }, [agencies]);
 
     // Filter Items
     const filteredItems = useMemo(() => {
-        return items.filter((item) => {
+        return agencies.filter((item) => {
             const matchesSearch =
-                item.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()));
+                item.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                item.name?.toLowerCase().includes(searchTerm.toLowerCase());
 
             const matchesType = typeFilter === 'ALL' || item.type === typeFilter;
             const matchesLevel = levelFilter === 'ALL' || item.level === levelFilter;
 
             return matchesSearch && matchesType && matchesLevel;
         });
-    }, [items, searchTerm, typeFilter, levelFilter]);
+    }, [agencies, searchTerm, typeFilter, levelFilter]);
 
-    // Open Add Modal
+    // Buka Modal Tambah
     const handleOpenAdd = () => {
         setEditingItem(null);
-        setFormData({
+        clearErrors();
+        reset();
+        setData({
             code: '',
             name: '',
             type: 'nasional',
             level: 'prodi',
-            description: '',
         });
         setModalOpen(true);
     };
 
-    // Open Edit Modal
+    // Buka Modal Edit
     const handleOpenEdit = (item) => {
         setEditingItem(item);
-        setFormData({
-            code: item.code,
-            name: item.name,
-            type: item.type,
-            level: item.level,
-            description: item.description || '',
+        clearErrors();
+        setData({
+            code: item.code || '',
+            name: item.name || '',
+            type: item.type || 'nasional',
+            level: item.level || 'prodi',
         });
         setModalOpen(true);
     };
 
-    // Save Form
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (!formData.code.trim() || !formData.name.trim()) return;
-
-        if (editingItem) {
-            setItems((prev) =>
-                prev.map((it) =>
-                    it.id === editingItem.id
-                        ? {
-                              ...it,
-                              code: formData.code.toUpperCase().trim(),
-                              name: formData.name.trim(),
-                              type: formData.type,
-                              level: formData.level,
-                              description: formData.description.trim(),
-                          }
-                        : it
-                )
-            );
-        } else {
-            const newItem = {
-                id: `ag-${Date.now()}`,
-                code: formData.code.toUpperCase().trim(),
-                name: formData.name.trim(),
-                type: formData.type,
-                level: formData.level,
-                description: formData.description.trim(),
-                prodis_count: 0,
-                criterias_count: 0,
-                sessions_count: 0,
-            };
-            setItems((prev) => [newItem, ...prev]);
-        }
-
+    // Tutup Modal
+    const handleCloseModal = () => {
         setModalOpen(false);
+        setEditingItem(null);
+        clearErrors();
+        reset();
     };
 
-    // Delete Item
-    const handleDelete = (id, name) => {
-        if (!confirm(`Hapus lembaga akreditasi "${name}"?`)) return;
-        setItems((prev) => prev.filter((it) => it.id !== id));
+    // Submit Form
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        if (editingItem) {
+            put(route('master.agency.update', editingItem.id), {
+                preserveScroll: true,
+                onSuccess: () => handleCloseModal(),
+            });
+        } else {
+            post(route('master.agency.store'), {
+                preserveScroll: true,
+                onSuccess: () => handleCloseModal(),
+            });
+        }
+    };
+
+    // Hapus Item dengan konfirmasi SweetAlert2
+    const handleDelete = async (item) => {
+        const confirmed = await confirmAlert({
+            title: 'Hapus Lembaga Akreditasi?',
+            text: `Apakah Anda yakin ingin menghapus lembaga akreditasi "${item.name} (${item.code})"?`,
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal',
+            icon: 'warning',
+        });
+
+        if (confirmed) {
+            router.delete(route('master.agency.destroy', item.id), {
+                preserveScroll: true,
+            });
+        }
     };
 
     return (
@@ -231,7 +151,7 @@ export default function AgencyIndex({ agencies = [] }) {
                     <button
                         type="button"
                         onClick={handleOpenAdd}
-                        className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shrink-0 cursor-pointer"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shrink-0 cursor-pointer shadow-xs"
                     >
                         <Plus className="w-4 h-4" />
                         <span>Tambah Agency Baru</span>
@@ -275,7 +195,7 @@ export default function AgencyIndex({ agencies = [] }) {
                             <GraduationCap className="w-5 h-5" />
                         </div>
                         <div>
-                            <span className="text-xs text-slate-400 block font-medium">Cakupan Prodi & Univ</span>
+                            <span className="text-xs text-slate-400 block font-medium">Cakupan Sasaran</span>
                             <span className="text-lg font-black text-slate-800">{stats.prodi} Prodi / {stats.univs} PT</span>
                         </div>
                     </div>
@@ -292,7 +212,7 @@ export default function AgencyIndex({ agencies = [] }) {
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 placeholder="Cari kode (BAN-PT, LAM) atau nama..."
-                                className="w-full pl-10 pr-4 py-2 text-xs border border-slate-200 bg-slate-50 focus:outline-none focus:border-indigo-600"
+                                className="w-full pl-10 pr-4 py-2 text-xs border border-slate-200 bg-slate-50 focus:outline-none focus:border-indigo-600 focus:bg-white"
                             />
                         </div>
 
@@ -307,20 +227,20 @@ export default function AgencyIndex({ agencies = [] }) {
                             <option value="internasional">Lembaga Internasional</option>
                         </select>
 
-                        {/* Filter Tingkat */}
+                        {/* Filter Tingkat Sasaran */}
                         <select
                             value={levelFilter}
                             onChange={(e) => setLevelFilter(e.target.value)}
                             className="px-3 py-2 text-xs border border-slate-200 bg-slate-50 text-slate-700 font-medium focus:outline-none focus:border-indigo-600 cursor-pointer"
                         >
                             <option value="ALL">Semua Tingkat Sasaran</option>
-                            <option value="univs">Tingkat Perguruan Tinggi / Institusi</option>
-                            <option value="prodi">Tingkat Program Studi</option>
+                            <option value="univs">Tingkat Perguruan Tinggi (AIPT)</option>
+                            <option value="prodi">Tingkat Program Studi (APS)</option>
                         </select>
                     </div>
 
                     <div className="text-xs text-slate-500">
-                        Menampilkan <strong className="text-slate-800">{filteredItems.length}</strong> dari {items.length} Lembaga
+                        Menampilkan <strong className="text-slate-800">{filteredItems.length}</strong> dari {agencies.length} Lembaga
                     </div>
                 </div>
 
@@ -330,10 +250,11 @@ export default function AgencyIndex({ agencies = [] }) {
                         <table className="w-full text-left border-collapse text-xs">
                             <thead>
                                 <tr className="border-b border-slate-200 bg-slate-100 text-slate-600 font-bold uppercase tracking-wider">
-                                    <th className="py-3 px-4 border-r border-slate-200">Kode & Nama Lembaga</th>
+                                    <th className="py-3 px-4 w-12 text-center border-r border-slate-200">No</th>
+                                    <th className="py-3 px-4 border-r border-slate-200">Kode</th>
+                                    <th className="py-3 px-4 border-r border-slate-200">Nama Lembaga</th>
                                     <th className="py-3 px-4 border-r border-slate-200">Tipe Akreditasi</th>
                                     <th className="py-3 px-4 border-r border-slate-200">Tingkat Sasaran</th>
-                                    <th className="py-3 px-4 border-r border-slate-200">Deskripsi Rumpun</th>
                                     <th className="py-3 px-4 text-center border-r border-slate-200">Data Terkait</th>
                                     <th className="py-3 px-4 text-right">Aksi</th>
                                 </tr>
@@ -346,12 +267,17 @@ export default function AgencyIndex({ agencies = [] }) {
                                         </td>
                                     </tr>
                                 ) : (
-                                    filteredItems.map((item) => (
+                                    filteredItems.map((item, index) => (
                                         <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
+                                            {/* No */}
+                                            <td className="py-3.5 px-4 text-center text-slate-400 font-mono border-r border-slate-100">
+                                                {index + 1}
+                                            </td>
+
                                             {/* Kode & Nama */}
                                             <td className="py-3.5 px-4 border-r border-slate-100">
                                                 <div className="flex items-center gap-2.5">
-                                                    <span className={`px-2 py-0.5 text-xs font-black tracking-wide uppercase border ${
+                                                    <span className={`px-2.5 py-1 text-xs font-black tracking-wide uppercase border ${
                                                         item.code === 'BAN-PT'
                                                             ? 'bg-indigo-100 text-indigo-800 border-indigo-300'
                                                             : item.type === 'internasional'
@@ -360,6 +286,11 @@ export default function AgencyIndex({ agencies = [] }) {
                                                     }`}>
                                                         {item.code}
                                                     </span>
+                                                </div>
+                                            </td>
+
+                                            <td className="py-3.5 px-4 border-r border-slate-100">
+                                                <div className="flex items-center gap-2.5">
                                                     <div>
                                                         <h3 className="font-bold text-slate-800 text-sm">{item.name}</h3>
                                                     </div>
@@ -368,7 +299,7 @@ export default function AgencyIndex({ agencies = [] }) {
 
                                             {/* Tipe: Nasional vs Internasional */}
                                             <td className="py-3.5 px-4 border-r border-slate-100">
-                                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-semibold border ${
+                                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold border ${
                                                     item.type === 'internasional'
                                                         ? 'bg-blue-50 text-blue-700 border-blue-200'
                                                         : 'bg-emerald-50 text-emerald-700 border-emerald-200'
@@ -399,22 +330,20 @@ export default function AgencyIndex({ agencies = [] }) {
                                                 </div>
                                             </td>
 
-                                            {/* Deskripsi */}
-                                            <td className="py-3.5 px-4 max-w-xs border-r border-slate-100">
-                                                <p className="text-slate-500 line-clamp-2 leading-relaxed" title={item.description}>
-                                                    {item.description || '-'}
-                                                </p>
-                                            </td>
-
                                             {/* Relasi Terkait */}
                                             <td className="py-3.5 px-4 text-center border-r border-slate-100">
                                                 <div className="inline-flex items-center gap-1.5 text-[11px]">
-                                                    <span className="px-2 py-0.5 border border-slate-200 bg-slate-100 text-slate-600 font-bold" title="Kriteria Standar">
+                                                    <span className="px-2 py-0.5 border border-slate-200 bg-slate-100 text-slate-600 font-bold" title="Kriteria Standar Mutu">
                                                         {item.criterias_count || 0} Kriteria
                                                     </span>
                                                     {item.level === 'prodi' && (
                                                         <span className="px-2 py-0.5 border border-emerald-200 bg-emerald-50 text-emerald-700 font-bold" title="Program Studi Terkait">
                                                             {item.prodis_count || 0} Prodi
+                                                        </span>
+                                                    )}
+                                                    {item.sessions_count > 0 && (
+                                                        <span className="px-2 py-0.5 border border-purple-200 bg-purple-50 text-purple-700 font-bold" title="Sesi Akreditasi">
+                                                            {item.sessions_count} Sesi
                                                         </span>
                                                     )}
                                                 </div>
@@ -427,15 +356,15 @@ export default function AgencyIndex({ agencies = [] }) {
                                                         type="button"
                                                         onClick={() => handleOpenEdit(item)}
                                                         className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 border border-transparent hover:border-slate-200 transition-colors cursor-pointer"
-                                                        title="Edit Agency"
+                                                        title="Edit Lembaga"
                                                     >
                                                         <Edit2 className="w-3.5 h-3.5" />
                                                     </button>
                                                     <button
                                                         type="button"
-                                                        onClick={() => handleDelete(item.id, item.name)}
+                                                        onClick={() => handleDelete(item)}
                                                         className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-slate-100 border border-transparent hover:border-slate-200 transition-colors cursor-pointer"
-                                                        title="Hapus Agency"
+                                                        title="Hapus Lembaga"
                                                     >
                                                         <Trash2 className="w-3.5 h-3.5" />
                                                     </button>
@@ -454,116 +383,136 @@ export default function AgencyIndex({ agencies = [] }) {
             {modalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
                     <div className="bg-white max-w-lg w-full p-6 shadow-2xl border border-slate-300">
+                        {/* Header Modal */}
                         <div className="flex items-center justify-between pb-4 border-b border-slate-200">
                             <div>
                                 <h3 className="text-base font-bold text-slate-800">
                                     {editingItem ? 'Edit Lembaga Akreditasi' : 'Tambah Lembaga Akreditasi Baru'}
                                 </h3>
                                 <p className="text-xs text-indigo-700 font-semibold mt-0.5">
-                                    Konfigurasi Master Agency Mutu
+                                    Master Data Lembaga Penjamin Mutu Akreditasi
                                 </p>
                             </div>
                             <button
-                                onClick={() => setModalOpen(false)}
-                                className="p-1 text-slate-400 hover:text-slate-600 border border-transparent hover:border-slate-200 cursor-pointer"
+                                type="button"
+                                onClick={handleCloseModal}
+                                disabled={processing}
+                                className="p-1 text-slate-400 hover:text-slate-600 border border-transparent hover:border-slate-200 cursor-pointer disabled:opacity-50"
                             >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
+                        {/* Form Sesuai Tabel agencies: code, name, type, level */}
                         <form onSubmit={handleSubmit} className="mt-4 space-y-4 text-xs">
-                            {/* Kode Lembaga */}
+                            {/* Kode Lembaga / Singkatan */}
                             <div>
-                                <label className="block font-semibold uppercase text-slate-600 mb-1">
+                                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
                                     Kode Lembaga / Singkatan <span className="text-rose-500">*</span>
                                 </label>
                                 <input
                                     type="text"
-                                    value={formData.code}
-                                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                                    value={data.code}
+                                    onChange={(e) => setData('code', e.target.value.toUpperCase())}
                                     placeholder="Contoh: LAM-INFOKOM, BAN-PT, ABET"
-                                    className="w-full px-3 py-2 text-xs border border-slate-300 focus:outline-none focus:border-indigo-600 font-bold uppercase"
+                                    className={`w-full px-3 py-2 text-xs border ${
+                                        errors.code ? 'border-rose-400 bg-rose-50/20' : 'border-slate-300'
+                                    } focus:outline-none focus:border-indigo-600 font-bold uppercase`}
                                     required
                                     autoFocus
                                 />
-                                <p className="text-[11px] text-slate-400 mt-1">
-                                    Gunakan huruf kapital singkat yang mewakili lembaga akreditasi.
-                                </p>
+                                {errors.code ? (
+                                    <p className="text-rose-500 text-[11px] mt-1 font-medium">{errors.code}</p>
+                                ) : (
+                                    <p className="text-[11px] text-slate-400 mt-1">
+                                        Gunakan huruf kapital singkat unik yang mewakili lembaga akreditasi.
+                                    </p>
+                                )}
                             </div>
 
-                            {/* Nama Lengkap */}
+                            {/* Nama Lengkap Lembaga */}
                             <div>
-                                <label className="block font-semibold uppercase text-slate-600 mb-1">
+                                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
                                     Nama Lengkap Lembaga <span className="text-rose-500">*</span>
                                 </label>
                                 <input
                                     type="text"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    value={data.name}
+                                    onChange={(e) => setData('name', e.target.value)}
                                     placeholder="Contoh: Lembaga Akreditasi Mandiri Informatika dan Komputer"
-                                    className="w-full px-3 py-2 text-xs border border-slate-300 focus:outline-none focus:border-indigo-600"
+                                    className={`w-full px-3 py-2 text-xs border ${
+                                        errors.name ? 'border-rose-400 bg-rose-50/20' : 'border-slate-300'
+                                    } focus:outline-none focus:border-indigo-600`}
                                     required
                                 />
+                                {errors.name && (
+                                    <p className="text-rose-500 text-[11px] mt-1 font-medium">{errors.name}</p>
+                                )}
                             </div>
 
-                            {/* Tipe & Tingkat */}
-                            <div className="grid grid-cols-2 gap-3">
+                            {/* Tipe & Tingkat Sasaran */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block font-semibold uppercase text-slate-600 mb-1">
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
                                         Tipe Lembaga <span className="text-rose-500">*</span>
                                     </label>
                                     <select
-                                        value={formData.type}
-                                        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                                        className="w-full px-3 py-2 text-xs border border-slate-300 bg-slate-50 font-semibold focus:outline-none focus:border-indigo-600"
+                                        value={data.type}
+                                        onChange={(e) => setData('type', e.target.value)}
+                                        className={`w-full px-3 py-2 text-xs border ${
+                                            errors.type ? 'border-rose-400 bg-rose-50/20' : 'border-slate-300'
+                                        } bg-slate-50 font-semibold focus:outline-none focus:border-indigo-600 cursor-pointer`}
+                                        required
                                     >
                                         <option value="nasional">Nasional (BAN-PT / LAM)</option>
                                         <option value="internasional">Internasional (ABET, ASIIN, dll)</option>
                                     </select>
+                                    {errors.type && (
+                                        <p className="text-rose-500 text-[11px] mt-1 font-medium">{errors.type}</p>
+                                    )}
                                 </div>
 
                                 <div>
-                                    <label className="block font-semibold uppercase text-slate-600 mb-1">
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
                                         Tingkat Sasaran <span className="text-rose-500">*</span>
                                     </label>
                                     <select
-                                        value={formData.level}
-                                        onChange={(e) => setFormData({ ...formData, level: e.target.value })}
-                                        className="w-full px-3 py-2 text-xs border border-slate-300 bg-slate-50 font-semibold focus:outline-none focus:border-indigo-600"
+                                        value={data.level}
+                                        onChange={(e) => setData('level', e.target.value)}
+                                        className={`w-full px-3 py-2 text-xs border ${
+                                            errors.level ? 'border-rose-400 bg-rose-50/20' : 'border-slate-300'
+                                        } bg-slate-50 font-semibold focus:outline-none focus:border-indigo-600 cursor-pointer`}
+                                        required
                                     >
                                         <option value="prodi">Program Studi (APS)</option>
                                         <option value="univs">Perguruan Tinggi / Institusi (AIPT)</option>
                                     </select>
+                                    {errors.level && (
+                                        <p className="text-rose-500 text-[11px] mt-1 font-medium">{errors.level}</p>
+                                    )}
                                 </div>
                             </div>
 
-                            {/* Deskripsi */}
-                            <div>
-                                <label className="block font-semibold uppercase text-slate-600 mb-1">
-                                    Deskripsi / Rumpun Keilmuan
-                                </label>
-                                <textarea
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    placeholder="Keterangan cakupan rumpun ilmu, asal negara, atau dasar hukum akreditasi..."
-                                    rows={3}
-                                    className="w-full px-3 py-2 text-xs border border-slate-300 focus:outline-none focus:border-indigo-600"
-                                />
-                            </div>
-
+                            {/* Tombol Aksi */}
                             <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-200">
                                 <button
                                     type="button"
-                                    onClick={() => setModalOpen(false)}
-                                    className="px-4 py-2 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 transition-colors cursor-pointer"
+                                    onClick={handleCloseModal}
+                                    disabled={processing}
+                                    className="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 transition-colors cursor-pointer disabled:opacity-50"
                                 >
                                     Batal
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors cursor-pointer"
+                                    disabled={processing}
+                                    className="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center gap-2"
                                 >
-                                    Simpan Lembaga
+                                    {processing ? (
+                                        <span>Menyimpan...</span>
+                                    ) : (
+                                        <span>{editingItem ? 'Perbarui Lembaga' : 'Simpan Lembaga'}</span>
+                                    )}
                                 </button>
                             </div>
                         </form>

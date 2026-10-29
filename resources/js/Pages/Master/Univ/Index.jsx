@@ -309,8 +309,8 @@ export default function UnivIndex({ univs = [] }) {
                                             <td className="py-3.5 px-4 text-center border-r border-slate-100">
                                                 <span
                                                     className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-bold border ${item.is_active
-                                                            ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                                                            : 'bg-slate-100 text-slate-500 border-slate-200'
+                                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                                                        : 'bg-slate-100 text-slate-500 border-slate-200'
                                                         }`}
                                                 >
                                                     <span className={`w-2 h-2 ${item.is_active ? 'bg-emerald-600' : 'bg-slate-400'}`}></span>

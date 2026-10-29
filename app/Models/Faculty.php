@@ -18,10 +18,16 @@ class Faculty extends Model
         'name',
         'acronym',
         'is_active',
-        'name_faculty',
-        'created_by',
-        'updated_by',
     ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
+    public function getNameFacultyAttribute()
+    {
+        return $this->attributes['name'] ?? null;
+    }
 
     public function univ()
     {

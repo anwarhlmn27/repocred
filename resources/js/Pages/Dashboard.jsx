@@ -65,7 +65,7 @@ export default function Dashboard({ auth, stats = {}, recentActivities = [] }) {
                 <div className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-7 text-white shadow-xl border border-indigo-900/40">
                     <div className="absolute -right-10 -bottom-10 h-64 w-64 bg-indigo-500/10 blur-3xl pointer-events-none" />
                     <div className="absolute top-0 right-1/4 h-32 w-32 bg-blue-500/10 blur-2xl pointer-events-none" />
-                    
+
                     <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/20 text-indigo-300 text-xs font-medium mb-3 backdrop-blur-sm border border-indigo-500/30">
@@ -318,11 +318,10 @@ export default function Dashboard({ auth, stats = {}, recentActivities = [] }) {
                                             <td className="px-4 py-3 text-xs">{act.prodi?.name_prodi || '-'}</td>
                                             <td className="px-4 py-3 text-xs font-mono">{act.academic_year}</td>
                                             <td className="px-4 py-3 text-center">
-                                                <span className={`inline-flex items-center px-2 py-0.5 text-xs font-semibold ${
-                                                    act.status === 'published' ? 'bg-emerald-100 text-emerald-800' :
-                                                    act.status === 'draft' ? 'bg-amber-100 text-amber-800' :
-                                                    'bg-rose-100 text-rose-800'
-                                                }`}>
+                                                <span className={`inline-flex items-center px-2 py-0.5 text-xs font-semibold ${act.status === 'published' ? 'bg-emerald-100 text-emerald-800' :
+                                                        act.status === 'draft' ? 'bg-amber-100 text-amber-800' :
+                                                            'bg-rose-100 text-rose-800'
+                                                    }`}>
                                                     {act.status}
                                                 </span>
                                             </td>

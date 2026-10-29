@@ -15,10 +15,14 @@ class Agency extends Model
     protected $fillable = [
         'code',
         'name',
-        'name_agency',
         'type',
         'level',
     ];
+
+    public function getNameAgencyAttribute()
+    {
+        return $this->attributes['name'] ?? null;
+    }
 
     public function criterias()
     {

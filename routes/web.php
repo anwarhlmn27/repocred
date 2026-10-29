@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Master\UnivController;
+use App\Http\Controllers\Master\FacultyController;
+use App\Http\Controllers\Master\AgencyController;
+use App\Http\Controllers\Master\ProdiController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -59,20 +62,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/univ/{univ}', [UnivController::class, 'update'])->name('univ.update');
         Route::delete('/univ/{univ}', [UnivController::class, 'destroy'])->name('univ.destroy');
 
-        Route::get('/fakultas', function () {
-            return Inertia::render('Master/Fakultas/Index');
-        })->name('fakultas.index');
+        Route::get('/fakultas', [FacultyController::class, 'index'])->name('fakultas.index');
+        Route::post('/fakultas', [FacultyController::class, 'store'])->name('fakultas.store');
+        Route::put('/fakultas/{faculty}', [FacultyController::class, 'update'])->name('fakultas.update');
+        Route::delete('/fakultas/{faculty}', [FacultyController::class, 'destroy'])->name('fakultas.destroy');
 
-        Route::get('/agency', function () {
-            $agencies = \App\Models\Agency::withCount(['criterias', 'prodis', 'sessions'])->get();
-            return Inertia::render('Master/Agency/Index', [
-                'agencies' => $agencies,
-            ]);
-        })->name('agency.index');
+        Route::get('/agency', [AgencyController::class, 'index'])->name('agency.index');
+        Route::post('/agency', [AgencyController::class, 'store'])->name('agency.store');
+        Route::put('/agency/{agency}', [AgencyController::class, 'update'])->name('agency.update');
+        Route::delete('/agency/{agency}', [AgencyController::class, 'destroy'])->name('agency.destroy');
 
-        Route::get('/prodi', function () {
-            return Inertia::render('Master/Prodi/Index');
-        })->name('prodi.index');
+        Route::get('/prodi', [ProdiController::class, 'index'])->name('prodi.index');
+        Route::post('/prodi', [ProdiController::class, 'store'])->name('prodi.store');
+        Route::put('/prodi/{prodi}', [ProdiController::class, 'update'])->name('prodi.update');
+        Route::delete('/prodi/{prodi}', [ProdiController::class, 'destroy'])->name('prodi.destroy');
 
         Route::get('/tahun-akademik', function () {
             return Inertia::render('Master/TahunAkademik/Index');

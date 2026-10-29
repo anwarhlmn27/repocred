@@ -19,11 +19,19 @@ class Prodi extends Model
         'name',
         'acronym',
         'is_active',
-        'name_prodi',
-        'degree',
-        'created_by',
-        'updated_by',
     ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
+    /**
+     * Accessor untuk kompatibilitas jika ada kode lama yang memanggil name_prodi.
+     */
+    public function getNameProdiAttribute(): ?string
+    {
+        return $this->attributes['name'] ?? null;
+    }
 
     public function faculty()
     {
