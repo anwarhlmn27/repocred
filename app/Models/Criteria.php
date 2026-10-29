@@ -17,10 +17,24 @@ class Criteria extends Model
         'code',
         'name',
         'sequence',
-        'code_criteria',
-        'title_criteria',
-        'type',
     ];
+
+    protected $casts = [
+        'sequence' => 'integer',
+    ];
+
+    /**
+     * Accessor untuk kompatibilitas kode terdahulu.
+     */
+    public function getCodeCriteriaAttribute(): ?string
+    {
+        return $this->attributes['code'] ?? null;
+    }
+
+    public function getTitleCriteriaAttribute(): ?string
+    {
+        return $this->attributes['name'] ?? null;
+    }
 
     public function agency()
     {

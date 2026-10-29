@@ -247,7 +247,7 @@ export default function ProdiIndex({ prodis = [], faculties = [], agencies = [] 
                         </select>
 
                         {/* Filter Lembaga Akreditasi */}
-                        <select
+                        {/* <select
                             value={selectedAgencyFilter}
                             onChange={(e) => setSelectedAgencyFilter(e.target.value)}
                             className="px-3 py-2 text-xs border border-slate-200 bg-slate-50 text-slate-700 font-medium focus:outline-none focus:border-indigo-600 cursor-pointer"
@@ -259,10 +259,10 @@ export default function ProdiIndex({ prodis = [], faculties = [], agencies = [] 
                                 </option>
                             ))}
                             <option value="NONE">Belum Ada Agency</option>
-                        </select>
+                        </select> */}
 
                         {/* Filter Status */}
-                        <select
+                        {/* <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
                             className="px-3 py-2 text-xs border border-slate-200 bg-slate-50 text-slate-700 font-medium focus:outline-none focus:border-indigo-600 cursor-pointer"
@@ -270,7 +270,7 @@ export default function ProdiIndex({ prodis = [], faculties = [], agencies = [] 
                             <option value="ALL">Semua Status</option>
                             <option value="ACTIVE">Hanya Aktif</option>
                             <option value="INACTIVE">Nonaktif</option>
-                        </select>
+                        </select> */}
                     </div>
 
                     <div className="text-xs text-slate-500">

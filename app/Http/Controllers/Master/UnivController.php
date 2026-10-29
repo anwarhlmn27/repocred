@@ -4,12 +4,19 @@ namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
 use App\Models\Univ;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class UnivController extends Controller
 {
-    public function index()
+    /**
+     * Menampilkan daftar perguruan tinggi.
+     */
+    public function index(): Response
     {
         $univs = Univ::withCount('faculties')->orderBy('created_at', 'desc')->get();
 
@@ -18,7 +25,10 @@ class UnivController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    /**
+     * Menyimpan data perguruan tinggi baru.
+     */
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'code' => 'required|string|max:50|unique:univs,code',
@@ -35,16 +45,24 @@ class UnivController extends Controller
             'acronym.unique' => 'Singkatan/Akronim perguruan tinggi sudah digunakan.',
         ]);
 
-        if (!isset($validated['is_active'])) {
-            $validated['is_active'] = true;
+        $validated['is_active'] = $request->boolean('is_active', true);
+
+        try {
+            DB::transaction(function () use ($validated) {
+                Univ::create($validated);
+            });
+
+            return redirect()->route('master.univ.index')->with('success', 'Data perguruan tinggi berhasil ditambahkan.');
+        } catch (\Throwable $e) {
+            Log::error('Gagal menambahkan data universitas: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan sistem saat menyimpan data perguruan tinggi.');
         }
-
-        Univ::create($validated);
-
-        return redirect()->route('master.univ.index')->with('success', 'Data perguruan tinggi berhasil ditambahkan.');
     }
 
-    public function update(Request $request, Univ $univ)
+    /**
+     * Memperbarui data perguruan tinggi.
+     */
+    public function update(Request $request, Univ $univ): RedirectResponse
     {
         $validated = $request->validate([
             'code' => 'required|string|max:50|unique:univs,code,' . $univ->id,
@@ -61,19 +79,38 @@ class UnivController extends Controller
             'acronym.unique' => 'Singkatan/Akronim perguruan tinggi sudah digunakan.',
         ]);
 
-        $univ->update($validated);
+        $validated['is_active'] = $request->boolean('is_active', true);
 
-        return redirect()->route('master.univ.index')->with('success', 'Data perguruan tinggi berhasil diperbarui.');
+        try {
+            DB::transaction(function () use ($univ, $validated) {
+                $univ->update($validated);
+            });
+
+            return redirect()->route('master.univ.index')->with('success', 'Data perguruan tinggi berhasil diperbarui.');
+        } catch (\Throwable $e) {
+            Log::error('Gagal memperbarui data universitas: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan sistem saat memperbarui data perguruan tinggi.');
+        }
     }
 
-    public function destroy(Univ $univ)
+    /**
+     * Menghapus data perguruan tinggi.
+     */
+    public function destroy(Univ $univ): RedirectResponse
     {
         if ($univ->faculties()->count() > 0) {
             return redirect()->back()->with('error', 'Tidak dapat menghapus universitas yang masih memiliki relasi data fakultas.');
         }
 
-        $univ->delete();
+        try {
+            DB::transaction(function () use ($univ) {
+                $univ->delete();
+            });
 
-        return redirect()->route('master.univ.index')->with('success', 'Data perguruan tinggi berhasil dihapus.');
+            return redirect()->route('master.univ.index')->with('success', 'Data perguruan tinggi berhasil dihapus.');
+        } catch (\Throwable $e) {
+            Log::error('Gagal menghapus data universitas: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan sistem saat menghapus data perguruan tinggi.');
+        }
     }
 }

@@ -1,323 +1,456 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, usePage } from '@inertiajs/react';
-import { useState } from 'react';
-import { Users, Plus, Edit2, Trash2, Search, X, Shield, Mail } from 'lucide-react';
-import { confirmAlert, toastSuccess } from '@/Utils/alert';
+import { Head, useForm, router, usePage } from '@inertiajs/react';
+import React, { useState, useMemo } from 'react';
+import { confirmAlert } from '@/Utils/alert';
+import {
+    Users,
+    Plus,
+    Edit2,
+    Trash2,
+    Search,
+    X,
+    Shield,
+    Mail,
+    Lock,
+    Eye,
+    EyeOff,
+    CheckCircle2,
+    KeyRound,
+    UserCheck,
+    Building2,
+    ShieldCheck
+} from 'lucide-react';
 
-const defaultUsers = [
-    {
-        id: 'usr-1',
-        name: 'Dr. Hendra Wijaya, M.Kom',
-        email: 'hendra.wijaya@kampus.ac.id',
-        role: 'admin_lpm',
-        created_at: '2025-01-15T08:00:00Z',
-    },
-    {
-        id: 'usr-2',
-        name: 'Siti Aminah, M.T',
-        email: 'siti.aminah@ti.kampus.ac.id',
-        role: 'admin_prodi',
-        created_at: '2025-02-10T09:30:00Z',
-    },
-    {
-        id: 'usr-3',
-        name: 'Rahmat Pratama, S.Kom',
-        email: 'rahmat.operator@kampus.ac.id',
-        role: 'operator',
-        created_at: '2025-03-01T10:15:00Z',
-    },
-    {
-        id: 'usr-4',
-        name: 'Prof. Bambang Suryono',
-        email: 'bambang.auditor@mutu.ac.id',
-        role: 'viewer',
-        created_at: '2025-03-20T11:00:00Z',
-    },
+const rolesList = [
+    { value: 'admin_lpm', label: 'Admin LPM / Penjaminan Mutu', badge: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+    { value: 'admin_prodi', label: 'Admin Prodi / Unit Pengelola', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    { value: 'operator', label: 'Operator / Tim Input Eviden', badge: 'bg-blue-50 text-blue-700 border-blue-200' },
+    { value: 'viewer', label: 'Auditor / Asesor / Viewer', badge: 'bg-purple-50 text-purple-700 border-purple-200' },
+    { value: 'user', label: 'User Reguler', badge: 'bg-slate-100 text-slate-700 border-slate-300' },
 ];
 
 export default function UserIndex({ users = [] }) {
     const pageProps = usePage().props;
-    const authUser = pageProps.auth?.user || { id: 'usr-1', name: 'Administrator' };
+    const authUser = pageProps.auth?.user;
 
-    const [items, setItems] = useState(users.length > 0 ? users : defaultUsers);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedRole, setSelectedRole] = useState('ALL');
     const [isOpenModal, setIsOpenModal] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
+    const [showPassword, setShowPassword] = useState(false);
 
-    const rolesList = [
-        { value: 'admin_lpm', label: 'Admin LPM / Penjaminan Mutu', badge: 'bg-indigo-100 text-indigo-800' },
-        { value: 'admin_prodi', label: 'Admin Prodi / Jurusan', badge: 'bg-emerald-100 text-emerald-800' },
-        { value: 'operator', label: 'Operator / Staff Input', badge: 'bg-blue-100 text-blue-800' },
-        { value: 'viewer', label: 'Auditor / Viewer', badge: 'bg-purple-100 text-purple-800' },
-        { value: 'user', label: 'User Reguler', badge: 'bg-slate-100 text-slate-800' },
-    ];
-
-    const [formState, setFormState] = useState({
+    // Form Inertia sesuai tabel users: name, email, role, password
+    const { data, setData, post, put, processing, errors, reset, clearErrors } = useForm({
         name: '',
         email: '',
         role: 'operator',
         password: '',
     });
 
+    // Statistik Cepat Pengguna
+    const stats = useMemo(() => {
+        const total = users.length;
+        const lpm = users.filter((u) => u.role === 'admin_lpm').length;
+        const prodi = users.filter((u) => u.role === 'admin_prodi').length;
+        const operatorAuditor = users.filter((u) => ['operator', 'viewer'].includes(u.role)).length;
+        return { total, lpm, prodi, operatorAuditor };
+    }, [users]);
+
+    // Filter Items
+    const filteredItems = useMemo(() => {
+        return users.filter((item) => {
+            const matchesSearch =
+                item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                item.email?.toLowerCase().includes(searchTerm.toLowerCase());
+
+            const matchesRole = selectedRole === 'ALL' || item.role === selectedRole;
+            return matchesSearch && matchesRole;
+        });
+    }, [users, searchTerm, selectedRole]);
+
+    // Buka Modal Tambah
     const openAddModal = () => {
         setEditingItem(null);
-        setFormState({ name: '', email: '', role: 'operator', password: '' });
+        clearErrors();
+        reset();
+        setShowPassword(false);
+        setData({
+            name: '',
+            email: '',
+            role: 'operator',
+            password: '',
+        });
         setIsOpenModal(true);
     };
 
+    // Buka Modal Edit
     const openEditModal = (item) => {
         setEditingItem(item);
-        setFormState({
-            name: item.name,
-            email: item.email,
+        clearErrors();
+        setShowPassword(false);
+        setData({
+            name: item.name || '',
+            email: item.email || '',
             role: item.role || 'user',
             password: '',
         });
         setIsOpenModal(true);
     };
 
+    // Tutup Modal
     const closeModal = () => {
         setIsOpenModal(false);
         setEditingItem(null);
+        clearErrors();
+        reset();
     };
 
-    const handleSave = (e) => {
+    // Submit Form
+    const handleSubmit = (e) => {
         e.preventDefault();
+
         if (editingItem) {
-            setItems(
-                items.map((it) =>
-                    it.id === editingItem.id
-                        ? { ...it, name: formState.name, email: formState.email, role: formState.role }
-                        : it
-                )
-            );
+            put(route('master.users.update', editingItem.id), {
+                preserveScroll: true,
+                onSuccess: () => closeModal(),
+            });
         } else {
-            const newItem = {
-                id: `usr-${Date.now()}`,
-                name: formState.name,
-                email: formState.email,
-                role: formState.role,
-                created_at: new Date().toISOString(),
-            };
-            setItems([newItem, ...items]);
+            post(route('master.users.store'), {
+                preserveScroll: true,
+                onSuccess: () => closeModal(),
+            });
         }
-        closeModal();
     };
 
-    const handleDelete = async (id, name) => {
+    // Hapus Pengguna dengan SweetAlert2
+    const handleDelete = async (user) => {
+        if (user.id === authUser?.id) return;
+
         const confirmed = await confirmAlert({
-            title: 'Hapus Pengguna?',
-            text: `Apakah Anda yakin ingin menghapus "${name}"?`,
+            title: 'Hapus Akun Pengguna?',
+            text: `Apakah Anda yakin ingin menghapus pengguna "${user.name} (${user.email})"? Pengguna ini tidak akan dapat login lagi ke sistem.`,
             confirmButtonText: 'Ya, Hapus',
             cancelButtonText: 'Batal',
+            icon: 'warning',
         });
+
         if (confirmed) {
-            setItems(items.filter((it) => it.id !== id));
-            toastSuccess(`Pengguna "${name}" berhasil dihapus.`);
+            router.delete(route('master.users.destroy', user.id), {
+                preserveScroll: true,
+            });
         }
     };
-
-    const filteredItems = items.filter((item) => {
-        const matchesSearch =
-            item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.email.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesRole = selectedRole === 'ALL' || item.role === selectedRole;
-        return matchesSearch && matchesRole;
-    });
 
     return (
         <AuthenticatedLayout>
-            <Head title="Master Pengguna" />
+            <Head title="Master Pengguna & Hak Akses - Repository Akreditasi" />
 
             <div className="space-y-6">
-                {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 border border-slate-200/80 shadow-sm">
+                {/* Header Halaman */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 border border-slate-200 shadow-xs">
                     <div>
-                        <div className="flex items-center gap-2 text-indigo-600 font-semibold text-xs tracking-wider uppercase mb-1">
+                        <div className="flex items-center gap-2 text-indigo-700 font-bold text-xs tracking-wider uppercase mb-1">
                             <Users className="w-4 h-4" />
-                            <span>Master Data</span>
+                            <span>Master Data Pengguna</span>
                         </div>
                         <h1 className="text-2xl font-black text-slate-800">Data Pengguna & Hak Akses</h1>
-                        <p className="text-sm text-slate-500 mt-1">
-                            Kelola akun operator akreditasi, admin LPM, ketua prodi, dan tim penjamin mutu.
+                        <p className="text-sm text-slate-500 mt-1 max-w-2xl">
+                            Kelola akun operator akreditasi, admin LPM penjamin mutu, perwakilan prodi, dan auditor penjaminan mutu PPEPP.
                         </p>
                     </div>
+
                     <button
+                        type="button"
                         onClick={openAddModal}
-                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white text-sm font-semibold shadow-lg shadow-indigo-500/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shrink-0 cursor-pointer shadow-xs"
                     >
                         <Plus className="w-4 h-4" />
-                        <span>Tambah Pengguna</span>
+                        <span>Tambah Pengguna Baru</span>
                     </button>
                 </div>
 
-                {/* Filters */}
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                        <div className="relative w-full sm:w-72">
-                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                {/* Metric Summary Cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="bg-white p-4 border border-slate-200 shadow-xs flex items-center gap-3">
+                        <div className="h-10 w-10 bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
+                            <Users className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <span className="text-xs text-slate-400 block font-medium">Total Akun</span>
+                            <span className="text-lg font-black text-slate-800">{stats.total} Akun</span>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-4 border border-slate-200 shadow-xs flex items-center gap-3">
+                        <div className="h-10 w-10 bg-indigo-50 border border-indigo-100 text-indigo-700 flex items-center justify-center shrink-0">
+                            <ShieldCheck className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <span className="text-xs text-slate-400 block font-medium">Admin LPM</span>
+                            <span className="text-lg font-black text-slate-800">{stats.lpm} Akun</span>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-4 border border-slate-200 shadow-xs flex items-center gap-3">
+                        <div className="h-10 w-10 bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                            <Building2 className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <span className="text-xs text-slate-400 block font-medium">Admin Prodi</span>
+                            <span className="text-lg font-black text-slate-800">{stats.prodi} Akun</span>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-4 border border-slate-200 shadow-xs flex items-center gap-3">
+                        <div className="h-10 w-10 bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                            <UserCheck className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <span className="text-xs text-slate-400 block font-medium">Operator & Auditor</span>
+                            <span className="text-lg font-black text-slate-800">{stats.operatorAuditor} Akun</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Filter & Search Bar */}
+                <div className="bg-white p-4 border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                        {/* Search Input */}
+                        <div className="relative min-w-[240px] sm:min-w-[320px]">
+                            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                             <input
                                 type="text"
-                                placeholder="Cari nama atau email..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white"
+                                placeholder="Cari nama atau alamat email pengguna..."
+                                className="w-full pl-10 pr-8 py-2 text-xs border border-slate-200 bg-slate-50 focus:outline-none focus:border-indigo-600 focus:bg-white"
                             />
+                            {searchTerm && (
+                                <button
+                                    type="button"
+                                    onClick={() => setSearchTerm('')}
+                                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                >
+                                    <X className="h-3.5 w-3.5" />
+                                </button>
+                            )}
                         </div>
 
+                        {/* Filter Role */}
                         <select
                             value={selectedRole}
                             onChange={(e) => setSelectedRole(e.target.value)}
-                            className="px-3 py-2 text-sm border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                            className="px-3 py-2 text-xs border border-slate-200 bg-slate-50 text-slate-700 font-medium focus:outline-none focus:border-indigo-600 cursor-pointer"
                         >
-                            <option value="ALL">Semua Role</option>
+                            <option value="ALL">Semua Peran / Role</option>
                             {rolesList.map((r) => (
-                                <option key={r.value} value={r.value}>{r.label}</option>
+                                <option key={r.value} value={r.value}>
+                                    {r.label}
+                                </option>
                             ))}
                         </select>
                     </div>
 
-                    <span className="text-xs font-medium text-slate-500">
-                        Menampilkan <strong className="text-slate-800">{filteredItems.length}</strong> pengguna terdaftar
-                    </span>
+                    <div className="text-xs text-slate-500">
+                        Menampilkan <strong className="text-slate-800">{filteredItems.length}</strong> dari {users.length} Pengguna
+                    </div>
                 </div>
 
-                {/* Table */}
-                <div className="bg-white border border-slate-200/80 shadow-sm overflow-hidden">
+                {/* Tabel Data Pengguna */}
+                <div className="bg-white border border-slate-200 shadow-xs overflow-hidden">
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm text-slate-600">
-                            <thead className="bg-slate-50 text-xs uppercase text-slate-500 font-semibold border-b border-slate-200">
-                                <tr>
-                                    <th className="px-5 py-3.5 w-16">No</th>
-                                    <th className="px-5 py-3.5">Nama & Email</th>
-                                    <th className="px-5 py-3.5 text-center">Role / Peran</th>
-                                    <th className="px-5 py-3.5">Terdaftar</th>
-                                    <th className="px-5 py-3.5 text-right">Aksi</th>
+                        <table className="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr className="border-b border-slate-200 bg-slate-100 text-slate-600 font-bold uppercase tracking-wider">
+                                    <th className="py-3 px-4 w-12 text-center border-r border-slate-200">No</th>
+                                    <th className="py-3 px-4 border-r border-slate-200">Nama & Identitas Akun</th>
+                                    <th className="py-3 px-4 text-center border-r border-slate-200">Peran / Role</th>
+                                    <th className="py-3 px-4 border-r border-slate-200">Terdaftar Sejak</th>
+                                    <th className="py-3 px-4 text-right">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
-                                {filteredItems.map((user, index) => {
-                                    const roleConfig = rolesList.find((r) => r.value === user.role) || {
-                                        label: user.role,
-                                        badge: 'bg-slate-100 text-slate-700',
-                                    };
-                                    const isCurrent = user.id === authUser.id;
+                                {filteredItems.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={5} className="py-8 text-center text-slate-400 italic">
+                                            Tidak ada data pengguna yang cocok dengan kriteria pencarian.
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    filteredItems.map((item, index) => {
+                                        const roleConfig = rolesList.find((r) => r.value === item.role) || {
+                                            label: item.role,
+                                            badge: 'bg-slate-100 text-slate-700 border-slate-200',
+                                        };
+                                        const isCurrentUser = authUser && item.id === authUser.id;
 
-                                    return (
-                                        <tr key={user.id} className="hover:bg-slate-50/70 transition-colors">
-                                            <td className="px-5 py-4 font-medium text-slate-400">{index + 1}</td>
-                                            <td className="px-5 py-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-9 h-9 bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-sm uppercase">
-                                                        {user.name.charAt(0)}
-                                                    </div>
-                                                    <div>
-                                                        <div className="font-bold text-slate-800 flex items-center gap-1.5">
-                                                            {user.name}
-                                                            {isCurrent && (
-                                                                <span className="px-1.5 py-0.2 text-[10px] font-semibold bg-indigo-50 text-indigo-600 border border-indigo-200">
-                                                                    Anda
+                                        return (
+                                            <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
+                                                {/* No */}
+                                                <td className="py-3.5 px-4 text-center text-slate-400 font-mono border-r border-slate-100">
+                                                    {index + 1}
+                                                </td>
+
+                                                {/* Nama & Email */}
+                                                <td className="py-3.5 px-4 border-r border-slate-100">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 bg-indigo-100 text-indigo-700 font-black flex items-center justify-center text-xs uppercase border border-indigo-200 shrink-0">
+                                                            {item.name?.charAt(0) || 'U'}
+                                                        </div>
+                                                        <div>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="font-bold text-slate-800 text-sm">
+                                                                    {item.name}
                                                                 </span>
-                                                            )}
-                                                        </div>
-                                                        <div className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
-                                                            <Mail className="w-3 h-3" />
-                                                            {user.email}
+                                                                {isCurrentUser && (
+                                                                    <span className="px-1.5 py-0.2 text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                                                        Akun Anda
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <div className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
+                                                                <Mail className="w-3 h-3 text-slate-400" />
+                                                                <span>{item.email}</span>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-5 py-4 text-center">
-                                                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold ${roleConfig.badge}`}>
-                                                    <Shield className="w-3 h-3" />
-                                                    {roleConfig.label}
-                                                </span>
-                                            </td>
-                                            <td className="px-5 py-4 text-xs text-slate-500 font-mono">
-                                                {new Date(user.created_at).toLocaleDateString('id-ID', {
-                                                    day: 'numeric',
-                                                    month: 'short',
-                                                    year: 'numeric',
-                                                })}
-                                            </td>
-                                            <td className="px-5 py-4 text-right">
-                                                <div className="inline-flex items-center gap-1">
-                                                    <button
-                                                        onClick={() => openEditModal(user)}
-                                                        className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
-                                                        title="Edit"
-                                                    >
-                                                        <Edit2 className="w-4 h-4" />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDelete(user.id, user.name)}
-                                                        className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                                                        title="Hapus"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
+                                                </td>
+
+                                                {/* Role */}
+                                                <td className="py-3.5 px-4 text-center border-r border-slate-100">
+                                                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold border ${roleConfig.badge}`}>
+                                                        <Shield className="w-3 h-3" />
+                                                        {roleConfig.label}
+                                                    </span>
+                                                </td>
+
+                                                {/* Terdaftar */}
+                                                <td className="py-3.5 px-4 text-slate-500 font-mono text-[11px] border-r border-slate-100">
+                                                    {item.created_at ? (
+                                                        new Date(item.created_at).toLocaleDateString('id-ID', {
+                                                            day: 'numeric',
+                                                            month: 'short',
+                                                            year: 'numeric',
+                                                        })
+                                                    ) : (
+                                                        '-'
+                                                    )}
+                                                </td>
+
+                                                {/* Aksi */}
+                                                <td className="py-3.5 px-4 text-right">
+                                                    <div className="inline-flex items-center gap-1">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => openEditModal(item)}
+                                                            className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 border border-transparent hover:border-slate-200 transition-colors cursor-pointer"
+                                                            title="Edit Pengguna"
+                                                        >
+                                                            <Edit2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleDelete(item)}
+                                                            disabled={isCurrentUser}
+                                                            className={`p-1.5 border border-transparent transition-colors ${
+                                                                isCurrentUser
+                                                                    ? 'text-slate-300 cursor-not-allowed'
+                                                                    : 'text-slate-500 hover:text-rose-600 hover:bg-slate-100 hover:border-slate-200 cursor-pointer'
+                                                            }`}
+                                                            title={isCurrentUser ? 'Tidak dapat menghapus akun sendiri' : 'Hapus Pengguna'}
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            {/* Modal Dialog Form */}
+            {/* Modal Dialog Form Tambah / Edit Pengguna */}
             {isOpenModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white max-w-lg w-full p-6 shadow-2xl border border-slate-100">
-                        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                            <h3 className="text-lg font-bold text-slate-800">
-                                {editingItem ? 'Edit Pengguna' : 'Tambah Pengguna Baru'}
-                            </h3>
-                            <button onClick={closeModal} className="p-1 text-slate-400 hover:text-slate-600 ">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
+                    <div className="bg-white max-w-lg w-full p-6 shadow-2xl border border-slate-300">
+                        {/* Header Modal */}
+                        <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+                            <div>
+                                <h3 className="text-base font-bold text-slate-800">
+                                    {editingItem ? 'Edit Akun Pengguna' : 'Tambah Akun Pengguna Baru'}
+                                </h3>
+                                <p className="text-xs text-indigo-700 font-semibold mt-0.5">
+                                    Konfigurasi Hak Akses & Kredensial Pengguna
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={closeModal}
+                                disabled={processing}
+                                className="p-1 text-slate-400 hover:text-slate-600 border border-transparent hover:border-slate-200 cursor-pointer disabled:opacity-50"
+                            >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
-                        <form onSubmit={handleSave} className="mt-4 space-y-4">
+                        {/* Form Body Sesuai Skema Tabel users: name, email, role, password */}
+                        <form onSubmit={handleSubmit} className="mt-4 space-y-4 text-xs">
+                            {/* Nama Lengkap */}
                             <div>
-                                <label className="block text-xs font-semibold uppercase text-slate-600 mb-1">
-                                    Nama Lengkap <span className="text-rose-500">*</span>
+                                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                    Nama Lengkap Pengguna <span className="text-rose-500">*</span>
                                 </label>
                                 <input
                                     type="text"
-                                    value={formState.name}
-                                    onChange={(e) => setFormState({ ...formState, name: e.target.value })}
+                                    value={data.name}
+                                    onChange={(e) => setData('name', e.target.value)}
                                     placeholder="Contoh: Dr. Budi Santoso, M.Kom"
-                                    className="w-full px-3.5 py-2.5 text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                    className={`w-full px-3 py-2 text-xs border ${
+                                        errors.name ? 'border-rose-400 bg-rose-50/20' : 'border-slate-300'
+                                    } focus:outline-none focus:border-indigo-600`}
                                     required
+                                    autoFocus
                                 />
+                                {errors.name && (
+                                    <p className="text-rose-500 text-[11px] mt-1 font-medium">{errors.name}</p>
+                                )}
                             </div>
 
+                            {/* Alamat Email */}
                             <div>
-                                <label className="block text-xs font-semibold uppercase text-slate-600 mb-1">
-                                    Alamat Email <span className="text-rose-500">*</span>
+                                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                    Alamat Email Login <span className="text-rose-500">*</span>
                                 </label>
                                 <input
                                     type="email"
-                                    value={formState.email}
-                                    onChange={(e) => setFormState({ ...formState, email: e.target.value })}
+                                    value={data.email}
+                                    onChange={(e) => setData('email', e.target.value)}
                                     placeholder="contoh@kampus.ac.id"
-                                    className="w-full px-3.5 py-2.5 text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                    className={`w-full px-3 py-2 text-xs border ${
+                                        errors.email ? 'border-rose-400 bg-rose-50/20' : 'border-slate-300'
+                                    } focus:outline-none focus:border-indigo-600`}
                                     required
                                 />
+                                {errors.email && (
+                                    <p className="text-rose-500 text-[11px] mt-1 font-medium">{errors.email}</p>
+                                )}
                             </div>
 
+                            {/* Peran / Role Pengguna */}
                             <div>
-                                <label className="block text-xs font-semibold uppercase text-slate-600 mb-1">
-                                    Peran / Role Pengguna <span className="text-rose-500">*</span>
+                                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                    Peran / Hak Akses (Role) <span className="text-rose-500">*</span>
                                 </label>
                                 <select
-                                    value={formState.role}
-                                    onChange={(e) => setFormState({ ...formState, role: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white"
+                                    value={data.role}
+                                    onChange={(e) => setData('role', e.target.value)}
+                                    className={`w-full px-3 py-2 text-xs border ${
+                                        errors.role ? 'border-rose-400 bg-rose-50/20' : 'border-slate-300'
+                                    } bg-slate-50 focus:outline-none focus:border-indigo-600 font-semibold cursor-pointer`}
                                     required
                                 >
                                     {rolesList.map((r) => (
@@ -326,21 +459,72 @@ export default function UserIndex({ users = [] }) {
                                         </option>
                                     ))}
                                 </select>
+                                {errors.role && (
+                                    <p className="text-rose-500 text-[11px] mt-1 font-medium">{errors.role}</p>
+                                )}
                             </div>
 
-                            <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
+                            {/* Kata Sandi */}
+                            <div>
+                                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                    Kata Sandi (Password){' '}
+                                    {editingItem ? (
+                                        <span className="text-slate-400 font-normal lowercase">(kosongkan jika tidak diubah)</span>
+                                    ) : (
+                                        <span className="text-rose-500">*</span>
+                                    )}
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={data.password}
+                                        onChange={(e) => setData('password', e.target.value)}
+                                        placeholder={editingItem ? 'Minimal 8 karakter jika ingin merubah' : 'Minimal 8 karakter'}
+                                        className={`w-full pl-3 pr-10 py-2 text-xs border ${
+                                            errors.password ? 'border-rose-400 bg-rose-50/20' : 'border-slate-300'
+                                        } focus:outline-none focus:border-indigo-600 font-mono`}
+                                        required={!editingItem}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                                        tabIndex={-1}
+                                    >
+                                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
+                                </div>
+                                {errors.password ? (
+                                    <p className="text-rose-500 text-[11px] mt-1 font-medium">{errors.password}</p>
+                                ) : (
+                                    <p className="text-[11px] text-slate-400 mt-1">
+                                        {editingItem
+                                            ? 'Biarkan kosong jika tetap menggunakan kata sandi yang sudah ada.'
+                                            : 'Gunakan minimal 8 karakter kombinasi huruf dan angka.'}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Tombol Aksi Modal */}
+                            <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-200">
                                 <button
                                     type="button"
                                     onClick={closeModal}
-                                    className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors"
+                                    disabled={processing}
+                                    className="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 transition-colors cursor-pointer disabled:opacity-50"
                                 >
                                     Batal
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-5 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-500/20 transition-all"
+                                    disabled={processing}
+                                    className="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center gap-2"
                                 >
-                                    {editingItem ? 'Simpan Perubahan' : 'Tambah Pengguna'}
+                                    {processing ? (
+                                        <span>Menyimpan...</span>
+                                    ) : (
+                                        <span>{editingItem ? 'Simpan Perubahan' : 'Tambah Pengguna'}</span>
+                                    )}
                                 </button>
                             </div>
                         </form>

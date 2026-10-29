@@ -5,6 +5,10 @@ use App\Http\Controllers\Master\UnivController;
 use App\Http\Controllers\Master\FacultyController;
 use App\Http\Controllers\Master\AgencyController;
 use App\Http\Controllers\Master\ProdiController;
+use App\Http\Controllers\Master\AcademicYearController;
+use App\Http\Controllers\Master\AccreditationSessionController;
+use App\Http\Controllers\Master\CriteriaController;
+use App\Http\Controllers\Master\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -77,21 +81,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/prodi/{prodi}', [ProdiController::class, 'update'])->name('prodi.update');
         Route::delete('/prodi/{prodi}', [ProdiController::class, 'destroy'])->name('prodi.destroy');
 
-        Route::get('/tahun-akademik', function () {
-            return Inertia::render('Master/TahunAkademik/Index');
-        })->name('tahun-akademik.index');
+        Route::get('/tahun-akademik', [AcademicYearController::class, 'index'])->name('tahun-akademik.index');
+        Route::post('/tahun-akademik', [AcademicYearController::class, 'store'])->name('tahun-akademik.store');
+        Route::put('/tahun-akademik/{academicYear}', [AcademicYearController::class, 'update'])->name('tahun-akademik.update');
+        Route::delete('/tahun-akademik/{academicYear}', [AcademicYearController::class, 'destroy'])->name('tahun-akademik.destroy');
 
-        Route::get('/sesi-akreditasi', function () {
-            return Inertia::render('Master/SesiAkreditasi/Index');
-        })->name('sesi-akreditasi.index');
+        Route::get('/sesi-akreditasi', [AccreditationSessionController::class, 'index'])->name('sesi-akreditasi.index');
+        Route::post('/sesi-akreditasi', [AccreditationSessionController::class, 'store'])->name('sesi-akreditasi.store');
+        Route::put('/sesi-akreditasi/{session}', [AccreditationSessionController::class, 'update'])->name('sesi-akreditasi.update');
+        Route::delete('/sesi-akreditasi/{session}', [AccreditationSessionController::class, 'destroy'])->name('sesi-akreditasi.destroy');
 
-        Route::get('/kriteria', function () {
-            return Inertia::render('Master/Kriteria/Index');
-        })->name('kriteria.index');
+        Route::get('/kriteria', [CriteriaController::class, 'index'])->name('kriteria.index');
+        Route::post('/kriteria', [CriteriaController::class, 'store'])->name('kriteria.store');
+        Route::put('/kriteria/{criteria}', [CriteriaController::class, 'update'])->name('kriteria.update');
+        Route::delete('/kriteria/{criteria}', [CriteriaController::class, 'destroy'])->name('kriteria.destroy');
 
-        Route::get('/users', function () {
-            return Inertia::render('Master/Users/Index');
-        })->name('users.index');
+        Route::get('/users', [UserController::class, 'index'])->name('users.index');
+        Route::post('/users', [UserController::class, 'store'])->name('users.store');
+        Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

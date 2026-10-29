@@ -8,6 +8,8 @@ use App\Models\Faculty;
 use App\Models\Prodi;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -63,9 +65,16 @@ class ProdiController extends Controller
         $validated['is_active'] = $request->boolean('is_active', true);
         $validated['acronym'] = strtoupper(trim($validated['acronym']));
 
-        Prodi::create($validated);
+        try {
+            DB::transaction(function () use ($validated) {
+                Prodi::create($validated);
+            });
 
-        return redirect()->route('master.prodi.index')->with('success', 'Program Studi berhasil ditambahkan.');
+            return redirect()->route('master.prodi.index')->with('success', 'Program Studi berhasil ditambahkan.');
+        } catch (\Throwable $e) {
+            Log::error('Gagal menambahkan prodi: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan sistem saat menyimpan program studi.');
+        }
     }
 
     /**
@@ -94,9 +103,16 @@ class ProdiController extends Controller
         $validated['is_active'] = $request->boolean('is_active', true);
         $validated['acronym'] = strtoupper(trim($validated['acronym']));
 
-        $prodi->update($validated);
+        try {
+            DB::transaction(function () use ($prodi, $validated) {
+                $prodi->update($validated);
+            });
 
-        return redirect()->route('master.prodi.index')->with('success', 'Program Studi berhasil diperbarui.');
+            return redirect()->route('master.prodi.index')->with('success', 'Program Studi berhasil diperbarui.');
+        } catch (\Throwable $e) {
+            Log::error('Gagal memperbarui prodi: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan sistem saat memperbarui program studi.');
+        }
     }
 
     /**
@@ -112,8 +128,15 @@ class ProdiController extends Controller
             return redirect()->back()->with('error', 'Tidak dapat menghapus Program Studi yang masih memiliki sesi akreditasi.');
         }
 
-        $prodi->delete();
+        try {
+            DB::transaction(function () use ($prodi) {
+                $prodi->delete();
+            });
 
-        return redirect()->route('master.prodi.index')->with('success', 'Program Studi berhasil dihapus.');
+            return redirect()->route('master.prodi.index')->with('success', 'Program Studi berhasil dihapus.');
+        } catch (\Throwable $e) {
+            Log::error('Gagal menghapus prodi: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan sistem saat menghapus program studi.');
+        }
     }
 }

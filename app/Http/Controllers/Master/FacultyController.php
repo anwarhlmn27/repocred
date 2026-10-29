@@ -7,6 +7,8 @@ use App\Models\Faculty;
 use App\Models\Univ;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -54,13 +56,19 @@ class FacultyController extends Controller
             'acronym.unique' => 'Singkatan/Akronim fakultas sudah digunakan.',
         ]);
 
-        if (!isset($validated['is_active'])) {
-            $validated['is_active'] = true;
+        $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['acronym'] = strtoupper(trim($validated['acronym']));
+
+        try {
+            DB::transaction(function () use ($validated) {
+                Faculty::create($validated);
+            });
+
+            return redirect()->route('master.fakultas.index')->with('success', 'Data fakultas berhasil ditambahkan.');
+        } catch (\Throwable $e) {
+            Log::error('Gagal menambahkan fakultas: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan sistem saat menyimpan data fakultas.');
         }
-
-        Faculty::create($validated);
-
-        return redirect()->route('master.fakultas.index')->with('success', 'Data fakultas berhasil ditambahkan.');
     }
 
     /**
@@ -84,13 +92,19 @@ class FacultyController extends Controller
             'acronym.unique' => 'Singkatan/Akronim fakultas sudah digunakan.',
         ]);
 
-        if (!isset($validated['is_active'])) {
-            $validated['is_active'] = true;
+        $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['acronym'] = strtoupper(trim($validated['acronym']));
+
+        try {
+            DB::transaction(function () use ($faculty, $validated) {
+                $faculty->update($validated);
+            });
+
+            return redirect()->route('master.fakultas.index')->with('success', 'Data fakultas berhasil diperbarui.');
+        } catch (\Throwable $e) {
+            Log::error('Gagal memperbarui fakultas: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan sistem saat memperbarui data fakultas.');
         }
-
-        $faculty->update($validated);
-
-        return redirect()->route('master.fakultas.index')->with('success', 'Data fakultas berhasil diperbarui.');
     }
 
     /**
@@ -102,8 +116,15 @@ class FacultyController extends Controller
             return redirect()->back()->with('error', 'Tidak dapat menghapus fakultas yang masih memiliki program studi terhubung.');
         }
 
-        $faculty->delete();
+        try {
+            DB::transaction(function () use ($faculty) {
+                $faculty->delete();
+            });
 
-        return redirect()->route('master.fakultas.index')->with('success', 'Data fakultas berhasil dihapus.');
+            return redirect()->route('master.fakultas.index')->with('success', 'Data fakultas berhasil dihapus.');
+        } catch (\Throwable $e) {
+            Log::error('Gagal menghapus fakultas: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan sistem saat menghapus data fakultas.');
+        }
     }
 }
