@@ -10,9 +10,6 @@
         <link rel="icon" type="image/png" href="{{ asset('images/official/logo_icon.png') }}">
         <link rel="shortcut icon" type="image/png" href="{{ asset('images/official/logo_icon.png') }}">
 
-        <!-- Edumin Vendor Styles -->
-        <link rel="stylesheet" href="{{ asset('vendor/bootstrap-select/dist/css/bootstrap-select.min.css') }}">
-        
         <!-- Edumin Main Theme & Skin Styles (includes Bootstrap, FontAwesome, Flaticon, LineAwesome, Themify, etc.) -->
         <link rel="stylesheet" href="{{ asset('css/style.css') }}">
         <link rel="stylesheet" href="{{ asset('css/skin.css') }}">
@@ -37,7 +34,12 @@
 
         <!-- Edumin Vendor & Core Scripts -->
         <script src="{{ asset('vendor/global/global.min.js') }}"></script>
-        <script src="{{ asset('vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
+        <script>
+            // Nonaktifkan bootstrap-select agar seluruh select memakai style native React yang konsisten
+            if (window.jQuery) {
+                window.jQuery.fn.selectpicker = function() { return this; };
+            }
+        </script>
         <script src="{{ asset('js/custom.min.js') }}"></script>
         <script src="{{ asset('js/dlabnav-init.js') }}"></script>
     </body>

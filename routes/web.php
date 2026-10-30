@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Akreditasi\BanPtController;
 use App\Http\Controllers\Master\UnivController;
 use App\Http\Controllers\Master\FacultyController;
 use App\Http\Controllers\Master\AgencyController;
@@ -36,9 +37,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Dokumen Akreditasi
     Route::prefix('akreditasi')->name('akreditasi.')->group(function () {
-        Route::get('/ban-pt', function () {
-            return Inertia::render('Akreditasi/BanPt/Index');
-        })->name('ban-pt');
+        Route::get('/ban-pt', [BanPtController::class, 'index'])->name('ban-pt');
+        Route::post('/ban-pt/kegiatan', [BanPtController::class, 'storeActivity'])->name('ban-pt.kegiatan.store');
+        Route::put('/ban-pt/kegiatan/{activity}', [BanPtController::class, 'updateActivity'])->name('ban-pt.kegiatan.update');
+        Route::delete('/ban-pt/kegiatan/{activity}', [BanPtController::class, 'destroyActivity'])->name('ban-pt.kegiatan.destroy');
+        Route::post('/ban-pt/dokumen', [BanPtController::class, 'uploadDocument'])->name('ban-pt.dokumen.upload');
+        Route::delete('/ban-pt/dokumen/{document}', [BanPtController::class, 'destroyDocument'])->name('ban-pt.dokumen.destroy');
+        Route::get('/ban-pt/dokumen/{document}/download', [BanPtController::class, 'downloadDocument'])->name('ban-pt.dokumen.download');
 
         Route::get('/lam', function () {
             return Inertia::render('Akreditasi/Lam/Index');

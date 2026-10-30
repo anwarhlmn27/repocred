@@ -19,7 +19,8 @@ import {
     Layers,
     SlidersHorizontal,
     ChevronsUpDown,
-    Check
+    Check,
+    Edit2
 } from 'lucide-react';
 
 /**
@@ -40,6 +41,8 @@ export default function PpeppFolderExplorer({
     onOpenUpload,
     onDeleteFile,
     onAddActivity,
+    onEditActivity,
+    onDeleteActivity,
 }) {
     // Mode tampilan: 'compact' (default), 'grid', 'spacious'
     const [viewMode, setViewMode] = useState('compact');
@@ -386,6 +389,34 @@ export default function PpeppFolderExplorer({
                                             )}
                                             <span>{stagesWithFiles}/5 PPEPP</span>
                                         </span>
+
+                                        {/* Aksi Edit & Hapus Folder Kegiatan */}
+                                        {onEditActivity && (
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onEditActivity(critId, act);
+                                                }}
+                                                className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 transition-colors"
+                                                title="Edit Nama / Tahun Kegiatan"
+                                            >
+                                                <Edit2 className="w-3.5 h-3.5" />
+                                            </button>
+                                        )}
+                                        {onDeleteActivity && (
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onDeleteActivity(critId, act);
+                                                }}
+                                                className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                                title="Hapus Kegiatan & Seluruh Berkas"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
 
@@ -529,9 +560,13 @@ export default function PpeppFolderExplorer({
                                                                             {getFileIcon(file.name)}
                                                                             <span
                                                                                 className="text-slate-700 font-medium truncate hover:text-indigo-600 cursor-pointer text-xs"
-                                                                                onClick={() =>
-                                                                                    toastInfo(`Membuka berkas: ${file.name}`)
-                                                                                }
+                                                                                onClick={() => {
+                                                                                    if (file.url) {
+                                                                                        window.open(file.url, '_blank');
+                                                                                    } else {
+                                                                                        toastInfo(`Membuka berkas: ${file.name}`);
+                                                                                    }
+                                                                                }}
                                                                                 title={file.name}
                                                                             >
                                                                                 {file.name}
@@ -544,9 +579,13 @@ export default function PpeppFolderExplorer({
                                                                         <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity shrink-0">
                                                                             <button
                                                                                 type="button"
-                                                                                onClick={() =>
-                                                                                    toastInfo(`Membuka berkas: ${file.name}`)
-                                                                                }
+                                                                                onClick={() => {
+                                                                                    if (file.url) {
+                                                                                        window.open(file.url, '_blank');
+                                                                                    } else {
+                                                                                        toastInfo(`Membuka berkas: ${file.name}`);
+                                                                                    }
+                                                                                }}
                                                                                 className="p-1 text-slate-400 hover:text-indigo-600 "
                                                                                 title="Lihat Berkas"
                                                                             >
@@ -912,6 +951,34 @@ export default function PpeppFolderExplorer({
                                             )}
                                             <span>{stagesWithFiles}/5 PPEPP</span>
                                         </span>
+
+                                        {/* Aksi Edit & Hapus Folder Kegiatan */}
+                                        {onEditActivity && (
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onEditActivity(critId, act);
+                                                }}
+                                                className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 transition-colors"
+                                                title="Edit Nama / Tahun Kegiatan"
+                                            >
+                                                <Edit2 className="w-3.5 h-3.5" />
+                                            </button>
+                                        )}
+                                        {onDeleteActivity && (
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onDeleteActivity(critId, act);
+                                                }}
+                                                className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                                title="Hapus Kegiatan & Seluruh Berkas"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
 

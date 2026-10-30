@@ -1,8 +1,8 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
-import { useState, useMemo } from 'react';
+import { Head, router } from '@inertiajs/react';
+import React, { useState, useMemo, useRef } from 'react';
 import PpeppFolderExplorer from '@/Components/PpeppFolderExplorer';
-import { confirmAlert, toastSuccess } from '@/Utils/alert';
+import { confirmAlert, toastSuccess, toastError } from '@/Utils/alert';
 import {
     Award,
     Filter,
@@ -21,7 +21,11 @@ import {
     Check,
     Calendar,
     SlidersHorizontal,
-    FileCheck2
+    FileCheck2,
+    FileText,
+    Trash2,
+    Edit2,
+    Loader2
 } from 'lucide-react';
 
 const PPEPP_STAGES = [
@@ -32,357 +36,27 @@ const PPEPP_STAGES = [
     { key: 'peningkatan', label: '5. Peningkatan (P)', desc: 'Benchmarking Institusi, Rencana Pengembangan & Standar Mutu Baru' },
 ];
 
-// Daftar Sesi Akreditasi Institusi BAN-PT
-const defaultSessions = [
-    {
-        id: 'sesi-pt-2025',
-        name: 'Akreditasi Perguruan Tinggi (AIPT) 2025–2030',
-        agency_code: 'BAN-PT',
-        agency_name: 'Badan Akreditasi Nasional Perguruan Tinggi',
-        level: 'Institusi / Perguruan Tinggi',
-        univ_name: 'Universitas Teknologi Digital',
-        year_start: 2025,
-        year_end: 2030,
-        ts_year: 2025,
-        ts_count: 5,
-        status: 'active',
-        status_label: 'Sesi Aktif Sedang Berjalan',
-        status_badge: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-        target_rating: 'Unggul',
-        sk_number: 'Dalam Proses Penyusunan LKPT & LED Institusi 2025',
-        description: 'Siklus akreditasi institusi berjalan periode 2025–2030 berbasis instrumen 4 Kriteria Standar BAN-PT.',
-    },
-    {
-        id: 'sesi-pt-2020',
-        name: 'Akreditasi Perguruan Tinggi (AIPT) 2020–2025',
-        agency_code: 'BAN-PT',
-        agency_name: 'Badan Akreditasi Nasional Perguruan Tinggi',
-        level: 'Institusi / Perguruan Tinggi',
-        univ_name: 'Universitas Teknologi Digital',
-        year_start: 2020,
-        year_end: 2025,
-        ts_year: 2020,
-        ts_count: 5,
-        status: 'completed',
-        status_label: 'Terakreditasi (Arsip)',
-        status_badge: 'bg-blue-50 text-blue-700 border-blue-200',
-        target_rating: 'Unggul (Tercapai)',
-        sk_number: 'SK BAN-PT No. 1024/SK/BAN-PT/Akred/PT/XII/2020',
-        description: 'Arsip berkas evidensi PPEPP dan instrumen akreditasi perguruan tinggi siklus sebelumnya.',
-    },
-    {
-        id: 'sesi-pt-2030',
-        name: 'Reakreditasi Perguruan Tinggi (AIPT) 2030–2035',
-        agency_code: 'BAN-PT',
-        agency_name: 'Badan Akreditasi Nasional Perguruan Tinggi',
-        level: 'Institusi / Perguruan Tinggi',
-        univ_name: 'Universitas Teknologi Digital',
-        year_start: 2030,
-        year_end: 2035,
-        ts_year: 2030,
-        ts_count: 5,
-        status: 'draft',
-        status_label: 'Persiapan Mendatang',
-        status_badge: 'bg-amber-50 text-amber-700 border-amber-200',
-        target_rating: 'Unggul / Internasional',
-        sk_number: 'Dalam Perencanaan Strategis Jangka Panjang',
-        description: 'Perencanaan dan pemetaan dokumen SPMI institusi untuk siklus reakreditasi 2030–2035.',
-    },
-];
+export default function BanPtIndex({
+    sessions = [],
+    selectedSessionId = '',
+    criterias = [],
+    academicYears = [],
+    ppepps = [],
+}) {
+    // Sesi aktif terpilih
+    const activeSession = useMemo(() => {
+        return sessions.find((s) => String(s.id) === String(selectedSessionId)) || null;
+    }, [sessions, selectedSessionId]);
 
-// Data Kriteria BAN-PT untuk Sesi Aktif 2025-2030
-const initialBanPtCriterias2025 = [
-    {
-        id: 'crit-b-1',
-        code_criteria: 1,
-        title_criteria: 'Visi, Misi, Tujuan, dan Strategi (VMTS) Perguruan Tinggi',
-        activities: [
-            {
-                id: 'act-b-1',
-                title_activity: 'Rapat Kerja Tahunan Penetapan & Review VMTS Universitas',
-                description: 'Dokumen bukti SK Rektor, Berita Acara, dan daftar hadir peninjauan VMTS bersama Senat Universitas.',
-                academic_year: 2025,
-                status: 'published',
-                ppepp_docs: {
-                    penetapan: [
-                        { id: 'f-1', name: 'SK_Rektor_Penetapan_VMTS_2025.pdf', size: '1.4 MB', date: '10 Jan 2025' },
-                        { id: 'f-2', name: 'Buku_Renstra_Universitas_2024_2029.pdf', size: '4.8 MB', date: '12 Jan 2025' },
-                    ],
-                    pelaksanaan: [
-                        { id: 'f-3', name: 'Dokumentasi_Sosialisasi_VMTS_Sivitas.pdf', size: '3.2 MB', date: '02 Feb 2025' },
-                    ],
-                    evaluasi: [
-                        { id: 'f-4', name: 'Laporan_Survei_Pemahaman_VMTS.pdf', size: '890 KB', date: '15 Mar 2025' },
-                    ],
-                    pengendalian: [],
-                    peningkatan: [],
-                },
-            },
-            {
-                id: 'act-b-2',
-                title_activity: 'Survei Pemahaman VMTS oleh Sivitas Akademika dan Stakeholder',
-                description: 'Hasil kuesioner pemahaman visi misi oleh dosen, mahasiswa, tendik, dan mitra industri.',
-                academic_year: 2024,
-                status: 'published',
-                ppepp_docs: {
-                    penetapan: [
-                        { id: 'f-5', name: 'Instrumen_Kuesioner_Pemahaman_VMTS.pdf', size: '540 KB', date: '10 Nov 2024' },
-                    ],
-                    pelaksanaan: [
-                        { id: 'f-6', name: 'Rekapitulasi_Jawaban_Responden.xlsx', size: '1.2 MB', date: '20 Des 2024' },
-                    ],
-                    evaluasi: [
-                        { id: 'f-7', name: 'Laporan_Analisis_Capaian_Survei_92Persen.pdf', size: '2.1 MB', date: '28 Des 2024' },
-                    ],
-                    pengendalian: [
-                        { id: 'f-8', name: 'Notulen_RTM_Pengendalian_VMTS.pdf', size: '750 KB', date: '05 Jan 2025' },
-                    ],
-                    peningkatan: [
-                        { id: 'f-9', name: 'Rencana_Tindak_Lanjut_Sosialisasi_Digital.pdf', size: '1.1 MB', date: '15 Jan 2025' },
-                    ],
-                },
-            },
-        ],
-    },
-    {
-        id: 'crit-b-2',
-        code_criteria: 2,
-        title_criteria: 'Tata Pamong, Tata Kelola, dan Kerjasama Tridharma Perguruan Tinggi',
-        activities: [
-            {
-                id: 'act-b-3',
-                title_activity: 'MoU & Perjanjian Kerjasama Magang Industri & Tridharma',
-                description: 'Kerjasama resmi dengan BUMN dan industri dalam program magang bersertifikat dan penelitian bersama.',
-                academic_year: 2025,
-                status: 'published',
-                ppepp_docs: {
-                    penetapan: [
-                        { id: 'f-10', name: 'Pedoman_Kerjasama_Kemitraan_Universitas.pdf', size: '2.5 MB', date: '05 Jan 2025' },
-                    ],
-                    pelaksanaan: [
-                        { id: 'f-11', name: 'Dokumen_MoU_15_Mitra_Industri.pdf', size: '8.4 MB', date: '18 Feb 2025' },
-                    ],
-                    evaluasi: [],
-                    pengendalian: [],
-                    peningkatan: [],
-                },
-            },
-        ],
-    },
-    {
-        id: 'crit-b-3',
-        code_criteria: 3,
-        title_criteria: 'Mahasiswa, Dosen, dan Sumber Daya Penunjang Akademik',
-        activities: [
-            {
-                id: 'act-b-4',
-                title_activity: 'Pembinaan Prestasi Mahasiswa Tingkat Nasional & Internasional',
-                description: 'Sertifikat kejuaraan Gemastik, PKM Kemendikbudristek, dan kompetisi inovasi global.',
-                academic_year: 2025,
-                status: 'published',
-                ppepp_docs: {
-                    penetapan: [
-                        { id: 'f-12', name: 'SK_Pemberian_Insentif_Prestasi_Mahasiswa.pdf', size: '1.1 MB', date: '15 Feb 2025' },
-                    ],
-                    pelaksanaan: [
-                        { id: 'f-13', name: 'Piagam_Juara_Gemastik_Nasional.pdf', size: '3.6 MB', date: '01 Mar 2025' },
-                    ],
-                    evaluasi: [],
-                    pengendalian: [],
-                    peningkatan: [],
-                },
-            },
-        ],
-    },
-    {
-        id: 'crit-b-4',
-        code_criteria: 4,
-        title_criteria: 'Luaran, Capaian Tridharma, dan Dampak Kemanfaatan Masyarakat',
-        activities: [
-            {
-                id: 'act-b-5',
-                title_activity: 'Tracer Study Lulusan dan Waktu Tunggu Kerja Pertama',
-                description: 'Laporan tracer study dengan persentase lulusan bekerja dalam waktu kurang dari 3 bulan.',
-                academic_year: 2024,
-                status: 'published',
-                ppepp_docs: {
-                    penetapan: [
-                        { id: 'f-14', name: 'SOP_Pelaksanaan_Tracer_Study.pdf', size: '980 KB', date: '01 Okt 2024' },
-                    ],
-                    pelaksanaan: [
-                        { id: 'f-15', name: 'Kuesioner_Online_Alumni_Batch_2024.pdf', size: '1.3 MB', date: '15 Nov 2024' },
-                    ],
-                    evaluasi: [
-                        { id: 'f-16', name: 'Laporan_Hasil_Tracer_Study_2024.pdf', size: '4.2 MB', date: '20 Des 2024' },
-                    ],
-                    pengendalian: [],
-                    peningkatan: [],
-                },
-            },
-        ],
-    },
-];
-
-// Data Kriteria BAN-PT untuk Sesi Historis 2020-2025 (Arsip)
-const initialBanPtCriterias2020 = [
-    {
-        id: 'crit-b20-1',
-        code_criteria: 1,
-        title_criteria: 'Visi, Misi, Tujuan, dan Strategi (VMTS) Perguruan Tinggi',
-        activities: [
-            {
-                id: 'act-b20-1',
-                title_activity: 'Penetapan Renstra Universitas 2020–2025 & Sosialisasi VMTS',
-                description: 'Dokumen SK Rektor dan Notulen Pengesahan Senat Universitas.',
-                academic_year: 2020,
-                status: 'published',
-                ppepp_docs: {
-                    penetapan: [{ id: 'f-20-1', name: 'SK_Rektor_Renstra_2020_2025.pdf', size: '3.1 MB', date: '12 Jan 2020' }],
-                    pelaksanaan: [{ id: 'f-20-2', name: 'Dokumentasi_Raker_Sosialisasi_2020.pdf', size: '2.4 MB', date: '18 Feb 2020' }],
-                    evaluasi: [{ id: 'f-20-3', name: 'Laporan_Evaluasi_Pemahaman_VMTS_2020.pdf', size: '1.1 MB', date: '15 Des 2020' }],
-                    pengendalian: [{ id: 'f-20-4', name: 'RTM_Pengendalian_Target_Renstra.pdf', size: '820 KB', date: '20 Des 2020' }],
-                    peningkatan: [{ id: 'f-20-5', name: 'Rencana_Peningkatan_Kapasitas_2021.pdf', size: '1.5 MB', date: '05 Jan 2021' }],
-                },
-            },
-        ],
-    },
-    {
-        id: 'crit-b20-2',
-        code_criteria: 2,
-        title_criteria: 'Tata Pamong, Tata Kelola, dan Kerjasama Tridharma Perguruan Tinggi',
-        activities: [
-            {
-                id: 'act-b20-2',
-                title_activity: 'Implementasi Tata Kelola SPMI dan Dokumen Kerjasama Nasional',
-                description: 'Laporan implementasi sistem penjaminan mutu internal universitas.',
-                academic_year: 2020,
-                status: 'published',
-                ppepp_docs: {
-                    penetapan: [{ id: 'f-20-6', name: 'Manual_Mutu_SPMI_Universitas.pdf', size: '2.8 MB', date: '10 Jan 2020' }],
-                    pelaksanaan: [{ id: 'f-20-7', name: 'Kompilasi_MoU_Kerjasama_2020.pdf', size: '5.2 MB', date: '15 Mar 2020' }],
-                    evaluasi: [],
-                    pengendalian: [],
-                    peningkatan: [],
-                },
-            },
-        ],
-    },
-    {
-        id: 'crit-b20-3',
-        code_criteria: 3,
-        title_criteria: 'Mahasiswa, Dosen, dan Sumber Daya Penunjang Akademik',
-        activities: [
-            {
-                id: 'act-b20-3',
-                title_activity: 'Rekapitulasi Kualifikasi Dosen & Prestasi Kemahasiswaan 2020',
-                description: 'Portofolio SDM Dosen dan capaian kejuaraan mahasiswa.',
-                academic_year: 2020,
-                status: 'published',
-                ppepp_docs: {
-                    penetapan: [{ id: 'f-20-8', name: 'Pedoman_Pengembangan_SDM_Dosen.pdf', size: '1.8 MB', date: '05 Jan 2020' }],
-                    pelaksanaan: [{ id: 'f-20-9', name: 'Laporan_Prestasi_Mahasiswa_2020.pdf', size: '3.4 MB', date: '20 Des 2020' }],
-                    evaluasi: [],
-                    pengendalian: [],
-                    peningkatan: [],
-                },
-            },
-        ],
-    },
-    {
-        id: 'crit-b20-4',
-        code_criteria: 4,
-        title_criteria: 'Luaran, Capaian Tridharma, dan Dampak Kemanfaatan Masyarakat',
-        activities: [
-            {
-                id: 'act-b20-4',
-                title_activity: 'Laporan Tracer Study & Publikasi Ilmiah Institusi 2020',
-                description: 'Hasil pelacakan jejak alumni dan indeks publikasi institusi.',
-                academic_year: 2020,
-                status: 'published',
-                ppepp_docs: {
-                    penetapan: [{ id: 'f-20-10', name: 'Instrumen_Tracer_Study_2020.pdf', size: '750 KB', date: '01 Okt 2020' }],
-                    pelaksanaan: [{ id: 'f-20-11', name: 'Laporan_Akhir_Tracer_Study_2020.pdf', size: '3.9 MB', date: '28 Des 2020' }],
-                    evaluasi: [],
-                    pengendalian: [],
-                    peningkatan: [],
-                },
-            },
-        ],
-    },
-];
-
-// Data Kriteria BAN-PT untuk Sesi Draft 2030-2035
-const initialBanPtCriterias2030 = [
-    {
-        id: 'crit-b30-1',
-        code_criteria: 1,
-        title_criteria: 'Visi, Misi, Tujuan, dan Strategi (VMTS) Perguruan Tinggi',
-        activities: [
-            {
-                id: 'act-b30-1',
-                title_activity: 'Penyusunan Rencana Induk Pengembangan Menuju World Class University 2030–2035',
-                description: 'Draft roadmap jangka panjang institusi dan sasaran strategis internasional.',
-                academic_year: 2030,
-                status: 'draft',
-                ppepp_docs: {
-                    penetapan: [{ id: 'f-30-1', name: 'Draft_Roadmap_WCU_Universitas_2030.pdf', size: '2.1 MB', date: '01 Jan 2030' }],
-                    pelaksanaan: [],
-                    evaluasi: [],
-                    pengendalian: [],
-                    peningkatan: [],
-                },
-            },
-        ],
-    },
-    {
-        id: 'crit-b30-2',
-        code_criteria: 2,
-        title_criteria: 'Tata Pamong, Tata Kelola, dan Kerjasama Tridharma Perguruan Tinggi',
-        activities: [],
-    },
-    {
-        id: 'crit-b30-3',
-        code_criteria: 3,
-        title_criteria: 'Mahasiswa, Dosen, dan Sumber Daya Penunjang Akademik',
-        activities: [],
-    },
-    {
-        id: 'crit-b30-4',
-        code_criteria: 4,
-        title_criteria: 'Luaran, Capaian Tridharma, dan Dampak Kemanfaatan Masyarakat',
-        activities: [],
-    },
-];
-
-export default function BanPtIndex({ sessions = defaultSessions }) {
-    const sessionList = sessions?.length > 0 ? sessions : defaultSessions;
-
-    // Filter Sesi Akreditasi Institusi: Awalnya kosong agar konsisten seperti LAM
-    const [selectedSessionId, setSelectedSessionId] = useState('');
-
-    // State Kriteria per Sesi Akreditasi
-    const [criteriasBySession, setCriteriasBySession] = useState({
-        'sesi-pt-2025': initialBanPtCriterias2025,
-        'sesi-pt-2020': initialBanPtCriterias2020,
-        'sesi-pt-2030': initialBanPtCriterias2030,
+    // Accordion kriteria aktif: buka kriteria pertama secara default jika ada data
+    const [expandedCrit, setExpandedCrit] = useState(() => {
+        return criterias[0]?.id || null;
     });
 
-    // Filter Tahun Kegiatan di dalam sesi yang dipilih (opsional)
+    // Filter tahun kegiatan di dalam sesi (opsional)
     const [selectedYearFilter, setSelectedYearFilter] = useState('');
 
-    // Sesi aktif terpilih
-    const activeSession = sessionList.find((s) => s.id === selectedSessionId);
-
-    // Kriteria untuk sesi aktif
-    const currentCriterias = useMemo(() => {
-        if (!selectedSessionId) return [];
-        return criteriasBySession[selectedSessionId] || initialBanPtCriterias2025;
-    }, [selectedSessionId, criteriasBySession]);
-
-    // Accordion kriteria aktif
-    const [expandedCrit, setExpandedCrit] = useState('crit-b-1');
-
-    // Modal Upload File PPEPP
+    // Modal Upload Berkas PPEPP
     const [uploadModal, setUploadModal] = useState({
         isOpen: false,
         critId: null,
@@ -391,23 +65,40 @@ export default function BanPtIndex({ sessions = defaultSessions }) {
         stageLabel: null,
         activityTitle: '',
     });
-    const [fileNameInput, setFileNameInput] = useState('');
+    const [uploadFile, setUploadFile] = useState(null);
+    const [customFileName, setCustomFileName] = useState('');
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef(null);
 
-    // Modal Tambah Kegiatan Baru
+    // Modal Tambah Kegiatan
     const [newActivityModal, setNewActivityModal] = useState({
         isOpen: false,
         critId: null,
         critCode: null,
+        title_activity: '',
+        description: '',
+        academicyear_id: '',
     });
-    const [newActivityTitle, setNewActivityTitle] = useState('');
+    const [isSavingActivity, setIsSavingActivity] = useState(false);
 
-    // Handler Ganti Sesi
+    // Modal Edit Kegiatan
+    const [editActivityModal, setEditActivityModal] = useState({
+        isOpen: false,
+        activityId: null,
+        critId: null,
+        title_activity: '',
+        description: '',
+        academicyear_id: '',
+    });
+    const [isUpdatingActivity, setIsUpdatingActivity] = useState(false);
+
+    // Handler ganti sesi akreditasi
     const handleSelectSession = (sessionId) => {
-        setSelectedSessionId(sessionId);
         setSelectedYearFilter('');
-        if (sessionId) {
-            const firstCrit = (criteriasBySession[sessionId] || initialBanPtCriterias2025)[0];
-            setExpandedCrit(firstCrit?.id || null);
+        if (!sessionId) {
+            router.get(route('akreditasi.ban-pt'), {}, { preserveScroll: true });
+        } else {
+            router.get(route('akreditasi.ban-pt'), { session_id: sessionId }, { preserveScroll: true });
         }
     };
 
@@ -416,7 +107,7 @@ export default function BanPtIndex({ sessions = defaultSessions }) {
         setExpandedCrit(expandedCrit === critId ? null : critId);
     };
 
-    // Buka Modal Upload
+    // Buka Modal Upload Berkas
     const handleOpenUpload = (critId, activityId, stageKey, stageLabel, activityTitle) => {
         setUploadModal({
             isOpen: true,
@@ -426,136 +117,234 @@ export default function BanPtIndex({ sessions = defaultSessions }) {
             stageLabel,
             activityTitle,
         });
-        setFileNameInput('');
+        setUploadFile(null);
+        setCustomFileName('');
+        setIsUploading(false);
     };
 
-    // Konfirmasi Upload Dokumen Dummy
+    // Tutup Modal Upload
+    const handleCloseUpload = () => {
+        if (isUploading) return;
+        setUploadModal({
+            isOpen: false,
+            critId: null,
+            activityId: null,
+            stageKey: null,
+            stageLabel: null,
+            activityTitle: '',
+        });
+        setUploadFile(null);
+        setCustomFileName('');
+    };
+
+    // File selection handler
+    const handleFileChange = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setUploadFile(file);
+            if (!customFileName) {
+                // Buang ekstensi untuk isian custom nama awal
+                const nameWithoutExt = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+                setCustomFileName(nameWithoutExt);
+            }
+        }
+    };
+
+    // Konfirmasi Upload Berkas Real via Inertia FormData
     const handleConfirmUpload = (e) => {
         e.preventDefault();
-        if (!fileNameInput.trim() || !selectedSessionId) return;
+        if (!uploadFile || !uploadModal.activityId || !uploadModal.stageKey) {
+            toastError('Silakan pilih berkas dokumen yang ingin diunggah.');
+            return;
+        }
 
-        const newDoc = {
-            id: `f-${Date.now()}`,
-            name: fileNameInput.endsWith('.pdf') || fileNameInput.endsWith('.docx') ? fileNameInput : `${fileNameInput}.pdf`,
-            size: `${(Math.random() * 3 + 0.5).toFixed(1)} MB`,
-            date: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
-        };
+        setIsUploading(true);
 
-        setCriteriasBySession((prev) => {
-            const sessionData = prev[selectedSessionId] || [];
-            const updated = sessionData.map((crit) => {
-                if (crit.id !== uploadModal.critId) return crit;
-                return {
-                    ...crit,
-                    activities: (crit.activities || []).map((act) => {
-                        if (act.id !== uploadModal.activityId) return act;
-                        const existingDocs = act.ppepp_docs?.[uploadModal.stageKey] || [];
-                        return {
-                            ...act,
-                            ppepp_docs: {
-                                ...act.ppepp_docs,
-                                [uploadModal.stageKey]: [...existingDocs, newDoc],
-                            },
-                        };
-                    }),
-                };
-            });
-            return { ...prev, [selectedSessionId]: updated };
+        const formData = new FormData();
+        formData.append('activity_id', uploadModal.activityId);
+        formData.append('stage_key', uploadModal.stageKey);
+        formData.append('file', uploadFile);
+        if (customFileName.trim()) {
+            formData.append('custom_name', customFileName.trim());
+        }
+
+        router.post(route('akreditasi.ban-pt.dokumen.upload'), formData, {
+            preserveScroll: true,
+            onSuccess: () => {
+                handleCloseUpload();
+            },
+            onError: (err) => {
+                const firstError = Object.values(err)[0] || 'Gagal mengunggah dokumen.';
+                toastError(firstError);
+            },
+            onFinish: () => {
+                setIsUploading(false);
+            },
         });
-
-        setUploadModal({ isOpen: false, critId: null, activityId: null, stageKey: null, stageLabel: null, activityTitle: '' });
     };
 
-    // Hapus File Dokumen
+    // Hapus Berkas Eviden PPEPP
     const handleDeleteFile = async (critId, activityId, stageKey, fileId, fileName) => {
         const confirmed = await confirmAlert({
             title: 'Hapus Berkas PPEPP?',
-            text: `Apakah Anda yakin ingin menghapus file "${fileName}" dari tahap PPEPP?`,
+            text: `Apakah Anda yakin ingin menghapus dokumen "${fileName}" dari server secara permanen?`,
             confirmButtonText: 'Ya, Hapus',
             cancelButtonText: 'Batal',
         });
         if (!confirmed) return;
 
-        setCriteriasBySession((prev) => {
-            const sessionData = prev[selectedSessionId] || [];
-            const updated = sessionData.map((crit) => {
-                if (crit.id !== critId) return crit;
-                return {
-                    ...crit,
-                    activities: (crit.activities || []).map((act) => {
-                        if (act.id !== activityId) return act;
-                        return {
-                            ...act,
-                            ppepp_docs: {
-                                ...act.ppepp_docs,
-                                [stageKey]: (act.ppepp_docs?.[stageKey] || []).filter((f) => f.id !== fileId),
-                            },
-                        };
-                    }),
-                };
-            });
-            return { ...prev, [selectedSessionId]: updated };
-        });
-    };
-
-    // Tambah Kegiatan Baru ke Sesi Terpilih
-    const handleAddActivity = (e) => {
-        e.preventDefault();
-        if (!newActivityTitle.trim() || !selectedSessionId) return;
-
-        const newAct = {
-            id: `act-${Date.now()}`,
-            title_activity: newActivityTitle.trim(),
-            description: 'Kegiatan pemenuhan butir standar akreditasi BAN-PT Institusi.',
-            academic_year: activeSession?.ts_year || new Date().getFullYear(),
-            status: 'published',
-            ppepp_docs: {
-                penetapan: [],
-                pelaksanaan: [],
-                evaluasi: [],
-                pengendalian: [],
-                peningkatan: [],
+        router.delete(route('akreditasi.ban-pt.dokumen.destroy', { document: fileId }), {
+            preserveScroll: true,
+            onError: () => {
+                toastError('Gagal menghapus berkas dokumen.');
             },
-        };
-
-        setCriteriasBySession((prev) => {
-            const sessionData = prev[selectedSessionId] || [];
-            const updated = sessionData.map((crit) => {
-                if (crit.id !== newActivityModal.critId) return crit;
-                return {
-                    ...crit,
-                    activities: [newAct, ...(crit.activities || [])],
-                };
-            });
-            return { ...prev, [selectedSessionId]: updated };
         });
-
-        setNewActivityModal({ isOpen: false, critId: null, critCode: null });
-        setNewActivityTitle('');
     };
 
-    // Filter kriteria & kegiatan berdasarkan tahun akademik (jika diaktifkan)
-    const filteredCriterias = useMemo(() => {
-        if (!selectedYearFilter) return currentCriterias;
-        return currentCriterias.map((crit) => ({
-            ...crit,
-            activities: (crit.activities || []).filter((act) => String(act.academic_year) === String(selectedYearFilter)),
-        }));
-    }, [currentCriterias, selectedYearFilter]);
+    // Buka Modal Tambah Kegiatan
+    const handleOpenAddActivity = (critId, critCode) => {
+        setNewActivityModal({
+            isOpen: true,
+            critId,
+            critCode,
+            title_activity: '',
+            description: '',
+            academicyear_id: academicYears[0]?.id || '',
+        });
+    };
+
+    // Simpan Kegiatan Baru
+    const handleSaveNewActivity = (e) => {
+        e.preventDefault();
+        if (!newActivityModal.title_activity.trim() || !selectedSessionId) return;
+
+        setIsSavingActivity(true);
+
+        router.post(
+            route('akreditasi.ban-pt.kegiatan.store'),
+            {
+                session_id: selectedSessionId,
+                criteria_id: newActivityModal.critId,
+                title_activity: newActivityModal.title_activity.trim(),
+                description: newActivityModal.description.trim() || null,
+                academicyear_id: newActivityModal.academicyear_id || null,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setNewActivityModal({
+                        isOpen: false,
+                        critId: null,
+                        critCode: null,
+                        title_activity: '',
+                        description: '',
+                        academicyear_id: '',
+                    });
+                },
+                onError: (err) => {
+                    const msg = Object.values(err)[0] || 'Gagal menambahkan kegiatan.';
+                    toastError(msg);
+                },
+                onFinish: () => {
+                    setIsSavingActivity(false);
+                },
+            }
+        );
+    };
+
+    // Buka Modal Edit Kegiatan
+    const handleOpenEditActivity = (critId, act) => {
+        setEditActivityModal({
+            isOpen: true,
+            activityId: act.id,
+            critId: critId,
+            title_activity: act.title_activity || '',
+            description: act.description || '',
+            academicyear_id: act.academicyear_id || '',
+        });
+    };
+
+    // Simpan Pembaruan Kegiatan
+    const handleSaveEditActivity = (e) => {
+        e.preventDefault();
+        if (!editActivityModal.title_activity.trim() || !editActivityModal.activityId) return;
+
+        setIsUpdatingActivity(true);
+
+        router.put(
+            route('akreditasi.ban-pt.kegiatan.update', { activity: editActivityModal.activityId }),
+            {
+                title_activity: editActivityModal.title_activity.trim(),
+                description: editActivityModal.description.trim() || null,
+                academicyear_id: editActivityModal.academicyear_id || null,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setEditActivityModal({
+                        isOpen: false,
+                        activityId: null,
+                        critId: null,
+                        title_activity: '',
+                        description: '',
+                        academicyear_id: '',
+                    });
+                },
+                onError: (err) => {
+                    const msg = Object.values(err)[0] || 'Gagal memperbarui kegiatan.';
+                    toastError(msg);
+                },
+                onFinish: () => {
+                    setIsUpdatingActivity(false);
+                },
+            }
+        );
+    };
+
+    // Hapus Kegiatan
+    const handleDeleteActivity = async (critId, act) => {
+        const confirmed = await confirmAlert({
+            title: 'Hapus Kegiatan Institusi?',
+            text: `Apakah Anda yakin ingin menghapus folder kegiatan "${act.title_activity}"? Seluruh berkas eviden PPEPP di dalamnya juga akan terhapus.`,
+            confirmButtonText: 'Ya, Hapus Semua',
+            cancelButtonText: 'Batal',
+        });
+        if (!confirmed) return;
+
+        router.delete(route('akreditasi.ban-pt.kegiatan.destroy', { activity: act.id }), {
+            preserveScroll: true,
+            onError: () => {
+                toastError('Gagal menghapus kegiatan.');
+            },
+        });
+    };
 
     // Total kegiatan di seluruh kriteria pada sesi aktif
-    const totalAllActivities = currentCriterias.reduce((acc, c) => acc + (c.activities?.length || 0), 0);
+    const totalAllActivities = useMemo(() => {
+        return criterias.reduce((acc, c) => acc + (c.activities?.length || 0), 0);
+    }, [criterias]);
 
     // Daftar tahun unik dalam sesi ini untuk filter tambahan
     const sessionYears = useMemo(() => {
         const years = new Set();
-        currentCriterias.forEach((c) => {
+        criterias.forEach((c) => {
             (c.activities || []).forEach((a) => {
                 if (a.academic_year) years.add(a.academic_year);
             });
         });
         return Array.from(years).sort((a, b) => b - a);
-    }, [currentCriterias]);
+    }, [criterias]);
+
+    // Filter kriteria & kegiatan berdasarkan tahun akademik (jika diaktifkan)
+    const filteredCriterias = useMemo(() => {
+        if (!selectedYearFilter) return criterias;
+        return criterias.map((crit) => ({
+            ...crit,
+            activities: (crit.activities || []).filter(
+                (act) => String(act.academic_year) === String(selectedYearFilter)
+            ),
+        }));
+    }, [criterias, selectedYearFilter]);
 
     return (
         <AuthenticatedLayout>
@@ -563,64 +352,66 @@ export default function BanPtIndex({ sessions = defaultSessions }) {
 
             <div className="space-y-6">
                 {/* Header Utama Halaman BAN-PT */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6  border border-slate-200/80 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 border border-slate-200/80 shadow-xs">
                     <div>
                         <div className="flex items-center gap-2 text-indigo-600 font-bold text-xs tracking-wider uppercase mb-1">
                             <Landmark className="w-4 h-4" />
                             <span>Dokumen Akreditasi BAN-PT (Tingkat Institusi / Perguruan Tinggi)</span>
                         </div>
-                        <h1 className="text-2xl font-black text-slate-800">Instrumen Akreditasi BAN-PT (4 Kriteria)</h1>
-                        <p className="text-sm text-slate-500 mt-1 max-w-3xl">
-                            Repositori pohon folder evidensi siklus penjaminan mutu PPEPP (Penetapan, Pelaksanaan, Evaluasi, Pengendalian, Peningkatan) berbasis Sesi Akreditasi Institusi.
+                        <h1 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
+                            Instrumen Akreditasi BAN-PT (4 Kriteria)
+                        </h1>
+                        <p className="text-xs text-slate-500 mt-1 max-w-3xl leading-relaxed">
+                            Repositori pengumpulan dokumen borang dan evidensi penjaminan mutu PPEPP institusi perguruan tinggi berbasis standar BAN-PT.
                         </p>
                     </div>
 
-                    {/* Indikator Folder PPEPP */}
-                    <div className="flex flex-wrap items-center gap-3 bg-slate-50 px-4 py-2.5  border border-slate-200 text-xs shrink-0">
-                        <span className="font-semibold text-slate-700">Indikator Folder PPEPP:</span>
-                        <div className="flex items-center gap-1.5 text-slate-600 font-medium">
-                            <span className="w-3 h-3  bg-emerald-500 inline-block" />
-                            <span>Lengkap</span>
+                    {/* Indikator Status Kelengkapan Folder */}
+                    <div className="flex items-center gap-3 text-xs bg-slate-50 p-3 border border-slate-200 shrink-0">
+                        <span className="text-slate-500 font-medium">Indikator Folder PPEPP:</span>
+                        <div className="flex items-center gap-1.5 text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 border border-emerald-200">
+                            <span className="w-2 h-2 bg-emerald-500 inline-block" />
+                            <span>Lengkap (5/5)</span>
                         </div>
-                        <div className="flex items-center gap-1.5 text-rose-600 font-bold bg-rose-50 px-2 py-0.5  border border-rose-200">
+                        <div className="flex items-center gap-1.5 text-rose-600 font-bold bg-rose-50 px-2 py-0.5 border border-rose-200">
                             <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
                             <span>Belum Ada File (Merah)</span>
                         </div>
                     </div>
                 </div>
 
-                {/* Filter Bar: Berbasis Sesi Akreditasi Institusi (Bukan Berbasis Prodi) */}
-                <div className="bg-white p-4 sm:p-5  border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                {/* Filter Bar: Berbasis Sesi Akreditasi Institusi */}
+                <div className="bg-white p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
                         <div className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wide">
                             <Filter className="w-4 h-4 text-indigo-600" />
                             <span>Pilih Sesi Akreditasi Institusi:</span>
                         </div>
 
-                        {/* Dropdown Sesi Akreditasi Perguruan Tinggi */}
+                        {/* Dropdown Sesi Akreditasi Perguruan Tinggi (Permanent Gambar 2 Style) */}
                         <div className="relative min-w-[280px] sm:min-w-[360px]">
                             <select
                                 id="banpt-filter-sesi"
-                                value={selectedSessionId}
+                                value={selectedSessionId || ''}
                                 onChange={(e) => handleSelectSession(e.target.value)}
-                                className="w-full px-4 py-2.5 text-sm  border border-slate-300 bg-slate-50 hover:bg-white text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer shadow-xs"
+                                className="w-full px-4 py-2.5 text-xs border border-slate-300 bg-slate-50 hover:bg-white text-slate-800 font-semibold focus:outline-none focus:border-indigo-600 transition-all cursor-pointer shadow-xs"
                             >
                                 <option value="">-- Silakan Pilih Sesi Akreditasi Institusi --</option>
-                                {sessionList.map((s) => (
+                                {sessions.map((s) => (
                                     <option key={s.id} value={s.id}>
-                                        {s.name} [{s.status_label}]
+                                        {s.name} {s.is_active ? '★ [Sesi Aktif]' : `[${s.year_start}–${s.year_end}]`}
                                     </option>
                                 ))}
                             </select>
                         </div>
 
-                        {/* Filter Tahun Akademik Tambahan (Jika Sesi Dipilih) */}
-                        {selectedSessionId && sessionYears.length > 0 && (
+                        {/* Filter Tahun Akademik Tambahan (Jika Sesi Dipilih dan Memiliki Beragam Tahun) */}
+                        {selectedSessionId && sessionYears.length > 1 && (
                             <div className="relative">
                                 <select
                                     value={selectedYearFilter}
                                     onChange={(e) => setSelectedYearFilter(e.target.value)}
-                                    className="px-3.5 py-2 text-xs  border border-slate-200 bg-slate-50 hover:bg-white text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer"
+                                    className="px-3.5 py-2.5 text-xs border border-slate-300 bg-slate-50 hover:bg-white text-slate-700 font-medium focus:outline-none focus:border-indigo-600 cursor-pointer"
                                 >
                                     <option value="">Semua Tahun ({sessionYears.join(', ')})</option>
                                     {sessionYears.map((yr) => (
@@ -636,7 +427,7 @@ export default function BanPtIndex({ sessions = defaultSessions }) {
                             <button
                                 type="button"
                                 onClick={() => handleSelectSession('')}
-                                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-600 hover:text-rose-600 hover:bg-rose-50  border border-slate-200 transition-colors"
+                                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-600 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 transition-colors cursor-pointer"
                             >
                                 <RotateCcw className="w-3.5 h-3.5" />
                                 <span>Reset Sesi</span>
@@ -645,10 +436,10 @@ export default function BanPtIndex({ sessions = defaultSessions }) {
                     </div>
 
                     <div className="text-xs text-slate-500 flex items-center gap-2">
-                        {selectedSessionId ? (
-                            <span className="inline-flex items-center gap-1.5 text-indigo-700 bg-indigo-50 px-3 py-1.5  border border-indigo-200/60 font-medium">
+                        {selectedSessionId && activeSession ? (
+                            <span className="inline-flex items-center gap-1.5 text-indigo-700 bg-indigo-50 px-3 py-1.5 border border-indigo-200/60 font-medium">
                                 <Check className="w-3.5 h-3.5 text-indigo-600" />
-                                Sesi Aktif: <strong className="font-bold">{activeSession?.name}</strong>
+                                Sesi Terpilih: <strong className="font-bold">{activeSession.name}</strong>
                             </span>
                         ) : (
                             <span className="text-slate-400 italic">Pilih sesi untuk menampilkan instrumen borang</span>
@@ -660,12 +451,12 @@ export default function BanPtIndex({ sessions = defaultSessions }) {
                 {/* KONDISI 1: JIKA BELUM PILIH SESI (EMPTY STATE BERSIH)    */}
                 {/* ======================================================== */}
                 {!selectedSessionId ? (
-                    <div className=" border-2 border-dashed border-slate-200 bg-white p-8 sm:p-12 text-center shadow-xs">
-                        <div className="mx-auto flex h-16 w-16 items-center justify-center  bg-gradient-to-br from-indigo-100 to-blue-100 text-indigo-600 mb-4 shadow-sm">
+                    <div className="border-2 border-dashed border-slate-200 bg-white p-8 sm:p-12 text-center shadow-xs">
+                        <div className="mx-auto flex h-16 w-16 items-center justify-center bg-indigo-50 text-indigo-600 mb-4 border border-indigo-200">
                             <Landmark className="w-8 h-8" />
                         </div>
 
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1  bg-indigo-50 text-indigo-700 text-xs font-bold mb-2 border border-indigo-200/60">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold mb-2 border border-indigo-200/60">
                             <Sparkles className="w-3.5 h-3.5" />
                             <span>Pilih Sesi Akreditasi Institusi Terlebih Dahulu</span>
                         </div>
@@ -674,138 +465,80 @@ export default function BanPtIndex({ sessions = defaultSessions }) {
                             Tidak Ada Dokumen yang Ditampilkan
                         </h2>
 
-                        <p className="text-sm text-slate-500 max-w-xl mx-auto mt-2 leading-relaxed">
-                            Instrumen Akreditasi BAN-PT dikelompokkan berdasarkan <strong>Sesi Akreditasi Perguruan Tinggi</strong> (contoh: Akreditasi 2020–2025 vs 2025–2030). Silakan tentukan Sesi Akreditasi melalui dropdown di atas atau klik salah satu kartu pilihan cepat di bawah ini untuk menampilkan pohon folder 4 kriteria dan eviden PPEPP.
+                        <p className="text-xs text-slate-500 max-w-xl mx-auto mt-2 leading-relaxed">
+                            Instrumen Akreditasi BAN-PT dikelompokkan berdasarkan <strong>Sesi Akreditasi Perguruan Tinggi</strong>. Silakan tentukan Sesi Akreditasi melalui dropdown di atas untuk mengelola pohon folder 4 kriteria dan evidensi berkas PPEPP.
                         </p>
 
-                        {/* Quick Selection Cards Sesi Akreditasi */}
-                        <div className="mt-8 pt-8 border-t border-slate-100 max-w-4xl mx-auto">
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">
-                                Atau Pilih Cepat Sesi Akreditasi Institusi Di Bawah Ini:
-                            </p>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-                                {sessionList.map((s) => (
+                        {/* Pilihan Cepat Daftar Sesi yang Tersedia */}
+                        {sessions.length > 0 && (
+                            <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+                                <span className="text-xs font-semibold text-slate-400 block w-full mb-1">
+                                    Pilih Cepat Sesi Tersedia:
+                                </span>
+                                {sessions.map((s) => (
                                     <button
                                         key={s.id}
                                         type="button"
                                         onClick={() => handleSelectSession(s.id)}
-                                        className="group p-5  border border-slate-200 hover:border-indigo-400 bg-slate-50/50 hover:bg-indigo-50/30 text-left transition-all duration-200 shadow-xs hover:shadow-md cursor-pointer flex flex-col justify-between"
+                                        className="inline-flex items-center gap-2 px-3 py-2 text-xs font-bold bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 border border-slate-300 hover:border-indigo-300 shadow-xs transition-all cursor-pointer"
                                     >
-                                        <div>
-                                            <div className="flex items-center justify-between mb-2.5">
-                                                <span className="px-2 py-0.5  text-[11px] font-black uppercase tracking-wider bg-indigo-100 text-indigo-800">
-                                                    {s.year_start}–{s.year_end}
-                                                </span>
-                                                <span className={`text-[10px] px-2 py-0.5  font-bold border ${s.status_badge}`}>
-                                                    {s.status === 'active' ? 'Aktif' : s.status === 'completed' ? 'Selesai' : 'Persiapan'}
-                                                </span>
-                                            </div>
-                                            <h3 className="text-sm font-bold text-slate-800 group-hover:text-indigo-700 transition-colors leading-snug">
-                                                {s.name}
-                                            </h3>
-                                            <p className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">
-                                                {s.description}
-                                            </p>
-
-                                            <div className="mt-3 pt-2.5 border-t border-slate-200/50 text-[11px] text-slate-500 space-y-1">
-                                                <div className="flex items-center justify-between">
-                                                    <span>Target Peringkat:</span>
-                                                    <strong className="text-slate-700 font-bold">{s.target_rating}</strong>
-                                                </div>
-                                                <div className="flex items-center justify-between">
-                                                    <span>Tahun Acuan TS:</span>
-                                                    <strong className="text-indigo-600 font-bold">{s.ts_year}</strong>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="mt-4 pt-3 border-t border-slate-200/60 text-[11px] font-semibold text-indigo-600 flex items-center justify-between">
-                                            <span>Buka Borang BAN-PT &rarr;</span>
-                                            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                                        </div>
+                                        <Building2 className="w-3.5 h-3.5 text-indigo-600" />
+                                        <span>{s.name}</span>
+                                        {s.is_active && (
+                                            <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1 py-0.2 border border-emerald-300 font-bold">
+                                                Aktif
+                                            </span>
+                                        )}
                                     </button>
                                 ))}
                             </div>
-                        </div>
+                        )}
                     </div>
                 ) : (
                     /* ======================================================== */
                     /* KONDISI 2: SESI DIPILIH (BANNER SESI & POHON FOLDER PPEPP) */
                     /* ======================================================== */
-                    <div className="space-y-4 animate-fade-in">
+                    <div className="space-y-4">
                         {/* Panel Sesi Akreditasi BAN-PT Aktif */}
-                        <div className="bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 text-white p-5 sm:p-6  shadow-md border border-indigo-800/40 space-y-4">
+                        <div className="bg-slate-900 text-white p-5 sm:p-6 shadow-xs border border-slate-800 space-y-4">
                             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                                 <div className="flex items-start sm:items-center gap-3.5">
-                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center  bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 shadow-inner">
+                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center bg-indigo-900/60 text-indigo-300 border border-indigo-700">
                                         <Building2 className="w-6 h-6" />
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2 flex-wrap">
-                                            <span className="px-2 py-0.5  text-[10px] font-extrabold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
-                                                Lembaga: BAN-PT (Standar Institusi / AIPT)
+                                            <span className="text-xs text-indigo-300 font-bold uppercase tracking-wider">
+                                                {activeSession?.agency_code}
                                             </span>
-                                            <span className="text-xs text-slate-300">• {activeSession?.univ_name}</span>
-                                            <span className={`text-[10px] px-2 py-0.5  font-bold border ${
-                                                activeSession?.status === 'active'
-                                                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30'
-                                                    : activeSession?.status === 'completed'
-                                                    ? 'bg-blue-500/20 text-blue-300 border-blue-400/30'
-                                                    : 'bg-amber-500/20 text-amber-300 border-amber-400/30'
-                                            }`}>
+                                            <span className="text-xs text-slate-400">• {activeSession?.univ_name}</span>
+                                            <span className={`text-[10px] px-2 py-0.5 font-bold border ${activeSession?.status_badge}`}>
                                                 {activeSession?.status_label}
                                             </span>
                                         </div>
                                         <h2 className="text-lg sm:text-xl font-black text-white mt-1">
                                             {activeSession?.name}
                                         </h2>
-                                        <p className="text-xs text-slate-300 mt-0.5">
+                                        <p className="text-xs text-slate-400 mt-0.5">
                                             {activeSession?.sk_number ? `Status / No. SK: ${activeSession.sk_number}` : activeSession?.description}
                                         </p>
                                     </div>
                                 </div>
 
                                 {/* Statistik Cepat Sesi */}
-                                <div className="flex items-center gap-2.5 text-xs flex-wrap">
-                                    <div className="bg-white/10 backdrop-blur-sm px-3.5 py-1.5  border border-white/10 text-indigo-100">
+                                <div className="flex items-center gap-2 text-xs flex-wrap">
+                                    <div className="bg-slate-800 px-3 py-1.5 border border-slate-700 text-slate-300">
                                         <span>Tahun Acuan TS: </span>
-                                        <strong className="text-white font-bold">{activeSession?.ts_year}</strong>
+                                        <strong className="text-white font-bold">{activeSession?.ts_year || '-'}</strong>
                                     </div>
-                                    <div className="bg-white/10 backdrop-blur-sm px-3.5 py-1.5  border border-white/10 text-indigo-100">
+                                    <div className="bg-slate-800 px-3 py-1.5 border border-slate-700 text-slate-300">
                                         <span>Target Peringkat: </span>
-                                        <strong className="text-white font-bold">{activeSession?.target_rating}</strong>
+                                        <strong className="text-emerald-400 font-bold">{activeSession?.target_rating || '-'}</strong>
                                     </div>
-                                    <div className="bg-white/10 backdrop-blur-sm px-3.5 py-1.5  border border-white/10 text-indigo-100">
+                                    <div className="bg-slate-800 px-3 py-1.5 border border-slate-700 text-slate-300">
                                         <span>Total: </span>
                                         <strong className="text-white font-bold">{totalAllActivities} Kegiatan</strong>
                                     </div>
-                                </div>
-                            </div>
-
-                            {/* Sub-bar Informasi Sesi & Navigasi Cepat */}
-                            <div className="pt-3 border-t border-indigo-800/60 flex flex-wrap items-center justify-between gap-3 text-xs">
-                                <div className="flex items-center gap-2 text-indigo-200">
-                                    <FileCheck2 className="w-4 h-4 text-indigo-400" />
-                                    <span>
-                                        Instrumen: <strong>4 Kriteria BAN-PT</strong> • Siklus Evaluasi PPEPP Lengkap
-                                    </span>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                    <span className="text-slate-400">Ganti Sesi Cepat:</span>
-                                    {sessionList
-                                        .filter((s) => s.id !== activeSession?.id)
-                                        .map((s) => (
-                                            <button
-                                                key={s.id}
-                                                type="button"
-                                                onClick={() => handleSelectSession(s.id)}
-                                                className="px-2.5 py-1  bg-white/10 hover:bg-white/20 text-indigo-200 hover:text-white transition-colors text-[11px] font-semibold border border-white/10"
-                                            >
-                                                {s.year_start}–{s.year_end}
-                                            </button>
-                                        ))}
                                 </div>
                             </div>
                         </div>
@@ -819,29 +552,36 @@ export default function BanPtIndex({ sessions = defaultSessions }) {
                                 return (
                                     <div
                                         key={crit.id}
-                                        className={` bg-white border transition-all duration-200 overflow-hidden shadow-xs ${
-                                            isExpanded ? 'border-indigo-300 ring-2 ring-indigo-500/10' : 'border-slate-200/80 hover:border-slate-300'
+                                        className={`bg-white border transition-all duration-200 overflow-hidden shadow-xs ${
+                                            isExpanded ? 'border-indigo-300' : 'border-slate-200 hover:border-slate-300'
                                         }`}
                                     >
                                         {/* Accordion Header Kriteria */}
-                                        <div className="px-3.5 py-2.5 sm:px-4 sm:py-3 flex items-center justify-between bg-white border-b border-slate-100/80">
+                                        <div className="px-3.5 py-2.5 sm:px-4 sm:py-3 flex items-center justify-between bg-white border-b border-slate-200">
                                             <button
                                                 type="button"
                                                 onClick={() => toggleCrit(crit.id)}
-                                                className="flex items-center gap-3 text-left flex-1 min-w-0 mr-2"
+                                                className="flex items-center gap-3 text-left flex-1 min-w-0 mr-2 cursor-pointer"
                                             >
-                                                <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center  bg-gradient-to-br from-indigo-600 to-blue-700 text-white font-extrabold text-xs sm:text-sm shadow-xs">
+                                                <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center bg-indigo-600 text-white font-extrabold text-xs sm:text-sm">
                                                     C{crit.code_criteria}
                                                 </div>
                                                 <div className="min-w-0">
                                                     <div className="flex items-center gap-1.5 flex-wrap">
-                                                        <span className="px-1.5 py-0.2  text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200/60">
+                                                        <span className="px-1.5 py-0.2 text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200">
                                                             Kriteria {crit.code_criteria}
                                                         </span>
-                                                        <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">• BAN-PT Standar Institusi</span>
-                                                        <span className="text-[11px] text-slate-400 font-medium">• {activitiesCount} Kegiatan</span>
+                                                        <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">
+                                                            • Standar BAN-PT
+                                                        </span>
+                                                        <span className="text-[11px] text-slate-400 font-medium">
+                                                            • {activitiesCount} Kegiatan
+                                                        </span>
                                                     </div>
-                                                    <h3 className="text-xs sm:text-sm font-bold text-slate-800 leading-snug truncate mt-0.5" title={crit.title_criteria}>
+                                                    <h3
+                                                        className="text-xs sm:text-sm font-bold text-slate-800 leading-snug truncate mt-0.5"
+                                                        title={crit.title_criteria}
+                                                    >
                                                         {crit.title_criteria}
                                                     </h3>
                                                 </div>
@@ -850,16 +590,17 @@ export default function BanPtIndex({ sessions = defaultSessions }) {
                                             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                                                 <button
                                                     type="button"
-                                                    onClick={() => setNewActivityModal({ isOpen: true, critId: crit.id, critCode: crit.code_criteria })}
-                                                    className="inline-flex items-center gap-1 px-2.5 py-1  text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-colors"
+                                                    onClick={() => handleOpenAddActivity(crit.id, crit.code_criteria)}
+                                                    className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors cursor-pointer"
                                                 >
                                                     <Plus className="w-3.5 h-3.5" />
                                                     <span className="hidden sm:inline">Tambah Kegiatan</span>
                                                 </button>
+
                                                 <button
                                                     type="button"
                                                     onClick={() => toggleCrit(crit.id)}
-                                                    className="p-1 sm:p-1.5  text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                                                    className="p-1 sm:p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer"
                                                 >
                                                     {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                                                 </button>
@@ -878,7 +619,9 @@ export default function BanPtIndex({ sessions = defaultSessions }) {
                                                     theme="indigo"
                                                     onOpenUpload={handleOpenUpload}
                                                     onDeleteFile={handleDeleteFile}
-                                                    onAddActivity={() => setNewActivityModal({ isOpen: true, critId: crit.id, critCode: crit.code_criteria })}
+                                                    onAddActivity={() => handleOpenAddActivity(crit.id, crit.code_criteria)}
+                                                    onEditActivity={handleOpenEditActivity}
+                                                    onDeleteActivity={handleDeleteActivity}
                                                 />
                                             </div>
                                         )}
@@ -890,71 +633,121 @@ export default function BanPtIndex({ sessions = defaultSessions }) {
                 )}
             </div>
 
-            {/* Modal Upload File ke Tahap PPEPP */}
+            {/* ======================================================== */}
+            {/* MODAL 1: UPLOAD REAL BERKAS PPEPP                        */}
+            {/* ======================================================== */}
             {uploadModal.isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white  max-w-lg w-full p-6 shadow-2xl border border-slate-100">
-                        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
+                    <div className="bg-white max-w-lg w-full p-6 shadow-2xl border border-slate-300">
+                        <div className="flex items-center justify-between pb-4 border-b border-slate-200">
                             <div>
                                 <h3 className="text-base font-bold text-slate-800">
-                                    Upload File Eviden PPEPP
+                                    Upload Dokumen Eviden PPEPP
                                 </h3>
-                                <p className="text-xs text-indigo-600 font-semibold mt-0.5">
+                                <p className="text-xs text-indigo-700 font-semibold mt-0.5">
                                     {uploadModal.stageLabel}
                                 </p>
                             </div>
                             <button
-                                onClick={() => setUploadModal({ isOpen: false, critId: null, activityId: null, stageKey: null, stageLabel: null, activityTitle: '' })}
-                                className="p-1 text-slate-400 hover:text-slate-600 "
+                                type="button"
+                                onClick={handleCloseUpload}
+                                disabled={isUploading}
+                                className="p-1 text-slate-400 hover:text-slate-600 border border-transparent hover:border-slate-200 cursor-pointer disabled:opacity-50"
                             >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
-                        <form onSubmit={handleConfirmUpload} className="mt-4 space-y-4">
-                            <div className="p-3  bg-slate-50 border border-slate-200/80 text-xs">
-                                <span className="text-slate-400 block font-medium">Kegiatan Terkait:</span>
+                        <form onSubmit={handleConfirmUpload} className="mt-4 space-y-4 text-xs">
+                            <div className="p-3 bg-slate-50 border border-slate-200 text-xs">
+                                <span className="text-slate-400 block font-medium">Folder Kegiatan:</span>
                                 <span className="font-bold text-slate-800">{uploadModal.activityTitle}</span>
                             </div>
 
+                            {/* Dropzone File Input */}
                             <div>
-                                <label className="block text-xs font-semibold uppercase text-slate-600 mb-1">
-                                    Nama / Judul File Dokumen <span className="text-rose-500">*</span>
+                                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                    Pilih Berkas Dokumen <span className="text-rose-500">*</span>
+                                </label>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    onChange={handleFileChange}
+                                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.png,.jpg,.jpeg"
+                                    className="hidden"
+                                    id="file-upload-input"
+                                    required
+                                />
+
+                                <label
+                                    htmlFor="file-upload-input"
+                                    className={`p-5 border-2 border-dashed ${
+                                        uploadFile ? 'border-indigo-500 bg-indigo-50/20' : 'border-slate-300 hover:border-indigo-400 bg-slate-50/50'
+                                    } block text-center cursor-pointer transition-colors`}
+                                >
+                                    <UploadCloud className="w-8 h-8 text-indigo-600 mx-auto mb-1.5" />
+                                    {uploadFile ? (
+                                        <div>
+                                            <p className="text-xs font-bold text-slate-800">{uploadFile.name}</p>
+                                            <p className="text-[11px] text-slate-500 mt-0.5 font-mono">
+                                                {(uploadFile.size / 1024 / 1024).toFixed(2)} MB • Klik untuk mengganti
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            <p className="text-xs font-semibold text-indigo-700">
+                                                Klik untuk memilih berkas dari komputer
+                                            </p>
+                                            <p className="text-[10px] text-slate-400 mt-0.5">
+                                                PDF, DOCX, XLSX, PPTX, ZIP, RAR, atau Gambar (Maks. 25 MB)
+                                            </p>
+                                        </div>
+                                    )}
+                                </label>
+                            </div>
+
+                            {/* Nama Dokumen / Judul Khusus (Opsional) */}
+                            <div>
+                                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                    Nama / Judul Dokumen (Opsional)
                                 </label>
                                 <input
                                     type="text"
-                                    value={fileNameInput}
-                                    onChange={(e) => setFileNameInput(e.target.value)}
-                                    placeholder="Contoh: SK_Rektor_Penetapan_Standar_Mutu_Institusi.pdf"
-                                    className="w-full px-3.5 py-2.5 text-sm  border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
-                                    required
-                                    autoFocus
+                                    value={customFileName}
+                                    onChange={(e) => setCustomFileName(e.target.value)}
+                                    placeholder="Contoh: SK_Rektor_Standar_Mutu_Institusi"
+                                    className="w-full px-3 py-2 text-xs border border-slate-300 focus:outline-none focus:border-indigo-600 font-medium"
                                 />
-                                <p className="text-[11px] text-slate-400 mt-1">
-                                    Bisa berupa format PDF, Word (.docx), Excel (.xlsx), atau link berkas.
+                                <p className="text-[10px] text-slate-400 mt-1">
+                                    Jika dikosongkan, nama asli file dari komputer akan digunakan secara otomatis.
                                 </p>
                             </div>
 
-                            {/* Dropzone Simulation */}
-                            <div className="p-5 border-2 border-dashed border-indigo-200 hover:border-indigo-400  bg-indigo-50/30 text-center cursor-pointer transition-colors">
-                                <UploadCloud className="w-8 h-8 text-indigo-500 mx-auto mb-1" />
-                                <p className="text-xs font-semibold text-indigo-700">Pilih berkas dari komputer atau drag & drop</p>
-                                <p className="text-[10px] text-slate-400 mt-0.5">Ukuran maksimal file 25 MB</p>
-                            </div>
-
-                            <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
+                            <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-200">
                                 <button
                                     type="button"
-                                    onClick={() => setUploadModal({ isOpen: false, critId: null, activityId: null, stageKey: null, stageLabel: null, activityTitle: '' })}
-                                    className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100  transition-colors"
+                                    onClick={handleCloseUpload}
+                                    disabled={isUploading}
+                                    className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer disabled:opacity-50"
                                 >
                                     Batal
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-5 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700  shadow-md shadow-indigo-500/20 transition-all"
+                                    disabled={isUploading || !uploadFile}
+                                    className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-xs transition-all cursor-pointer disabled:opacity-50"
                                 >
-                                    Upload & Simpan
+                                    {isUploading ? (
+                                        <>
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            <span>Mengunggah...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <UploadCloud className="w-3.5 h-3.5" />
+                                            <span>Upload & Simpan</span>
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </form>
@@ -962,59 +755,220 @@ export default function BanPtIndex({ sessions = defaultSessions }) {
                 </div>
             )}
 
-            {/* Modal Tambah Kegiatan Baru */}
+            {/* ======================================================== */}
+            {/* MODAL 2: TAMBAH KEGIATAN BARU                            */}
+            {/* ======================================================== */}
             {newActivityModal.isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white  max-w-lg w-full p-6 shadow-2xl border border-slate-100">
-                        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
+                    <div className="bg-white max-w-lg w-full p-6 shadow-2xl border border-slate-300">
+                        <div className="flex items-center justify-between pb-4 border-b border-slate-200">
                             <div>
                                 <h3 className="text-base font-bold text-slate-800">
-                                    Tambah Kegiatan / Folder Utama Institusi
+                                    Tambah Folder Kegiatan Institusi
                                 </h3>
-                                <p className="text-xs text-indigo-600 font-semibold mt-0.5">
+                                <p className="text-xs text-indigo-700 font-semibold mt-0.5">
                                     Kriteria {newActivityModal.critCode} • Sesi {activeSession?.name}
                                 </p>
                             </div>
                             <button
-                                onClick={() => setNewActivityModal({ isOpen: false, critId: null, critCode: null })}
-                                className="p-1 text-slate-400 hover:text-slate-600 "
+                                type="button"
+                                onClick={() => setNewActivityModal({ ...newActivityModal, isOpen: false })}
+                                disabled={isSavingActivity}
+                                className="p-1 text-slate-400 hover:text-slate-600 border border-transparent hover:border-slate-200 cursor-pointer disabled:opacity-50"
                             >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
-                        <form onSubmit={handleAddActivity} className="mt-4 space-y-4">
+                        <form onSubmit={handleSaveNewActivity} className="mt-4 space-y-4 text-xs">
                             <div>
-                                <label className="block text-xs font-semibold uppercase text-slate-600 mb-1">
-                                    Nama Kegiatan Baru <span className="text-rose-500">*</span>
+                                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                    Nama Kegiatan / Dokumen Induk <span className="text-rose-500">*</span>
                                 </label>
                                 <input
                                     type="text"
-                                    value={newActivityTitle}
-                                    onChange={(e) => setNewActivityTitle(e.target.value)}
+                                    value={newActivityModal.title_activity}
+                                    onChange={(e) =>
+                                        setNewActivityModal({ ...newActivityModal, title_activity: e.target.value })
+                                    }
                                     placeholder="Contoh: Rapat Kerja Institusi Evaluasi Ketercapaian Renstra"
-                                    className="w-full px-3.5 py-2.5 text-sm  border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                    className="w-full px-3 py-2 text-xs border border-slate-300 focus:outline-none focus:border-indigo-600 font-semibold"
                                     required
                                     autoFocus
                                 />
-                                <p className="text-[11px] text-slate-400 mt-1">
+                                <p className="text-[10px] text-slate-400 mt-1">
                                     Setelah dibuat, kegiatan akan otomatis memiliki 5 subfolder PPEPP (Penetapan, Pelaksanaan, Evaluasi, Pengendalian, Peningkatan).
                                 </p>
                             </div>
 
-                            <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
+                            <div>
+                                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                    Tahun Akademik Kegiatan
+                                </label>
+                                <select
+                                    value={newActivityModal.academicyear_id}
+                                    onChange={(e) =>
+                                        setNewActivityModal({ ...newActivityModal, academicyear_id: e.target.value })
+                                    }
+                                    className="w-full px-3 py-2 text-xs border border-slate-300 bg-slate-50 focus:outline-none focus:border-indigo-600 cursor-pointer"
+                                >
+                                    <option value="">-- Berlaku untuk Semua Tahun / Siklus --</option>
+                                    {academicYears.map((ay) => (
+                                        <option key={ay.id} value={ay.id}>
+                                            Tahun Akademik {ay.year}/{ay.year + 1}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                    Deskripsi / Catatan Tambahan (Opsional)
+                                </label>
+                                <textarea
+                                    rows={3}
+                                    value={newActivityModal.description}
+                                    onChange={(e) =>
+                                        setNewActivityModal({ ...newActivityModal, description: e.target.value })
+                                    }
+                                    placeholder="Keterangan singkat mengenai lingkup kegiatan atau bukti eviden yang dibutuhkan..."
+                                    className="w-full px-3 py-2 text-xs border border-slate-300 focus:outline-none focus:border-indigo-600"
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-200">
                                 <button
                                     type="button"
-                                    onClick={() => setNewActivityModal({ isOpen: false, critId: null, critCode: null })}
-                                    className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100  transition-colors"
+                                    onClick={() => setNewActivityModal({ ...newActivityModal, isOpen: false })}
+                                    disabled={isSavingActivity}
+                                    className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer disabled:opacity-50"
                                 >
                                     Batal
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-5 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700  shadow-md shadow-indigo-500/20 transition-all"
+                                    disabled={isSavingActivity}
+                                    className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-xs transition-all cursor-pointer disabled:opacity-50"
                                 >
-                                    Simpan Kegiatan
+                                    {isSavingActivity ? (
+                                        <>
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            <span>Menyimpan...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Plus className="w-3.5 h-3.5" />
+                                            <span>Simpan Kegiatan</span>
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* ======================================================== */}
+            {/* MODAL 3: EDIT KEGIATAN                                   */}
+            {/* ======================================================== */}
+            {editActivityModal.isOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
+                    <div className="bg-white max-w-lg w-full p-6 shadow-2xl border border-slate-300">
+                        <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+                            <div>
+                                <h3 className="text-base font-bold text-slate-800">
+                                    Edit Folder Kegiatan
+                                </h3>
+                                <p className="text-xs text-indigo-700 font-semibold mt-0.5">
+                                    Perbarui Data dan Tahun Akademik
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setEditActivityModal({ ...editActivityModal, isOpen: false })}
+                                disabled={isUpdatingActivity}
+                                className="p-1 text-slate-400 hover:text-slate-600 border border-transparent hover:border-slate-200 cursor-pointer disabled:opacity-50"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSaveEditActivity} className="mt-4 space-y-4 text-xs">
+                            <div>
+                                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                    Nama Kegiatan / Dokumen Induk <span className="text-rose-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={editActivityModal.title_activity}
+                                    onChange={(e) =>
+                                        setEditActivityModal({ ...editActivityModal, title_activity: e.target.value })
+                                    }
+                                    className="w-full px-3 py-2 text-xs border border-slate-300 focus:outline-none focus:border-indigo-600 font-semibold"
+                                    required
+                                    autoFocus
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                    Tahun Akademik Kegiatan
+                                </label>
+                                <select
+                                    value={editActivityModal.academicyear_id}
+                                    onChange={(e) =>
+                                        setEditActivityModal({ ...editActivityModal, academicyear_id: e.target.value })
+                                    }
+                                    className="w-full px-3 py-2 text-xs border border-slate-300 bg-slate-50 focus:outline-none focus:border-indigo-600 cursor-pointer"
+                                >
+                                    <option value="">-- Berlaku untuk Semua Tahun / Siklus --</option>
+                                    {academicYears.map((ay) => (
+                                        <option key={ay.id} value={ay.id}>
+                                            Tahun Akademik {ay.year}/{ay.year + 1}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                    Deskripsi / Catatan Tambahan (Opsional)
+                                </label>
+                                <textarea
+                                    rows={3}
+                                    value={editActivityModal.description}
+                                    onChange={(e) =>
+                                        setEditActivityModal({ ...editActivityModal, description: e.target.value })
+                                    }
+                                    className="w-full px-3 py-2 text-xs border border-slate-300 focus:outline-none focus:border-indigo-600"
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-200">
+                                <button
+                                    type="button"
+                                    onClick={() => setEditActivityModal({ ...editActivityModal, isOpen: false })}
+                                    disabled={isUpdatingActivity}
+                                    className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer disabled:opacity-50"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isUpdatingActivity}
+                                    className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                                >
+                                    {isUpdatingActivity ? (
+                                        <>
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            <span>Menyimpan...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Edit2 className="w-3.5 h-3.5" />
+                                            <span>Simpan Perubahan</span>
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </form>

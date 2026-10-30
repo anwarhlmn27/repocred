@@ -647,9 +647,6 @@ export default function LamIndex({ prodis = defaultProdis }) {
                             <span>Dokumen Akreditasi LAM (Per Program Studi & TS)</span>
                         </div>
                         <h1 className="text-2xl font-black text-slate-800">Instrumen Akreditasi LAM (9 Kriteria)</h1>
-                        <p className="text-sm text-slate-500 mt-1 max-w-3xl">
-                            Repositori pohon folder evidensi 5 siklus penjaminan mutu PPEPP berbasis rentang evaluasi Tahun Akademik (TS, TS-1, TS-2).
-                        </p>
                     </div>
 
                     {/* Indikator Folder */}
@@ -736,43 +733,6 @@ export default function LamIndex({ prodis = defaultProdis }) {
                         <p className="text-sm text-slate-500 max-w-xl mx-auto mt-2 leading-relaxed">
                             Instrumen Akreditasi 9 Kriteria LAM bersifat khusus per-Program Studi. Silakan tentukan Program Studi melalui dropdown filter di atas untuk meninjau pohon folder kriteria, sesi evaluasi TS, dan eviden PPEPP.
                         </p>
-
-                        {/* Quick Selection Cards */}
-                        <div className="mt-8 pt-8 border-t border-slate-100 max-w-3xl mx-auto">
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">
-                                Atau Pilih Cepat Program Studi Di Bawah Ini:
-                            </p>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-                                {prodiList.map((p) => (
-                                    <button
-                                        key={p.id}
-                                        type="button"
-                                        onClick={() => handleSelectProdi(p.id)}
-                                        className="group p-4  border border-slate-200 hover:border-emerald-400 bg-slate-50/50 hover:bg-emerald-50/30 text-left transition-all duration-200 shadow-xs hover:shadow-md cursor-pointer flex flex-col justify-between"
-                                    >
-                                        <div>
-                                            <div className="flex items-center justify-between mb-2">
-                                                <span className="px-2 py-0.5  text-[11px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800">
-                                                    {p.degree} {p.acronym}
-                                                </span>
-                                                <span className="text-[10px] px-1.5 py-0.2  font-bold bg-slate-200 text-slate-700">
-                                                    {p.agency_code}
-                                                </span>
-                                            </div>
-                                            <h3 className="text-sm font-bold text-slate-800 group-hover:text-emerald-700 transition-colors">
-                                                {p.name_prodi}
-                                            </h3>
-                                            <p className="text-xs text-slate-400 mt-1">{p.faculty}</p>
-                                        </div>
-                                        <div className="mt-3 pt-2 border-t border-slate-200/60 text-[11px] font-semibold text-emerald-600 flex items-center justify-between">
-                                            <span>Buka Borang LAM &rarr;</span>
-                                            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                                        </div>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
                     </div>
                 ) : (
                     /* ======================================================== */
@@ -825,9 +785,8 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                         <button
                                             type="button"
                                             onClick={() => setTsCount(3)}
-                                            className={`px-3 py-1  font-semibold transition-all ${
-                                                tsCount === 3 ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
-                                            }`}
+                                            className={`px-3 py-1  font-semibold transition-all ${tsCount === 3 ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
+                                                }`}
                                             title="Standar LAMEMBA (3 Tahun Terakhir: TS, TS-1, TS-2)"
                                         >
                                             3 Tahun (TS s/d TS-2)
@@ -835,9 +794,8 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                         <button
                                             type="button"
                                             onClick={() => setTsCount(5)}
-                                            className={`px-3 py-1  font-semibold transition-all ${
-                                                tsCount === 5 ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
-                                            }`}
+                                            className={`px-3 py-1  font-semibold transition-all ${tsCount === 5 ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
+                                                }`}
                                             title="Standar LAM-TEKNIK / BAN-PT (5 Tahun Terakhir: TS s/d TS-4)"
                                         >
                                             5 Tahun (TS s/d TS-4)
@@ -895,9 +853,8 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                 return (
                                     <div
                                         key={crit.id}
-                                        className={` bg-white border transition-all duration-200 overflow-hidden shadow-xs ${
-                                            isCritExpanded ? 'border-emerald-300 ring-2 ring-emerald-500/10' : 'border-slate-200/80 hover:border-slate-300'
-                                        }`}
+                                        className={` bg-white border transition-all duration-200 overflow-hidden shadow-xs ${isCritExpanded ? 'border-emerald-300 ring-2 ring-emerald-500/10' : 'border-slate-200/80 hover:border-slate-300'
+                                            }`}
                                     >
                                         {/* Header Accordion Kriteria */}
                                         <div className="px-3.5 py-3 sm:px-4 sm:py-3.5 flex items-center justify-between bg-white border-b border-slate-100">
@@ -977,9 +934,8 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                         return (
                                                             <div
                                                                 key={tsOpt.key}
-                                                                className={` border transition-all duration-200 bg-white overflow-hidden shadow-xs ${
-                                                                    isTsFolderOpen ? 'border-slate-300 ring-1 ring-slate-200' : 'border-slate-200/80 hover:border-slate-300'
-                                                                }`}
+                                                                className={` border transition-all duration-200 bg-white overflow-hidden shadow-xs ${isTsFolderOpen ? 'border-slate-300 ring-1 ring-slate-200' : 'border-slate-200/80 hover:border-slate-300'
+                                                                    }`}
                                                             >
                                                                 {/* Header Subfolder TS */}
                                                                 <div className="px-3.5 py-2.5 flex items-center justify-between bg-slate-50/80 border-b border-slate-100">
@@ -996,13 +952,12 @@ export default function LamIndex({ prodis = defaultProdis }) {
 
                                                                         <div className="min-w-0">
                                                                             <div className="flex items-center gap-2">
-                                                                                <span className={`px-2 py-0.5  text-[10px] font-black tracking-wide uppercase ${
-                                                                                    tsOpt.key === 'all'
+                                                                                <span className={`px-2 py-0.5  text-[10px] font-black tracking-wide uppercase ${tsOpt.key === 'all'
                                                                                         ? 'bg-purple-100 text-purple-700'
                                                                                         : tsOpt.key === 'ts-0'
-                                                                                        ? 'bg-emerald-100 text-emerald-800'
-                                                                                        : 'bg-blue-100 text-blue-800'
-                                                                                }`}>
+                                                                                            ? 'bg-emerald-100 text-emerald-800'
+                                                                                            : 'bg-blue-100 text-blue-800'
+                                                                                    }`}>
                                                                                     {tsOpt.short}
                                                                                 </span>
                                                                                 <span className="text-xs font-bold text-slate-800 truncate">

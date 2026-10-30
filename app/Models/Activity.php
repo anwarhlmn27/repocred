@@ -19,10 +19,13 @@ class Activity extends Model
         'title_activity',
         'description',
         'academicyear_id',
-        'academic_year',
         'created_by',
         'updated_by',
         'status',
+    ];
+
+    protected $appends = [
+        'academic_year',
     ];
 
     public function session()
@@ -58,5 +61,17 @@ class Activity extends Model
     public function documents()
     {
         return $this->hasMany(ActivityDocument::class, 'activity_id');
+    }
+
+    /**
+     * Accessor untuk tahun akademik 4 digit (misal: 2025).
+     */
+    public function getAcademicYearAttribute()
+    {
+        if ($this->relationLoaded('academicYear')) {
+            return $this->getRelation('academicYear')?->year;
+        }
+
+        return $this->academicyear_id ? AcademicYear::find($this->academicyear_id)?->year : null;
     }
 }

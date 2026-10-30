@@ -148,9 +148,8 @@ export default function AuthenticatedLayout({ header, children }) {
                                             </small>
                                         </div>
                                         <i
-                                            className={`la la-angle-down ms-1 transition-transform ${
-                                                userDropdown ? 'rotate-180' : ''
-                                            }`}
+                                            className={`la la-angle-down ms-1 transition-transform ${userDropdown ? 'rotate-180' : ''
+                                                }`}
                                         ></i>
                                     </a>
 
@@ -384,8 +383,12 @@ export default function AuthenticatedLayout({ header, children }) {
             {/* Footer */}
             <div className="footer">
                 <div className="copyright">
-                    <p>
-                        Copyright © Dikembangkan untuk <strong>RepoCred</strong> {new Date().getFullYear()}
+                    <p className="text-center m-0">
+                        Copyright © Dikembangkan untuk{' '}
+                        <strong className="!inline font-bold text-slate-700" style={{ display: 'inline' }}>
+                            RepoCred
+                        </strong>{' '}
+                        {new Date().getFullYear()}
                     </p>
                 </div>
             </div>

@@ -344,7 +344,7 @@ jQuery(window).on('load',function () {
 	
 	$('#preloader').fadeOut(500);
     $('#main-wrapper').addClass('show');
-	$('select').selectpicker();
+	// $('select').selectpicker();
 	
 	Edumin.load();
 	

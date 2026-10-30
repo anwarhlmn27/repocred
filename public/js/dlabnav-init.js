@@ -71,7 +71,7 @@ function getUrlParams(dParam)
 				setCookie('version', 'light');
 				jQuery('#theme_version').val('light');
 			}
-			$('.default-select').selectpicker('refresh');
+			// $('.default-select').selectpicker('refresh');
 		});
 
 		// Apply saved version from cookie
