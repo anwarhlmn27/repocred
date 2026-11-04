@@ -25,7 +25,7 @@ const menuItems = [
         icon: 'FolderFolder',
         children: [
             { title: 'BAN-PT (4 Kriteria)', path: '/akreditasi/ban-pt' },
-            { title: 'LAM (9 Kriteria)', path: '/akreditasi/lam' },
+            { title: 'LAM (6 Kriteria)', path: '/akreditasi/lam' },
             { title: 'Matriks PPEPP', path: '/akreditasi/matriks-ppepp' },
         ],
     },

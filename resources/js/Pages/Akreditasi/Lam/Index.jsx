@@ -1,7 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
-import { useState, useMemo } from 'react';
-import { confirmAlert, toastSuccess, toastInfo } from '@/Utils/alert';
+import { Head, router } from '@inertiajs/react';
+import React, { useState, useMemo, useRef } from 'react';
+import { confirmAlert, toastSuccess, toastError, toastInfo } from '@/Utils/alert';
 import {
     Award,
     Filter,
@@ -11,14 +11,17 @@ import {
     ChevronUp,
     FileText,
     FileSpreadsheet,
+    FileCode,
     Plus,
     Folder,
     FolderOpen,
     UploadCloud,
     Trash2,
+    Edit2,
     CheckCircle2,
     AlertCircle,
     Eye,
+    Download,
     X,
     Layers,
     GraduationCap,
@@ -30,7 +33,8 @@ import {
     Clock,
     SlidersHorizontal,
     FolderPlus,
-    EyeOff
+    Search,
+    Loader2
 } from 'lucide-react';
 
 const PPEPP_STAGES = [
@@ -41,46 +45,18 @@ const PPEPP_STAGES = [
     { key: 'peningkatan', label: '5. Peningkatan (P)', desc: 'Akreditasi Internasional, Pemutakhiran Lab & Standar Baru' },
 ];
 
-const defaultProdis = [
-    {
-        id: 'p-ti',
-        code: '55201',
-        name_prodi: 'Teknik Informatika',
-        degree: 'S1',
-        faculty: 'Fakultas Ilmu Komputer',
-        acronym: 'TI',
-        agency_code: 'LAM-INFOKOM',
-        default_ts_count: 3,
-        description: 'Fokus keilmuan Rekayasa Perangkat Lunak, Kecerdasan Buatan, dan Komputasi Cerdas.',
-    },
-    {
-        id: 'p-si',
-        code: '57201',
-        name_prodi: 'Sistem Informasi',
-        degree: 'S1',
-        faculty: 'Fakultas Ilmu Komputer',
-        acronym: 'SI',
-        agency_code: 'LAM-INFOKOM',
-        default_ts_count: 3,
-        description: 'Fokus keilmuan Tata Kelola TI, Enterprise Architecture, dan Analisis Bisnis Digital.',
-    },
-    {
-        id: 'p-mnj',
-        code: '61201',
-        name_prodi: 'Manajemen',
-        degree: 'S1',
-        faculty: 'Fakultas Ekonomi dan Bisnis',
-        acronym: 'MNJ',
-        agency_code: 'LAMEMBA',
-        default_ts_count: 3, // LAMEMBA umumnya 3 tahun (TS s/d TS-2)
-        description: 'Fokus keilmuan Manajemen Bisnis, Kewirausahaan, dan Pemasaran Digital.',
-    },
-];
-
-// Helper kalkulasi daftar tahun TS berdasarkan tahun acuan TS dan jumlah TS
+/**
+ * Helper kalkulasi daftar opsi tahun TS berdasarkan tahun acuan TS dan jumlah TS
+ */
 const generateTsOptions = (tsYear, count = 3) => {
     const list = [
-        { key: 'all', label: 'Semua TS (Kebijakan/Siklus 5 Tahun)', short: 'Semua TS', year: null, desc: 'Untuk dokumen Renstra, VMTS, Kebijakan Lintas Tahun' },
+        {
+            key: 'all',
+            label: 'Semua TS (Kebijakan/Siklus 5 Tahun)',
+            short: 'Semua TS',
+            year: null,
+            desc: 'Untuk dokumen Renstra, VMTS, Kebijakan Lintas Tahun',
+        },
     ];
     for (let i = 0; i < count; i++) {
         const year = tsYear - i;
@@ -97,237 +73,73 @@ const generateTsOptions = (tsYear, count = 3) => {
     return list;
 };
 
-// Data Dasar 9 Kriteria LAM
-const baseLamCriterias = [
-    {
-        id: 'crit-l-1',
-        code_criteria: 1,
-        title_criteria: 'Visi, Misi, Tujuan, dan Strategi (VMTS) Keilmuan Program Studi',
-        default_ts_enabled: ['all'], // Kriteria 1 biasanya hanya butuh folder Semua TS
-        activities: [
-            {
-                id: 'act-ti-1',
-                title_activity: 'Penyusunan & Sosialisasi VMTS Prodi Berbasis AI & Software Engineering',
-                ts_key: 'all',
-                ts_label: 'Semua TS',
-                year: null,
-                status: 'published',
-                ppepp_docs: {
-                    penetapan: [
-                        { id: 'fl-1', name: 'SK_Dekan_Rumusan_VMTS_Keilmuan_TI.pdf', size: '1.6 MB', date: '15 Jan 2025' },
-                        { id: 'fl-1b', name: 'Buku_Renstra_Program_Studi_TI_2024_2029.pdf', size: '3.4 MB', date: '18 Jan 2025' },
-                    ],
-                    pelaksanaan: [
-                        { id: 'fl-2', name: 'Laporan_Sosialisasi_Maba_Dan_Mitra_Industri.pdf', size: '2.4 MB', date: '01 Feb 2025' },
-                    ],
-                    evaluasi: [
-                        { id: 'fl-3', name: 'Hasil_Survei_Pemahaman_VMTS_Prodi_94Persen.pdf', size: '920 KB', date: '25 Feb 2025' },
-                    ],
-                    pengendalian: [],
-                    peningkatan: [],
-                },
-            },
-        ],
-    },
-    {
-        id: 'crit-l-2',
-        code_criteria: 2,
-        title_criteria: 'Tata Pamong, Tata Kelola, dan Kerjasama Tridharma Program Studi',
-        default_ts_enabled: ['all', 'ts-0'],
-        activities: [
-            {
-                id: 'act-ti-2',
-                title_activity: 'MoU Kerjasama Industri Teknologi & Program Magang Kampus Merdeka',
-                ts_key: 'ts-0',
-                ts_label: 'TS (2024)',
-                year: 2024,
-                status: 'published',
-                ppepp_docs: {
-                    penetapan: [
-                        { id: 'fl-20', name: 'Pedoman_Kerjasama_Kemitraan_Prodi_TI.pdf', size: '2.1 MB', date: '10 Jan 2025' },
-                    ],
-                    pelaksanaan: [
-                        { id: 'fl-21', name: 'Dokumen_MoU_12_Perusahaan_Teknologi.pdf', size: '6.8 MB', date: '20 Feb 2025' },
-                    ],
-                    evaluasi: [],
-                    pengendalian: [],
-                    peningkatan: [],
-                },
-            },
-        ],
-    },
-    {
-        id: 'crit-l-3',
-        code_criteria: 3,
-        title_criteria: 'Mahasiswa dan Layanan Pembinaan Kemahasiswaan',
-        default_ts_enabled: ['all', 'ts-0', 'ts-1', 'ts-2'],
-        activities: [
-            {
-                id: 'act-ti-3',
-                title_activity: 'Pembinaan Prestasi Kompetensi Gemastik & Lomba Inovasi Nasional',
-                ts_key: 'ts-0',
-                ts_label: 'TS (2024)',
-                year: 2024,
-                status: 'published',
-                ppepp_docs: {
-                    penetapan: [
-                        { id: 'fl-30', name: 'SK_Tim_Pembina_Prestasi_Mahasiswa_TI.pdf', size: '980 KB', date: '05 Feb 2025' },
-                    ],
-                    pelaksanaan: [
-                        { id: 'fl-31', name: 'Piagam_Juara_2_Gemastik_Data_Mining.pdf', size: '3.1 MB', date: '12 Mar 2025' },
-                    ],
-                    evaluasi: [],
-                    pengendalian: [],
-                    peningkatan: [],
-                },
-            },
-        ],
-    },
-    {
-        id: 'crit-l-4',
-        code_criteria: 4,
-        title_criteria: 'Sumber Daya Manusia (Dosen Tetap Program Studi & Tenaga Kependidikan)',
-        default_ts_enabled: ['all', 'ts-0', 'ts-1', 'ts-2'],
-        activities: [],
-    },
-    {
-        id: 'crit-l-5',
-        code_criteria: 5,
-        title_criteria: 'Keuangan, Sarana dan Prasarana Penunjang Akademik Program Studi',
-        default_ts_enabled: ['all', 'ts-0', 'ts-1', 'ts-2'],
-        activities: [],
-    },
-    {
-        id: 'crit-l-6',
-        code_criteria: 6,
-        title_criteria: 'Pendidikan & Kurikulum Outcome-Based Education (OBE) Berstandar IEEE/ACM',
-        default_ts_enabled: ['all', 'ts-0', 'ts-1', 'ts-2'],
-        activities: [
-            {
-                id: 'act-ti-6',
-                title_activity: 'Review Kurikulum OBE & Pemetaan Capaian Pembelajaran Lulusan (CPL)',
-                ts_key: 'ts-0',
-                ts_label: 'TS (2024)',
-                year: 2024,
-                status: 'published',
-                ppepp_docs: {
-                    penetapan: [
-                        { id: 'fl-4', name: 'Dokumen_Kurikulum_OBE_Standar_ACM.pdf', size: '5.8 MB', date: '10 Jan 2025' },
-                        { id: 'fl-4b', name: 'Matrix_CPL_Terhadap_Profil_Lulusan.xlsx', size: '1.4 MB', date: '15 Jan 2025' },
-                    ],
-                    pelaksanaan: [
-                        { id: 'fl-5', name: 'Kompilasi_RPS_OBE_Mata_Kuliah_Inti.pdf', size: '12.4 MB', date: '01 Feb 2025' },
-                    ],
-                    evaluasi: [
-                        { id: 'fl-6', name: 'Laporan_Asesmen_Ketercapaian_CPL_Semester.pdf', size: '3.1 MB', date: '15 Mar 2025' },
-                    ],
-                    pengendalian: [
-                        { id: 'fl-7', name: 'Berita_Acara_RTM_Remedial_CPL_Rendah.pdf', size: '820 KB', date: '20 Mar 2025' },
-                    ],
-                    peningkatan: [
-                        { id: 'fl-8', name: 'Rencana_Upgrade_Modul_Microcredentials_AI.pdf', size: '1.5 MB', date: '02 Apr 2025' },
-                    ],
-                },
-            },
-            {
-                id: 'act-ti-6b',
-                title_activity: 'Lokakarya Peninjauan Silabus & Rubrik Penilaian Capstone Project',
-                ts_key: 'ts-1',
-                ts_label: 'TS-1 (2023)',
-                year: 2023,
-                status: 'published',
-                ppepp_docs: {
-                    penetapan: [
-                        { id: 'fl-40', name: 'Pedoman_Tugas_Akhir_Capstone_2023.pdf', size: '2.8 MB', date: '12 Des 2023' },
-                    ],
-                    pelaksanaan: [
-                        { id: 'fl-41', name: 'Berita_Acara_Sidang_Komprehensif.pdf', size: '3.6 MB', date: '15 Jan 2024' },
-                    ],
-                    evaluasi: [],
-                    pengendalian: [],
-                    peningkatan: [],
-                },
-            },
-        ],
-    },
-    {
-        id: 'crit-l-7',
-        code_criteria: 7,
-        title_criteria: 'Penelitian Dosen Bersama Mahasiswa Bereputasi Nasional/Internasional',
-        default_ts_enabled: ['all', 'ts-0', 'ts-1', 'ts-2'],
-        activities: [
-            {
-                id: 'act-ti-7',
-                title_activity: 'Hibah Penelitian Terapan Kemendikbudristek & Publikasi IEEE Access',
-                ts_key: 'ts-0',
-                ts_label: 'TS (2024)',
-                year: 2024,
-                status: 'published',
-                ppepp_docs: {
-                    penetapan: [
-                        { id: 'fl-9', name: 'Roadmap_Penelitian_Prodi_TI_2024_2029.pdf', size: '2.2 MB', date: '05 Jan 2025' },
-                    ],
-                    pelaksanaan: [
-                        { id: 'fl-10', name: 'Draft_Naskah_Publikasi_IEEE_Access_Q2.pdf', size: '4.6 MB', date: '22 Feb 2025' },
-                    ],
-                    evaluasi: [],
-                    pengendalian: [],
-                    peningkatan: [],
-                },
-            },
-        ],
-    },
-    {
-        id: 'crit-l-8',
-        code_criteria: 8,
-        title_criteria: 'Pengabdian kepada Masyarakat (PkM) Penerapan IPTEK bagi Masyarakat',
-        default_ts_enabled: ['all', 'ts-0', 'ts-1', 'ts-2'],
-        activities: [],
-    },
-    {
-        id: 'crit-l-9',
-        code_criteria: 9,
-        title_criteria: 'Luaran dan Capaian Tridharma (Tracer Study & Waktu Tunggu Lulusan)',
-        default_ts_enabled: ['all', 'ts-0', 'ts-1', 'ts-2'],
-        activities: [],
-    },
-];
+/**
+ * Helper icon file berdasarkan ekstensi
+ */
+const getFileIcon = (fileName = '') => {
+    const lower = fileName.toLowerCase();
+    if (lower.endsWith('.pdf')) {
+        return <FileText className="w-3.5 h-3.5 text-rose-500 shrink-0" />;
+    }
+    if (lower.endsWith('.xlsx') || lower.endsWith('.xls') || lower.endsWith('.csv')) {
+        return <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 shrink-0" />;
+    }
+    if (lower.endsWith('.docx') || lower.endsWith('.doc')) {
+        return <FileCode className="w-3.5 h-3.5 text-blue-600 shrink-0" />;
+    }
+    return <FileText className="w-3.5 h-3.5 text-slate-500 shrink-0" />;
+};
 
-export default function LamIndex({ prodis = defaultProdis }) {
-    const prodiList = prodis?.length > 0 ? prodis : defaultProdis;
-
-    // Filter Prodi: Awalnya kosong agar tidak memicu kerancuan
-    const [selectedProdi, setSelectedProdi] = useState('');
+export default function LamIndex({
+    prodis = [],
+    selectedProdiId = '',
+    activeSession = null,
+    criterias = [],
+    academicYears = [],
+    ppepps = [],
+}) {
+    // Program Studi yang sedang aktif dipilih
+    const [selectedProdi, setSelectedProdi] = useState(selectedProdiId || '');
 
     // Konfigurasi Sesi Akreditasi Aktif
-    const [tsYear, setTsYear] = useState(2024); // TS acuan
-    const [tsCount, setTsCount] = useState(3);   // 3 tahun (LAMEMBA) atau 5 tahun (LAM-TEKNIK)
-    const [hideEmptyTs, setHideEmptyTs] = useState(false); // Opsi sembunyikan folder TS kosong
+    const tsYear = activeSession?.ts_year ?? new Date().getFullYear();
+    const tsCount = activeSession?.ts_count ?? 3;
 
-    // State Kriteria beserta folder TS kustom per-kriteria
-    const [criterias, setCriterias] = useState(baseLamCriterias);
-    const [expandedCrit, setExpandedCrit] = useState('crit-l-1');
+    // Filter lokal
+    const [hideEmptyTs, setHideEmptyTs] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    // Accordion Kriteria (Default buka kriteria pertama jika ada data)
+    const [expandedCrit, setExpandedCrit] = useState(() => criterias[0]?.id || null);
 
     // Folder TS yang dibuka/ditutup (Key: `${critId}-${tsKey}`)
-    const [expandedTsFolders, setExpandedTsFolders] = useState({
-        'crit-l-1-all': true,
-        'crit-l-6-ts-0': true,
-        'crit-l-6-ts-1': true,
-        'crit-l-7-ts-0': true,
+    const [expandedTsFolders, setExpandedTsFolders] = useState(() => {
+        const initial = {};
+        if (criterias[0]) {
+            initial[`${criterias[0].id}-all`] = true;
+            initial[`${criterias[0].id}-ts-0`] = true;
+        }
+        return initial;
     });
 
-    // Kegiatan yang dibuka/ditutup (Key: activityId)
-    const [expandedActivities, setExpandedActivities] = useState({
-        'act-ti-1': true,
-        'act-ti-6': true,
+    // Folder Kegiatan yang dibuka/ditutup (Key: activityId)
+    const [expandedActivities, setExpandedActivities] = useState(() => {
+        const initial = {};
+        if (criterias[0]?.activities?.[0]) {
+            initial[criterias[0].activities[0].id] = true;
+        }
+        return initial;
     });
 
     // Subfolder PPEPP yang dibuka/ditutup (Key: `${activityId}-${stageKey}`)
-    const [expandedPpepp, setExpandedPpepp] = useState({
-        'act-ti-1-penetapan': true,
-        'act-ti-1-pelaksanaan': true,
-        'act-ti-6-penetapan': true,
-        'act-ti-6-pelaksanaan': true,
+    const [expandedPpepp, setExpandedPpepp] = useState(() => {
+        const initial = {};
+        if (criterias[0]?.activities?.[0]) {
+            const actId = criterias[0].activities[0].id;
+            initial[`${actId}-penetapan`] = true;
+            initial[`${actId}-pelaksanaan`] = true;
+        }
+        return initial;
     });
 
     // Modal Tambah Kegiatan
@@ -339,16 +151,22 @@ export default function LamIndex({ prodis = defaultProdis }) {
         presetTsKey: 'all',
     });
     const [formTitleActivity, setFormTitleActivity] = useState('');
+    const [formDescription, setFormDescription] = useState('');
     const [formSelectedTsKey, setFormSelectedTsKey] = useState('all');
+    const [isSavingActivity, setIsSavingActivity] = useState(false);
 
-    // Modal Tambah Folder TS Baru ke Kriteria
-    const [addTsFolderModal, setAddTsFolderModal] = useState({
+    // Modal Edit Kegiatan
+    const [editActivityModal, setEditActivityModal] = useState({
         isOpen: false,
+        activityId: null,
         critId: null,
         critCode: null,
         critTitle: '',
+        title_activity: '',
+        description: '',
+        ts_key: 'all',
     });
-    const [selectedNewTsKey, setSelectedNewTsKey] = useState('ts-3');
+    const [isUpdatingActivity, setIsUpdatingActivity] = useState(false);
 
     // Modal Upload File PPEPP
     const [uploadModal, setUploadModal] = useState({
@@ -359,28 +177,51 @@ export default function LamIndex({ prodis = defaultProdis }) {
         stageLabel: null,
         activityTitle: '',
     });
-    const [fileNameInput, setFileNameInput] = useState('');
+    const [uploadFile, setUploadFile] = useState(null);
+    const [customFileName, setCustomFileName] = useState('');
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef(null);
 
     // Objek prodi yang dipilih
-    const activeProdi = prodiList.find((p) => p.id === selectedProdi);
+    const activeProdi = useMemo(() => {
+        return prodis.find((p) => String(p.id) === String(selectedProdi)) || null;
+    }, [prodis, selectedProdi]);
 
     // Opsi TS yang tersedia sesuai tsCount
     const allPossibleTsOptions = useMemo(() => {
-        return generateTsOptions(tsYear, 5); // Sampai TS-4
+        return generateTsOptions(tsYear, 5); // Hingga TS-4
     }, [tsYear]);
 
-    const activeTsOptions = useMemo(() => {
-        return generateTsOptions(tsYear, tsCount);
-    }, [tsYear, tsCount]);
-
-    // Handler Ganti Prodi
+    // Handler Ganti Prodi via Inertia
     const handleSelectProdi = (prodiId) => {
         setSelectedProdi(prodiId);
-        const p = prodiList.find((x) => x.id === prodiId);
-        if (p?.default_ts_count) {
-            setTsCount(p.default_ts_count);
+        if (!prodiId) {
+            router.get(route('akreditasi.lam'), {}, { preserveScroll: true });
+        } else {
+            router.get(route('akreditasi.lam'), { prodi_id: prodiId }, { preserveScroll: true });
         }
-        setExpandedCrit('crit-l-1');
+    };
+
+    // Handler Update Rentang TS (3 Tahun / 5 Tahun)
+    const handleUpdateTsCount = (newCount) => {
+        if (!activeSession) return;
+        router.put(
+            route('akreditasi.lam.sesi.update', { session: activeSession.id }),
+            {
+                ts_year: tsYear,
+                ts_count: newCount,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    toastSuccess(`Rentang evaluasi TS berhasil diubah menjadi ${newCount} tahun.`);
+                },
+                onError: (err) => {
+                    const msg = Object.values(err)[0] || 'Gagal memperbarui rentang TS.';
+                    toastError(msg);
+                },
+            }
+        );
     };
 
     // Toggle Kriteria
@@ -412,7 +253,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
         }));
     };
 
-    // Buka Modal Tambah Kegiatan (Dengan preset TS jika diklik dari dalam folder TS)
+    // Buka Modal Tambah Kegiatan
     const handleOpenAddActivity = (critId, critCode, critTitle, presetTsKey = 'all') => {
         setNewActivityModal({
             isOpen: true,
@@ -422,107 +263,150 @@ export default function LamIndex({ prodis = defaultProdis }) {
             presetTsKey,
         });
         setFormTitleActivity('');
+        setFormDescription('');
         setFormSelectedTsKey(presetTsKey);
     };
 
-    // Submit Tambah Kegiatan Baru
+    // Submit Tambah Kegiatan Baru via Inertia
     const handleSubmitActivity = (e) => {
         e.preventDefault();
-        if (!formTitleActivity.trim()) return;
+        if (!formTitleActivity.trim() || !activeSession || !newActivityModal.critId) {
+            toastError('Nama kegiatan wajib diisi.');
+            return;
+        }
+
+        setIsSavingActivity(true);
 
         const tsObj = allPossibleTsOptions.find((t) => t.key === formSelectedTsKey) || allPossibleTsOptions[0];
 
-        const newAct = {
-            id: `act-${Date.now()}`,
-            title_activity: formTitleActivity.trim(),
-            ts_key: tsObj.key,
-            ts_label: tsObj.short,
-            year: tsObj.year,
-            status: 'published',
-            ppepp_docs: {
-                penetapan: [],
-                pelaksanaan: [],
-                evaluasi: [],
-                pengendalian: [],
-                peningkatan: [],
+        // Cari master academicyear jika tahun spesifik
+        const matchedAy = tsObj.year ? academicYears.find((ay) => Number(ay.year) === Number(tsObj.year)) : null;
+
+        router.post(
+            route('akreditasi.lam.kegiatan.store'),
+            {
+                session_id: activeSession.id,
+                criteria_id: newActivityModal.critId,
+                title_activity: formTitleActivity.trim(),
+                description: formDescription.trim() || null,
+                ts_key: tsObj.key,
+                year: tsObj.year,
+                academic_year: tsObj.year,
+                academicyear_id: matchedAy?.id || null,
             },
-        };
-
-        setCriterias((prev) =>
-            prev.map((crit) => {
-                if (crit.id !== newActivityModal.critId) return crit;
-                // Pastikan folder TS ini masuk ke daftar enabled kriteria jika belum ada
-                const currentEnabled = crit.default_ts_enabled || ['all'];
-                const updatedEnabled = currentEnabled.includes(tsObj.key) ? currentEnabled : [...currentEnabled, tsObj.key];
-
-                return {
-                    ...crit,
-                    default_ts_enabled: updatedEnabled,
-                    activities: [newAct, ...(crit.activities || [])],
-                };
-            })
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    const critId = newActivityModal.critId;
+                    setExpandedTsFolders((prev) => ({
+                        ...prev,
+                        [`${critId}-${tsObj.key}`]: true,
+                    }));
+                    setNewActivityModal({
+                        isOpen: false,
+                        critId: null,
+                        critCode: null,
+                        critTitle: '',
+                        presetTsKey: 'all',
+                    });
+                    setFormTitleActivity('');
+                    setFormDescription('');
+                    toastSuccess('Kegiatan akreditasi LAM berhasil ditambahkan.');
+                },
+                onError: (err) => {
+                    const msg = Object.values(err)[0] || 'Gagal menambahkan kegiatan.';
+                    toastError(msg);
+                },
+                onFinish: () => {
+                    setIsSavingActivity(false);
+                },
+            }
         );
-
-        // Buka folder TS dan buka kegiatan yang baru dibuat
-        setExpandedTsFolders((prev) => ({
-            ...prev,
-            [`${newActivityModal.critId}-${tsObj.key}`]: true,
-        }));
-        setExpandedActivities((prev) => ({
-            ...prev,
-            [newAct.id]: true,
-        }));
-
-        setNewActivityModal({ isOpen: false, critId: null, critCode: null, critTitle: '', presetTsKey: 'all' });
-        setFormTitleActivity('');
     };
 
-    // Hapus Folder TS dari Kriteria (Hanya jika folder kosong)
-    const handleDeleteTsFolder = async (critId, tsKey, tsLabel) => {
+    // Buka Modal Edit Kegiatan
+    const handleOpenEditActivity = (crit, act) => {
+        setEditActivityModal({
+            isOpen: true,
+            activityId: act.id,
+            critId: crit.id,
+            critCode: crit.code_criteria,
+            critTitle: crit.title_criteria,
+            title_activity: act.title_activity || '',
+            description: act.description || '',
+            ts_key: act.ts_key || 'all',
+        });
+    };
+
+    // Submit Update Kegiatan via Inertia
+    const handleUpdateActivity = (e) => {
+        e.preventDefault();
+        if (!editActivityModal.title_activity.trim() || !editActivityModal.activityId) {
+            toastError('Nama kegiatan wajib diisi.');
+            return;
+        }
+
+        setIsUpdatingActivity(true);
+
+        const tsObj = allPossibleTsOptions.find((t) => t.key === editActivityModal.ts_key) || allPossibleTsOptions[0];
+        const matchedAy = tsObj.year ? academicYears.find((ay) => Number(ay.year) === Number(tsObj.year)) : null;
+
+        router.put(
+            route('akreditasi.lam.kegiatan.update', { activity: editActivityModal.activityId }),
+            {
+                title_activity: editActivityModal.title_activity.trim(),
+                description: editActivityModal.description.trim() || null,
+                ts_key: tsObj.key,
+                year: tsObj.year,
+                academic_year: tsObj.year,
+                academicyear_id: matchedAy?.id || null,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setEditActivityModal({
+                        isOpen: false,
+                        activityId: null,
+                        critId: null,
+                        critCode: null,
+                        critTitle: '',
+                        title_activity: '',
+                        description: '',
+                        ts_key: 'all',
+                    });
+                    toastSuccess('Data kegiatan berhasil diperbarui.');
+                },
+                onError: (err) => {
+                    const msg = Object.values(err)[0] || 'Gagal memperbarui kegiatan.';
+                    toastError(msg);
+                },
+                onFinish: () => {
+                    setIsUpdatingActivity(false);
+                },
+            }
+        );
+    };
+
+    // Hapus Kegiatan via Inertia
+    const handleDeleteActivity = async (critId, act) => {
         const confirmed = await confirmAlert({
-            title: 'Hapus Folder TS?',
-            text: `Apakah Anda yakin ingin menghapus folder ${tsLabel} dari kriteria ini?`,
-            confirmButtonText: 'Ya, Hapus',
+            title: 'Hapus Kegiatan?',
+            text: `Apakah Anda yakin ingin menghapus kegiatan "${act.title_activity}"? Seluruh dokumen eviden PPEPP di dalamnya juga akan terhapus.`,
+            confirmButtonText: 'Ya, Hapus Semua',
             cancelButtonText: 'Batal',
         });
         if (!confirmed) return;
 
-        setCriterias((prev) =>
-            prev.map((crit) => {
-                if (crit.id !== critId) return crit;
-                const currentEnabled = crit.default_ts_enabled || ['all'];
-                return {
-                    ...crit,
-                    default_ts_enabled: currentEnabled.filter((k) => k !== tsKey),
-                };
-            })
-        );
-    };
-
-    // Tambah Folder TS Baru ke Kriteria
-    const handleAddTsFolderToCrit = (e) => {
-        e.preventDefault();
-        const { critId } = addTsFolderModal;
-        if (!critId) return;
-
-        setCriterias((prev) =>
-            prev.map((crit) => {
-                if (crit.id !== critId) return crit;
-                const currentEnabled = crit.default_ts_enabled || ['all'];
-                if (currentEnabled.includes(selectedNewTsKey)) return crit;
-                return {
-                    ...crit,
-                    default_ts_enabled: [...currentEnabled, selectedNewTsKey],
-                };
-            })
-        );
-
-        setExpandedTsFolders((prev) => ({
-            ...prev,
-            [`${critId}-${selectedNewTsKey}`]: true,
-        }));
-
-        setAddTsFolderModal({ isOpen: false, critId: null, critCode: null, critTitle: '' });
+        router.delete(route('akreditasi.lam.kegiatan.destroy', { activity: act.id }), {
+            preserveScroll: true,
+            onSuccess: () => {
+                toastSuccess('Kegiatan beserta seluruh dokumen di dalamnya berhasil dihapus.');
+            },
+            onError: (err) => {
+                const msg = Object.values(err)[0] || 'Gagal menghapus kegiatan.';
+                toastError(msg);
+            },
+        });
     };
 
     // Buka Modal Upload Dokumen PPEPP
@@ -535,136 +419,185 @@ export default function LamIndex({ prodis = defaultProdis }) {
             stageLabel,
             activityTitle,
         });
-        setFileNameInput('');
+        setUploadFile(null);
+        setCustomFileName('');
+        setIsUploading(false);
     };
 
-    // Konfirmasi Upload Dokumen
+    // Tutup Modal Upload
+    const handleCloseUpload = () => {
+        if (isUploading) return;
+        setUploadModal({
+            isOpen: false,
+            critId: null,
+            activityId: null,
+            stageKey: null,
+            stageLabel: null,
+            activityTitle: '',
+        });
+        setUploadFile(null);
+        setCustomFileName('');
+    };
+
+    // File selection handler
+    const handleFileChange = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setUploadFile(file);
+            if (!customFileName) {
+                const nameWithoutExt = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+                setCustomFileName(nameWithoutExt);
+            }
+        }
+    };
+
+    // Konfirmasi Upload Dokumen Real via FormData
     const handleConfirmUpload = (e) => {
         e.preventDefault();
-        if (!fileNameInput.trim()) return;
+        if (!uploadFile || !uploadModal.activityId || !uploadModal.stageKey) {
+            toastError('Silakan pilih file dokumen yang ingin diunggah.');
+            return;
+        }
 
-        const newDoc = {
-            id: `doc-${Date.now()}`,
-            name: fileNameInput.endsWith('.pdf') || fileNameInput.endsWith('.docx') ? fileNameInput : `${fileNameInput}.pdf`,
-            size: `${(Math.random() * 3 + 0.5).toFixed(1)} MB`,
-            date: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
-        };
+        setIsUploading(true);
 
-        setCriterias((prev) =>
-            prev.map((crit) => {
-                if (crit.id !== uploadModal.critId) return crit;
-                return {
-                    ...crit,
-                    activities: (crit.activities || []).map((act) => {
-                        if (act.id !== uploadModal.activityId) return act;
-                        const currentStageDocs = act.ppepp_docs?.[uploadModal.stageKey] || [];
-                        return {
-                            ...act,
-                            ppepp_docs: {
-                                ...act.ppepp_docs,
-                                [uploadModal.stageKey]: [...currentStageDocs, newDoc],
-                            },
-                        };
-                    }),
-                };
-            })
-        );
+        const formData = new FormData();
+        formData.append('activity_id', uploadModal.activityId);
+        formData.append('stage_key', uploadModal.stageKey);
+        formData.append('file', uploadFile);
+        if (customFileName.trim()) {
+            formData.append('custom_name', customFileName.trim());
+        }
 
-        setExpandedPpepp((prev) => ({
-            ...prev,
-            [`${uploadModal.activityId}-${uploadModal.stageKey}`]: true,
-        }));
-
-        setUploadModal({ isOpen: false, critId: null, activityId: null, stageKey: null, stageLabel: null, activityTitle: '' });
+        router.post(route('akreditasi.lam.dokumen.upload'), formData, {
+            preserveScroll: true,
+            onSuccess: () => {
+                const actId = uploadModal.activityId;
+                const stage = uploadModal.stageKey;
+                setExpandedActivities((prev) => ({ ...prev, [actId]: true }));
+                setExpandedPpepp((prev) => ({ ...prev, [`${actId}-${stage}`]: true }));
+                handleCloseUpload();
+                toastSuccess('Dokumen eviden PPEPP berhasil diunggah.');
+            },
+            onError: (err) => {
+                const msg = Object.values(err)[0] || 'Gagal mengunggah dokumen.';
+                toastError(msg);
+            },
+            onFinish: () => {
+                setIsUploading(false);
+            },
+        });
     };
 
-    // Hapus File Dokumen
-    const handleDeleteFile = async (critId, activityId, stageKey, fileId, fileName) => {
+    // Hapus File Dokumen via Inertia
+    const handleDeleteFile = async (docId, fileName) => {
         const confirmed = await confirmAlert({
-            title: 'Hapus Berkas PPEPP?',
-            text: `Apakah Anda yakin ingin menghapus file "${fileName}" dari tahap PPEPP?`,
+            title: 'Hapus Dokumen Eviden?',
+            text: `Apakah Anda yakin ingin menghapus berkas "${fileName}" dari server secara permanen?`,
             confirmButtonText: 'Ya, Hapus',
             cancelButtonText: 'Batal',
         });
         if (!confirmed) return;
 
-        setCriterias((prev) =>
-            prev.map((crit) => {
-                if (crit.id !== critId) return crit;
-                return {
-                    ...crit,
-                    activities: (crit.activities || []).map((act) => {
-                        if (act.id !== activityId) return act;
-                        return {
-                            ...act,
-                            ppepp_docs: {
-                                ...act.ppepp_docs,
-                                [stageKey]: (act.ppepp_docs?.[stageKey] || []).filter((f) => f.id !== fileId),
-                            },
-                        };
-                    }),
-                };
-            })
-        );
-        toastSuccess(`File "${fileName}" berhasil dihapus.`);
-    };
-
-    // Hapus Kegiatan
-    const handleDeleteActivity = async (critId, actId, title) => {
-        const confirmed = await confirmAlert({
-            title: 'Hapus Kegiatan?',
-            text: `Apakah Anda yakin ingin menghapus seluruh kegiatan "${title}" beserta semua dokumen PPEPP di dalamnya?`,
-            confirmButtonText: 'Ya, Hapus',
-            cancelButtonText: 'Batal',
+        router.delete(route('akreditasi.lam.dokumen.destroy', { document: docId }), {
+            preserveScroll: true,
+            onSuccess: () => {
+                toastSuccess(`Dokumen "${fileName}" berhasil dihapus.`);
+            },
+            onError: (err) => {
+                const msg = Object.values(err)[0] || 'Gagal menghapus dokumen.';
+                toastError(msg);
+            },
         });
-        if (!confirmed) return;
-
-        setCriterias((prev) =>
-            prev.map((crit) => {
-                if (crit.id !== critId) return crit;
-                return {
-                    ...crit,
-                    activities: (crit.activities || []).filter((a) => a.id !== actId),
-                };
-            })
-        );
-        toastSuccess(`Kegiatan "${title}" berhasil dihapus.`);
     };
 
-    // Total kegiatan di seluruh kriteria
-    const totalAllActivities = criterias.reduce((acc, c) => acc + (c.activities?.length || 0), 0);
+    // Total kegiatan di seluruh kriteria pada prodi terpilih
+    const totalAllActivities = useMemo(() => {
+        return criterias.reduce((acc, c) => acc + (c.activities?.length || 0), 0);
+    }, [criterias]);
+
+    // Total file dokumen di seluruh kriteria
+    const totalAllDocuments = useMemo(() => {
+        let count = 0;
+        criterias.forEach((c) => {
+            (c.activities || []).forEach((a) => {
+                if (a.ppepp_docs) {
+                    Object.values(a.ppepp_docs).forEach((arr) => {
+                        if (Array.isArray(arr)) count += arr.length;
+                    });
+                }
+            });
+        });
+        return count;
+    }, [criterias]);
+
+    // Filter pencarian kriteria & kegiatan
+    const filteredCriterias = useMemo(() => {
+        if (!searchQuery.trim()) return criterias;
+        const q = searchQuery.toLowerCase();
+
+        return criterias.map((crit) => {
+            const matchesCrit = crit.title_criteria?.toLowerCase().includes(q);
+            const filteredActivities = (crit.activities || []).filter((act) => {
+                const matchTitle = act.title_activity?.toLowerCase().includes(q);
+                const matchDesc = act.description?.toLowerCase().includes(q);
+                const matchTs = act.ts_label?.toLowerCase().includes(q);
+                let matchDoc = false;
+                if (act.ppepp_docs) {
+                    Object.values(act.ppepp_docs).forEach((docs) => {
+                        if (Array.isArray(docs)) {
+                            docs.forEach((d) => {
+                                if (d.name?.toLowerCase().includes(q)) matchDoc = true;
+                            });
+                        }
+                    });
+                }
+                return matchTitle || matchDesc || matchTs || matchDoc;
+            });
+
+            return {
+                ...crit,
+                activities: matchesCrit ? crit.activities : filteredActivities,
+            };
+        });
+    }, [criterias, searchQuery]);
 
     return (
         <AuthenticatedLayout>
-            <Head title="Dokumen Akreditasi LAM (9 Kriteria & Folderisasi TS)" />
+            <Head title="Dokumen Akreditasi LAM (6 Kriteria & Folderisasi TS)" />
 
             <div className="space-y-6">
                 {/* Header Utama Halaman */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6  border border-slate-200/80 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 border border-slate-200/80 shadow-xs">
                     <div>
                         <div className="flex items-center gap-2 text-emerald-600 font-bold text-xs tracking-wider uppercase mb-1">
                             <Layers className="w-4 h-4" />
-                            <span>Dokumen Akreditasi LAM (Per Program Studi & TS)</span>
+                            <span>Dokumen Akreditasi LAM</span>
                         </div>
-                        <h1 className="text-2xl font-black text-slate-800">Instrumen Akreditasi LAM (9 Kriteria)</h1>
+                        <h1 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
+                            Instrumen Akreditasi LAM (6 Kriteria)
+                        </h1>
+                        {/* <p className="text-xs text-slate-500 mt-1 max-w-3xl leading-relaxed">
+                            Pengelolaan dokumen borang, evaluasi capaian kurikulum OBE, dan evidensi penjaminan mutu PPEPP tingkat Program Studi berbasis siklus Tahun Sekarang (TS).
+                        </p> */}
                     </div>
 
-                    {/* Indikator Folder */}
-                    <div className="flex flex-wrap items-center gap-3 bg-slate-50 px-4 py-2.5  border border-slate-200 text-xs shrink-0">
+                    {/* Indikator Folder PPEPP */}
+                    <div className="flex flex-wrap items-center gap-3 bg-slate-50 px-4 py-2.5 border border-slate-200 text-xs shrink-0">
                         <span className="font-semibold text-slate-700">Indikator PPEPP:</span>
                         <div className="flex items-center gap-1.5 text-slate-600 font-medium">
-                            <span className="w-3 h-3  bg-emerald-500 inline-block" />
+                            <span className="w-2.5 h-2.5 bg-emerald-500 inline-block" />
                             <span>Lengkap</span>
                         </div>
-                        <div className="flex items-center gap-1.5 text-rose-600 font-bold bg-rose-50 px-2 py-0.5  border border-rose-200">
+                        <div className="flex items-center gap-1.5 text-rose-600 font-bold bg-rose-50 px-2 py-0.5 border border-rose-200">
                             <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
                             <span>Belum Ada File</span>
                         </div>
                     </div>
                 </div>
 
-                {/* Filter Bar: Hanya Berbasis Prodi */}
-                <div className="bg-white p-4 sm:p-5  border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                {/* Filter Bar: Hanya Berbasis Prodi (Gambar 2 Format) */}
+                <div className="bg-white p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
                         <div className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wide">
                             <Filter className="w-4 h-4 text-emerald-600" />
@@ -672,15 +605,15 @@ export default function LamIndex({ prodis = defaultProdis }) {
                         </div>
 
                         {/* Dropdown Program Studi */}
-                        <div className="relative min-w-[280px] sm:min-w-[340px]">
+                        <div className="relative min-w-[280px] sm:min-w-[360px]">
                             <select
                                 id="lam-filter-prodi"
-                                value={selectedProdi}
+                                value={selectedProdi || ''}
                                 onChange={(e) => handleSelectProdi(e.target.value)}
-                                className="w-full px-4 py-2.5 text-sm  border border-slate-300 bg-slate-50 hover:bg-white text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all cursor-pointer shadow-xs"
+                                className="w-full px-4 py-2.5 text-xs border border-slate-300 bg-slate-50 hover:bg-white text-slate-800 font-semibold focus:outline-none focus:border-emerald-600 transition-all cursor-pointer shadow-xs"
                             >
                                 <option value="">-- Silakan Pilih Program Studi --</option>
-                                {prodiList.map((p) => (
+                                {prodis.map((p) => (
                                     <option key={p.id} value={p.id}>
                                         {p.name_prodi} ({p.degree}) - {p.faculty} [{p.agency_code}]
                                     </option>
@@ -691,8 +624,8 @@ export default function LamIndex({ prodis = defaultProdis }) {
                         {selectedProdi && (
                             <button
                                 type="button"
-                                onClick={() => setSelectedProdi('')}
-                                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-600 hover:text-rose-600 hover:bg-rose-50  border border-slate-200 transition-colors"
+                                onClick={() => handleSelectProdi('')}
+                                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-600 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 transition-colors cursor-pointer"
                             >
                                 <RotateCcw className="w-3.5 h-3.5" />
                                 <span>Reset Filter</span>
@@ -701,10 +634,10 @@ export default function LamIndex({ prodis = defaultProdis }) {
                     </div>
 
                     <div className="text-xs text-slate-500 flex items-center gap-2">
-                        {selectedProdi ? (
-                            <span className="inline-flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-3 py-1.5  border border-emerald-200/60 font-medium">
-                                <Check className="w-3.5 h-3.5" />
-                                Prodi Aktif: <strong className="font-bold">{activeProdi?.name_prodi}</strong> ({activeProdi?.agency_code})
+                        {selectedProdi && activeProdi ? (
+                            <span className="inline-flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-3 py-1.5 border border-emerald-200/60 font-medium">
+                                <Check className="w-3.5 h-3.5 text-emerald-600" />
+                                Prodi Aktif: <strong className="font-bold">{activeProdi.name_prodi}</strong> ({activeProdi.agency_code})
                             </span>
                         ) : (
                             <span className="text-slate-400 italic">Pilih prodi untuk menampilkan kriteria</span>
@@ -716,12 +649,12 @@ export default function LamIndex({ prodis = defaultProdis }) {
                 {/* KONDISI 1: JIKA BELUM PILIH PRODI (EMPTY STATE BERSIH)   */}
                 {/* ======================================================== */}
                 {!selectedProdi ? (
-                    <div className=" border-2 border-dashed border-slate-200 bg-white p-8 sm:p-12 text-center shadow-xs">
-                        <div className="mx-auto flex h-16 w-16 items-center justify-center  bg-gradient-to-br from-emerald-100 to-teal-100 text-emerald-600 mb-4 shadow-sm">
+                    <div className="border-2 border-dashed border-slate-200 bg-white p-8 sm:p-12 text-center shadow-xs">
+                        <div className="mx-auto flex h-16 w-16 items-center justify-center bg-emerald-50 text-emerald-600 mb-4 border border-emerald-200">
                             <GraduationCap className="w-8 h-8" />
                         </div>
 
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1  bg-emerald-50 text-emerald-700 text-xs font-bold mb-2 border border-emerald-200/60">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold mb-2 border border-emerald-200/60">
                             <Sparkles className="w-3.5 h-3.5" />
                             <span>Pilih Program Studi Terlebih Dahulu</span>
                         </div>
@@ -730,101 +663,79 @@ export default function LamIndex({ prodis = defaultProdis }) {
                             Tidak Ada Dokumen yang Ditampilkan
                         </h2>
 
-                        <p className="text-sm text-slate-500 max-w-xl mx-auto mt-2 leading-relaxed">
-                            Instrumen Akreditasi 9 Kriteria LAM bersifat khusus per-Program Studi. Silakan tentukan Program Studi melalui dropdown filter di atas untuk meninjau pohon folder kriteria, sesi evaluasi TS, dan eviden PPEPP.
+                        <p className="text-xs text-slate-500 max-w-xl mx-auto mt-2 leading-relaxed">
+                            Instrumen Akreditasi 6 Kriteria LAM bersifat khusus per-Program Studi. Silakan tentukan Program Studi melalui dropdown filter di atas untuk meninjau pohon folder kriteria, sesi evaluasi TS, dan eviden PPEPP.
                         </p>
+
+                        {/* Pilihan Cepat Prodi */}
+                        {prodis.length > 0 && (
+                            <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+                                <span className="text-xs font-semibold text-slate-400 block w-full mb-1">
+                                    Pilih Cepat Program Studi:
+                                </span>
+                                {prodis.map((p) => (
+                                    <button
+                                        key={p.id}
+                                        type="button"
+                                        onClick={() => handleSelectProdi(p.id)}
+                                        className="inline-flex items-center gap-2 px-3 py-2 text-xs font-bold bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-300 hover:border-emerald-300 shadow-xs transition-all cursor-pointer"
+                                    >
+                                        <GraduationCap className="w-3.5 h-3.5 text-emerald-600" />
+                                        <span>{p.name_prodi}</span>
+                                        <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1 py-0.2 border border-emerald-300 font-bold">
+                                            {p.agency_code}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 ) : (
                     /* ======================================================== */
                     /* KONDISI 2: PRODI DIPILIH (SESI AKREDITASI & FOLDERISASI TS)*/
                     /* ======================================================== */
-                    <div className="space-y-4 animate-fade-in">
+                    <div className="space-y-4">
                         {/* Panel Sesi Akreditasi & Konfigurasi Rentang TS */}
-                        <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 text-white p-5 sm:p-6  shadow-md border border-emerald-800/40 space-y-4">
+                        <div className="bg-slate-900 text-white p-5 sm:p-6 border border-slate-800 space-y-4 shadow-xs">
                             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                                 <div className="flex items-start sm:items-center gap-3.5">
-                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center  bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 shadow-inner">
+                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                                         <GraduationCap className="w-6 h-6" />
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2 flex-wrap">
-                                            <span className="px-2 py-0.5  text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                                            <span className="px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
                                                 Lembaga: {activeProdi?.agency_code}
                                             </span>
                                             <span className="text-xs text-slate-300">• {activeProdi?.faculty}</span>
                                         </div>
                                         <h2 className="text-lg sm:text-xl font-black text-white mt-0.5">
-                                            {activeProdi?.name_prodi} ({activeProdi?.degree}) — Sesi Akreditasi 2024–2029
+                                            {activeSession?.name ?? `${activeProdi?.name_prodi} (${activeProdi?.degree})`}
                                         </h2>
                                     </div>
                                 </div>
 
                                 {/* Statistik Cepat */}
                                 <div className="flex items-center gap-2.5 text-xs">
-                                    <div className="bg-white/10 backdrop-blur-sm px-3.5 py-1.5  border border-white/10 text-emerald-100">
+                                    <div className="bg-slate-800/80 px-3.5 py-1.5 border border-slate-700 text-emerald-300">
                                         <span>Tahun Acuan TS: </span>
                                         <strong className="text-white font-bold">{tsYear}</strong>
                                     </div>
-                                    <div className="bg-white/10 backdrop-blur-sm px-3.5 py-1.5  border border-white/10 text-emerald-100">
+                                    <div className="bg-slate-800/80 px-3.5 py-1.5 border border-slate-700 text-emerald-300">
                                         <span>Total: </span>
                                         <strong className="text-white font-bold">{totalAllActivities} Kegiatan</strong>
                                     </div>
-                                </div>
-                            </div>
-
-                            {/* Bar Pengaturan Fleksibilitas TS (LAMEMBA 3 Tahun vs LAM-TEKNIK 5 Tahun) */}
-                            <div className="pt-3 border-t border-emerald-800/60 flex flex-wrap items-center justify-between gap-3 text-xs">
-                                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                                    <span className="font-bold text-emerald-300 flex items-center gap-1.5">
-                                        <SlidersHorizontal className="w-3.5 h-3.5" />
-                                        Rentang Evaluasi TS:
-                                    </span>
-
-                                    {/* Selector Rentang TS */}
-                                    <div className="inline-flex  bg-slate-800/80 p-0.5 border border-slate-700/80">
-                                        <button
-                                            type="button"
-                                            onClick={() => setTsCount(3)}
-                                            className={`px-3 py-1  font-semibold transition-all ${tsCount === 3 ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
-                                                }`}
-                                            title="Standar LAMEMBA (3 Tahun Terakhir: TS, TS-1, TS-2)"
-                                        >
-                                            3 Tahun (TS s/d TS-2)
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setTsCount(5)}
-                                            className={`px-3 py-1  font-semibold transition-all ${tsCount === 5 ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
-                                                }`}
-                                            title="Standar LAM-TEKNIK / BAN-PT (5 Tahun Terakhir: TS s/d TS-4)"
-                                        >
-                                            5 Tahun (TS s/d TS-4)
-                                        </button>
+                                    <div className="bg-slate-800/80 px-3.5 py-1.5 border border-slate-700 text-emerald-300">
+                                        <span>Eviden: </span>
+                                        <strong className="text-white font-bold">{totalAllDocuments} Berkas</strong>
                                     </div>
-
-                                    {activeProdi?.agency_code === 'LAMEMBA' && (
-                                        <span className="text-[11px] text-amber-300 bg-amber-500/20 px-2 py-0.5  border border-amber-400/30">
-                                            Direkomendasikan 3 Tahun untuk {activeProdi.agency_code}
-                                        </span>
-                                    )}
                                 </div>
-
-                                {/* Toggle Sembunyikan Folder TS Kosong */}
-                                <label className="inline-flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white select-none">
-                                    <input
-                                        type="checkbox"
-                                        checked={hideEmptyTs}
-                                        onChange={(e) => setHideEmptyTs(e.target.checked)}
-                                        className=" border-slate-700 text-emerald-600 focus:ring-emerald-500/20 bg-slate-800"
-                                    />
-                                    <span>Sembunyikan Folder TS Kosong</span>
-                                </label>
                             </div>
                         </div>
 
-                        {/* Accordion 9 Kriteria LAM */}
+                        {/* Accordion 6 Kriteria LAM */}
                         <div className="space-y-3">
-                            {criterias.map((crit) => {
+                            {filteredCriterias.map((crit) => {
                                 const isCritExpanded = expandedCrit === crit.id;
                                 const critActivities = crit.activities || [];
                                 const totalActsInCrit = critActivities.length;
@@ -834,17 +745,12 @@ export default function LamIndex({ prodis = defaultProdis }) {
 
                                 // Daftar opsi TS yang tampil di kriteria ini
                                 const visibleTsList = allPossibleTsOptions.filter((opt) => {
-                                    // Jika 'all', selalu sertakan jika ada di enabledTsKeys
                                     if (opt.key === 'all') return enabledTsKeys.includes('all');
-                                    // Cek apakah nomor indeks TS <= tsCount
                                     const tsIndex = parseInt(opt.key.replace('ts-', ''), 10);
                                     const isInCount = tsIndex < tsCount;
                                     const isExplicitlyEnabled = enabledTsKeys.includes(opt.key);
-
-                                    // Cek apakah ada kegiatan di TS ini
                                     const hasActivities = critActivities.some((a) => a.ts_key === opt.key);
 
-                                    // Jika filter sembunyikan TS kosong aktif, hanya tampilkan jika ada kegiatannya
                                     if (hideEmptyTs && !hasActivities) return false;
 
                                     return (isInCount || isExplicitlyEnabled) && (enabledTsKeys.includes(opt.key) || hasActivities);
@@ -853,7 +759,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                 return (
                                     <div
                                         key={crit.id}
-                                        className={` bg-white border transition-all duration-200 overflow-hidden shadow-xs ${isCritExpanded ? 'border-emerald-300 ring-2 ring-emerald-500/10' : 'border-slate-200/80 hover:border-slate-300'
+                                        className={`bg-white border transition-all duration-200 overflow-hidden shadow-xs ${isCritExpanded ? 'border-emerald-300' : 'border-slate-200/80 hover:border-slate-300'
                                             }`}
                                     >
                                         {/* Header Accordion Kriteria */}
@@ -863,15 +769,17 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                 onClick={() => toggleCrit(crit.id)}
                                                 className="flex items-center gap-3 text-left flex-1 min-w-0 mr-2 cursor-pointer"
                                             >
-                                                <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center  bg-gradient-to-br from-emerald-600 to-teal-700 text-white font-extrabold text-xs sm:text-sm shadow-xs">
+                                                <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center bg-emerald-600 text-white font-extrabold text-xs sm:text-sm shadow-xs">
                                                     C{crit.code_criteria}
                                                 </div>
                                                 <div className="min-w-0">
                                                     <div className="flex items-center gap-1.5 flex-wrap">
-                                                        <span className="px-1.5 py-0.2  text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                                                        <span className="px-1.5 py-0.2 text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/60">
                                                             Kriteria {crit.code_criteria}
                                                         </span>
-                                                        <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">• LAM Standar Mutu OBE</span>
+                                                        <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">
+                                                            • Standar LAM 6 Kriteria
+                                                        </span>
                                                         <span className={`text-[11px] font-semibold ${totalActsInCrit > 0 ? 'text-emerald-600' : 'text-slate-400'}`}>
                                                             • {totalActsInCrit} Kegiatan Terdata
                                                         </span>
@@ -883,22 +791,11 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                             </button>
 
                                             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                                                {/* Tombol Tambah Folder TS */}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setAddTsFolderModal({ isOpen: true, critId: crit.id, critCode: crit.code_criteria, critTitle: crit.title_criteria })}
-                                                    className="inline-flex items-center gap-1 px-2.5 py-1  text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
-                                                    title="Tambah Folder TS Baru ke Kriteria Ini"
-                                                >
-                                                    <FolderPlus className="w-3.5 h-3.5 text-slate-600" />
-                                                    <span className="hidden md:inline">+ Folder TS</span>
-                                                </button>
-
-                                                {/* Tombol Tambah Kegiatan Umum */}
+                                                {/* Tombol Tambah Kegiatan Umum di Kriteria */}
                                                 <button
                                                     type="button"
                                                     onClick={() => handleOpenAddActivity(crit.id, crit.code_criteria, crit.title_criteria, 'all')}
-                                                    className="inline-flex items-center gap-1 px-2.5 py-1  text-xs font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition-colors"
+                                                    className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors cursor-pointer"
                                                 >
                                                     <Plus className="w-3.5 h-3.5" />
                                                     <span className="hidden sm:inline">Tambah Kegiatan</span>
@@ -907,7 +804,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                 <button
                                                     type="button"
                                                     onClick={() => toggleCrit(crit.id)}
-                                                    className="p-1 sm:p-1.5  text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                                                    className="p-1 sm:p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer"
                                                 >
                                                     {isCritExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                                                 </button>
@@ -918,7 +815,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                         {isCritExpanded && (
                                             <div className="p-3 sm:p-4 bg-slate-50/60 space-y-3">
                                                 {visibleTsList.length === 0 ? (
-                                                    <div className="py-6 text-center text-xs text-slate-400 bg-white  border border-dashed border-slate-200">
+                                                    <div className="py-6 text-center text-xs text-slate-400 bg-white border border-dashed border-slate-200">
                                                         Tidak ada folder TS yang aktif atau memiliki kegiatan.
                                                     </div>
                                                 ) : (
@@ -929,12 +826,11 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                         // Filter kegiatan yang termasuk dalam folder TS ini
                                                         const activitiesInTs = critActivities.filter((a) => a.ts_key === tsOpt.key);
                                                         const actCount = activitiesInTs.length;
-                                                        const isDeletable = actCount === 0 && tsOpt.key !== 'all';
 
                                                         return (
                                                             <div
                                                                 key={tsOpt.key}
-                                                                className={` border transition-all duration-200 bg-white overflow-hidden shadow-xs ${isTsFolderOpen ? 'border-slate-300 ring-1 ring-slate-200' : 'border-slate-200/80 hover:border-slate-300'
+                                                                className={`border transition-all duration-200 bg-white overflow-hidden shadow-xs ${isTsFolderOpen ? 'border-slate-300 ring-1 ring-slate-200' : 'border-slate-200/80 hover:border-slate-300'
                                                                     }`}
                                                             >
                                                                 {/* Header Subfolder TS */}
@@ -952,12 +848,14 @@ export default function LamIndex({ prodis = defaultProdis }) {
 
                                                                         <div className="min-w-0">
                                                                             <div className="flex items-center gap-2">
-                                                                                <span className={`px-2 py-0.5  text-[10px] font-black tracking-wide uppercase ${tsOpt.key === 'all'
+                                                                                <span
+                                                                                    className={`px-2 py-0.5 text-[10px] font-black tracking-wide uppercase ${tsOpt.key === 'all'
                                                                                         ? 'bg-purple-100 text-purple-700'
                                                                                         : tsOpt.key === 'ts-0'
                                                                                             ? 'bg-emerald-100 text-emerald-800'
                                                                                             : 'bg-blue-100 text-blue-800'
-                                                                                    }`}>
+                                                                                        }`}
+                                                                                >
                                                                                     {tsOpt.short}
                                                                                 </span>
                                                                                 <span className="text-xs font-bold text-slate-800 truncate">
@@ -975,29 +873,17 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                                         <button
                                                                             type="button"
                                                                             onClick={() => handleOpenAddActivity(crit.id, crit.code_criteria, crit.title_criteria, tsOpt.key)}
-                                                                            className="inline-flex items-center gap-1 px-2 py-1  text-[11px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors"
+                                                                            className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors cursor-pointer"
                                                                             title={`Tambah Kegiatan di ${tsOpt.short}`}
                                                                         >
                                                                             <Plus className="w-3 h-3" />
                                                                             <span>Kegiatan</span>
                                                                         </button>
 
-                                                                        {/* Tombol Hapus Folder TS (Hanya Jika Kosong) */}
-                                                                        {isDeletable && (
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={() => handleDeleteTsFolder(crit.id, tsOpt.key, tsOpt.short)}
-                                                                                className="p-1  text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                                                                                title="Hapus Folder TS Kosong Ini"
-                                                                            >
-                                                                                <Trash2 className="w-3.5 h-3.5" />
-                                                                            </button>
-                                                                        )}
-
                                                                         <button
                                                                             type="button"
                                                                             onClick={() => toggleTsFolder(folderKey)}
-                                                                            className="p-1  text-slate-400 hover:text-slate-600"
+                                                                            className="p-1 text-slate-400 hover:text-slate-600 cursor-pointer"
                                                                         >
                                                                             {isTsFolderOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                                                                         </button>
@@ -1008,12 +894,12 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                                 {isTsFolderOpen && (
                                                                     <div className="p-3 sm:p-4 space-y-3 bg-white">
                                                                         {actCount === 0 ? (
-                                                                            <div className="py-4 px-3 text-center  bg-slate-50 border border-dashed border-slate-200 text-xs text-slate-400 flex flex-col items-center justify-center gap-1.5">
+                                                                            <div className="py-4 px-3 text-center bg-slate-50 border border-dashed border-slate-200 text-xs text-slate-400 flex flex-col items-center justify-center gap-1.5">
                                                                                 <span>Belum ada kegiatan pada {tsOpt.label}.</span>
                                                                                 <button
                                                                                     type="button"
                                                                                     onClick={() => handleOpenAddActivity(crit.id, crit.code_criteria, crit.title_criteria, tsOpt.key)}
-                                                                                    className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 hover:underline"
+                                                                                    className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 hover:underline cursor-pointer"
                                                                                 >
                                                                                     <Plus className="w-3 h-3" />
                                                                                     <span>Tambah Kegiatan Pertama</span>
@@ -1026,36 +912,53 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                                                 return (
                                                                                     <div
                                                                                         key={act.id}
-                                                                                        className=" border border-slate-200/90 overflow-hidden bg-slate-50/40"
+                                                                                        className="border border-slate-200/90 overflow-hidden bg-slate-50/40"
                                                                                     >
                                                                                         {/* Header Kegiatan */}
                                                                                         <div className="px-3 py-2 flex items-center justify-between bg-white border-b border-slate-100">
                                                                                             <button
                                                                                                 type="button"
                                                                                                 onClick={() => toggleActivity(act.id)}
-                                                                                                className="flex items-center gap-2 text-left flex-1 min-w-0 mr-2"
+                                                                                                className="flex items-center gap-2 text-left flex-1 min-w-0 mr-2 cursor-pointer"
                                                                                             >
                                                                                                 <FileText className="w-4 h-4 text-emerald-600 shrink-0" />
                                                                                                 <div className="min-w-0">
                                                                                                     <span className="text-xs font-bold text-slate-800 truncate block">
                                                                                                         {act.title_activity}
                                                                                                     </span>
+                                                                                                    {act.description && (
+                                                                                                        <span className="text-[11px] text-slate-400 truncate block">
+                                                                                                            {act.description}
+                                                                                                        </span>
+                                                                                                    )}
                                                                                                 </div>
                                                                                             </button>
 
-                                                                                            <div className="flex items-center gap-2 shrink-0">
+                                                                                            <div className="flex items-center gap-1.5 shrink-0">
+                                                                                                {/* Tombol Edit Kegiatan */}
                                                                                                 <button
                                                                                                     type="button"
-                                                                                                    onClick={() => handleDeleteActivity(crit.id, act.id, act.title_activity)}
-                                                                                                    className="p-1 text-slate-300 hover:text-rose-600 transition-colors"
+                                                                                                    onClick={() => handleOpenEditActivity(crit, act)}
+                                                                                                    className="p-1 text-slate-400 hover:text-emerald-600 transition-colors cursor-pointer"
+                                                                                                    title="Edit Nama/Deskripsi Kegiatan"
+                                                                                                >
+                                                                                                    <Edit2 className="w-3.5 h-3.5" />
+                                                                                                </button>
+
+                                                                                                {/* Tombol Hapus Kegiatan */}
+                                                                                                <button
+                                                                                                    type="button"
+                                                                                                    onClick={() => handleDeleteActivity(crit.id, act)}
+                                                                                                    className="p-1 text-slate-300 hover:text-rose-600 transition-colors cursor-pointer"
                                                                                                     title="Hapus Kegiatan Ini"
                                                                                                 >
                                                                                                     <Trash2 className="w-3.5 h-3.5" />
                                                                                                 </button>
+
                                                                                                 <button
                                                                                                     type="button"
                                                                                                     onClick={() => toggleActivity(act.id)}
-                                                                                                    className="p-1 text-slate-400 hover:text-slate-600"
+                                                                                                    className="p-1 text-slate-400 hover:text-slate-600 cursor-pointer"
                                                                                                 >
                                                                                                     {isActOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                                                                                                 </button>
@@ -1074,16 +977,16 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                                                                     return (
                                                                                                         <div
                                                                                                             key={stage.key}
-                                                                                                            className=" border border-slate-200/80 bg-white overflow-hidden text-xs"
+                                                                                                            className="border border-slate-200/80 bg-white overflow-hidden text-xs"
                                                                                                         >
                                                                                                             {/* Header Tahap PPEPP */}
                                                                                                             <div className="px-2.5 py-1.5 flex items-center justify-between bg-white hover:bg-slate-50">
                                                                                                                 <button
                                                                                                                     type="button"
                                                                                                                     onClick={() => togglePpepp(ppeppKey)}
-                                                                                                                    className="flex items-center gap-2 text-left flex-1 min-w-0"
+                                                                                                                    className="flex items-center gap-2 text-left flex-1 min-w-0 cursor-pointer"
                                                                                                                 >
-                                                                                                                    <span className={`w-2 h-2  shrink-0 ${hasDocs ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                                                                                                                    <span className={`w-2 h-2 shrink-0 ${hasDocs ? 'bg-emerald-500' : 'bg-rose-500'}`} />
                                                                                                                     <span className="font-bold text-slate-700 truncate">
                                                                                                                         {stage.label}
                                                                                                                     </span>
@@ -1095,8 +998,16 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                                                                                 <div className="flex items-center gap-1">
                                                                                                                     <button
                                                                                                                         type="button"
-                                                                                                                        onClick={() => handleOpenUpload(crit.id, act.id, stage.key, stage.label, act.title_activity)}
-                                                                                                                        className="inline-flex items-center gap-1 px-1.5 py-0.5  text-[10px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100"
+                                                                                                                        onClick={() =>
+                                                                                                                            handleOpenUpload(
+                                                                                                                                crit.id,
+                                                                                                                                act.id,
+                                                                                                                                stage.key,
+                                                                                                                                stage.label,
+                                                                                                                                act.title_activity
+                                                                                                                            )
+                                                                                                                        }
+                                                                                                                        className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 cursor-pointer"
                                                                                                                     >
                                                                                                                         <Plus className="w-2.5 h-2.5" />
                                                                                                                         <span>Upload</span>
@@ -1104,7 +1015,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                                                                                     <button
                                                                                                                         type="button"
                                                                                                                         onClick={() => togglePpepp(ppeppKey)}
-                                                                                                                        className="p-1 text-slate-400 hover:text-slate-600"
+                                                                                                                        className="p-1 text-slate-400 hover:text-slate-600 cursor-pointer"
                                                                                                                     >
                                                                                                                         {isPpeppOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                                                                                                                     </button>
@@ -1123,10 +1034,10 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                                                                                         stageDocs.map((doc) => (
                                                                                                                             <div
                                                                                                                                 key={doc.id}
-                                                                                                                                className="flex items-center justify-between p-1.5  bg-white border border-slate-200/60 hover:border-slate-300 text-[11px]"
+                                                                                                                                className="flex items-center justify-between p-1.5 bg-white border border-slate-200/60 hover:border-slate-300 text-[11px]"
                                                                                                                             >
                                                                                                                                 <div className="flex items-center gap-2 min-w-0 mr-2">
-                                                                                                                                    <FileSpreadsheet className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                                                                                                                                    {getFileIcon(doc.name)}
                                                                                                                                     <span className="font-medium text-slate-700 truncate" title={doc.name}>
                                                                                                                                         {doc.name}
                                                                                                                                     </span>
@@ -1136,18 +1047,22 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                                                                                                                 </div>
 
                                                                                                                                 <div className="flex items-center gap-1 shrink-0">
-                                                                                                                                    <button
-                                                                                                                                        type="button"
-                                                                                                                                        onClick={() => toastInfo(`Preview file: ${doc.name}`)}
-                                                                                                                                        className="p-1 text-slate-400 hover:text-emerald-600 "
-                                                                                                                                        title="Lihat / Unduh Dokumen"
+                                                                                                                                    {/* Unduh / Buka File */}
+                                                                                                                                    <a
+                                                                                                                                        href={route('akreditasi.lam.dokumen.download', { document: doc.id })}
+                                                                                                                                        target="_blank"
+                                                                                                                                        rel="noreferrer"
+                                                                                                                                        className="p-1 text-slate-400 hover:text-emerald-600 cursor-pointer"
+                                                                                                                                        title="Unduh / Lihat Dokumen"
                                                                                                                                     >
                                                                                                                                         <Eye className="w-3.5 h-3.5" />
-                                                                                                                                    </button>
+                                                                                                                                    </a>
+
+                                                                                                                                    {/* Hapus Dokumen */}
                                                                                                                                     <button
                                                                                                                                         type="button"
-                                                                                                                                        onClick={() => handleDeleteFile(crit.id, act.id, stage.key, doc.id, doc.name)}
-                                                                                                                                        className="p-1 text-slate-400 hover:text-rose-600 "
+                                                                                                                                        onClick={() => handleDeleteFile(doc.id, doc.name)}
+                                                                                                                                        className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer"
                                                                                                                                         title="Hapus Dokumen"
                                                                                                                                     >
                                                                                                                                         <Trash2 className="w-3.5 h-3.5" />
@@ -1184,23 +1099,31 @@ export default function LamIndex({ prodis = defaultProdis }) {
             </div>
 
             {/* ======================================================== */}
-            {/* MODAL TAMBAH KEGIATAN BARU (DENGAN PILIHAN TS)          */}
+            {/* MODAL 1: TAMBAH KEGIATAN BARU (DENGAN PILIHAN TS)        */}
             {/* ======================================================== */}
             {newActivityModal.isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white  max-w-lg w-full p-6 shadow-2xl border border-slate-100">
-                        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
+                    <div className="bg-white max-w-lg w-full p-6 shadow-2xl border border-slate-300">
+                        <div className="flex items-center justify-between pb-4 border-b border-slate-200">
                             <div>
                                 <h3 className="text-base font-bold text-slate-800">
                                     Tambah Kegiatan / Eviden Baru
                                 </h3>
-                                <p className="text-xs text-emerald-600 font-semibold mt-0.5">
+                                <p className="text-xs text-emerald-700 font-semibold mt-0.5">
                                     Kriteria {newActivityModal.critCode} — {newActivityModal.critTitle}
                                 </p>
                             </div>
                             <button
-                                onClick={() => setNewActivityModal({ isOpen: false, critId: null, critCode: null, critTitle: '', presetTsKey: 'all' })}
-                                className="p-1 text-slate-400 hover:text-slate-600 "
+                                onClick={() =>
+                                    setNewActivityModal({
+                                        isOpen: false,
+                                        critId: null,
+                                        critCode: null,
+                                        critTitle: '',
+                                        presetTsKey: 'all',
+                                    })
+                                }
+                                className="p-1 text-slate-400 hover:text-slate-600 cursor-pointer"
                             >
                                 <X className="w-5 h-5" />
                             </button>
@@ -1215,7 +1138,7 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                 <select
                                     value={formSelectedTsKey}
                                     onChange={(e) => setFormSelectedTsKey(e.target.value)}
-                                    className="w-full px-3.5 py-2.5 text-sm  border border-slate-300 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-semibold"
+                                    className="w-full px-3.5 py-2.5 text-xs border border-slate-300 bg-slate-50 focus:outline-none focus:border-emerald-600 font-semibold cursor-pointer"
                                 >
                                     {allPossibleTsOptions.map((opt) => (
                                         <option key={opt.key} value={opt.key}>
@@ -1238,28 +1161,49 @@ export default function LamIndex({ prodis = defaultProdis }) {
                                     value={formTitleActivity}
                                     onChange={(e) => setFormTitleActivity(e.target.value)}
                                     placeholder="Contoh: Lokakarya Evaluasi Kurikulum OBE & Pemetaan CPL"
-                                    className="w-full px-3.5 py-2.5 text-sm  border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                                    className="w-full px-3.5 py-2 text-xs border border-slate-300 focus:outline-none focus:border-emerald-600 text-slate-800"
                                     required
                                     autoFocus
                                 />
-                                <p className="text-[11px] text-slate-400 mt-1">
-                                    Setelah disimpan, kegiatan akan otomatis dimasukkan ke folder tahun tersebut dan memiliki 5 subfolder siklus PPEPP.
-                                </p>
                             </div>
 
-                            <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
+                            {/* Deskripsi Kegiatan */}
+                            <div>
+                                <label className="block text-xs font-semibold uppercase text-slate-600 mb-1">
+                                    Deskripsi / Keterangan (Opsional)
+                                </label>
+                                <textarea
+                                    value={formDescription}
+                                    onChange={(e) => setFormDescription(e.target.value)}
+                                    rows="2"
+                                    placeholder="Penjelasan ringkas terkait konteks kegiatan atau pemenuhan kriteria..."
+                                    className="w-full px-3.5 py-2 text-xs border border-slate-300 focus:outline-none focus:border-emerald-600 text-slate-800"
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-200">
                                 <button
                                     type="button"
-                                    onClick={() => setNewActivityModal({ isOpen: false, critId: null, critCode: null, critTitle: '', presetTsKey: 'all' })}
-                                    className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100  transition-colors"
+                                    onClick={() =>
+                                        setNewActivityModal({
+                                            isOpen: false,
+                                            critId: null,
+                                            critCode: null,
+                                            critTitle: '',
+                                            presetTsKey: 'all',
+                                        })
+                                    }
+                                    className="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
                                 >
                                     Batal
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-5 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700  shadow-md shadow-emerald-500/20 transition-all"
+                                    disabled={isSavingActivity}
+                                    className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-all cursor-pointer disabled:opacity-50"
                                 >
-                                    Simpan Kegiatan
+                                    {isSavingActivity && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                                    <span>Simpan Kegiatan</span>
                                 </button>
                             </div>
                         </form>
@@ -1268,62 +1212,127 @@ export default function LamIndex({ prodis = defaultProdis }) {
             )}
 
             {/* ======================================================== */}
-            {/* MODAL TAMBAH FOLDER TS BARU KE KRITERIA                 */}
+            {/* MODAL 2: EDIT KEGIATAN                                   */}
             {/* ======================================================== */}
-            {addTsFolderModal.isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white  max-w-md w-full p-6 shadow-2xl border border-slate-100">
-                        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+            {editActivityModal.isOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
+                    <div className="bg-white max-w-lg w-full p-6 shadow-2xl border border-slate-300">
+                        <div className="flex items-center justify-between pb-4 border-b border-slate-200">
                             <div>
                                 <h3 className="text-base font-bold text-slate-800">
-                                    Tambah Folder Tahun TS
+                                    Edit Kegiatan Akreditasi
                                 </h3>
-                                <p className="text-xs text-emerald-600 font-semibold mt-0.5">
-                                    Kriteria {addTsFolderModal.critCode}
+                                <p className="text-xs text-emerald-700 font-semibold mt-0.5">
+                                    Kriteria {editActivityModal.critCode} — {editActivityModal.critTitle}
                                 </p>
                             </div>
                             <button
-                                onClick={() => setAddTsFolderModal({ isOpen: false, critId: null, critCode: null, critTitle: '' })}
-                                className="p-1 text-slate-400 hover:text-slate-600 "
+                                onClick={() =>
+                                    setEditActivityModal({
+                                        isOpen: false,
+                                        activityId: null,
+                                        critId: null,
+                                        critCode: null,
+                                        critTitle: '',
+                                        title_activity: '',
+                                        description: '',
+                                        ts_key: 'all',
+                                    })
+                                }
+                                className="p-1 text-slate-400 hover:text-slate-600 cursor-pointer"
                             >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
-                        <form onSubmit={handleAddTsFolderToCrit} className="mt-4 space-y-4">
+                        <form onSubmit={handleUpdateActivity} className="mt-4 space-y-4">
+                            {/* Pilihan Cakupan Evaluasi (TS) */}
                             <div>
                                 <label className="block text-xs font-semibold uppercase text-slate-600 mb-1">
-                                    Pilih Tahun TS yang Ingin Ditambahkan
+                                    Cakupan Tahun Evaluasi (TS) <span className="text-rose-500">*</span>
                                 </label>
                                 <select
-                                    value={selectedNewTsKey}
-                                    onChange={(e) => setSelectedNewTsKey(e.target.value)}
-                                    className="w-full px-3.5 py-2.5 text-sm  border border-slate-300 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-semibold"
+                                    value={editActivityModal.ts_key}
+                                    onChange={(e) =>
+                                        setEditActivityModal((prev) => ({
+                                            ...prev,
+                                            ts_key: e.target.value,
+                                        }))
+                                    }
+                                    className="w-full px-3.5 py-2.5 text-xs border border-slate-300 bg-slate-50 focus:outline-none focus:border-emerald-600 font-semibold cursor-pointer"
                                 >
                                     {allPossibleTsOptions.map((opt) => (
                                         <option key={opt.key} value={opt.key}>
-                                            {opt.label}
+                                            {opt.label} — {opt.desc}
                                         </option>
                                     ))}
                                 </select>
-                                <p className="text-[11px] text-slate-400 mt-1">
-                                    Folder baru akan langsung disiapkan di dalam kriteria dan siap diisi kegiatan.
-                                </p>
                             </div>
 
-                            <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
+                            {/* Judul Kegiatan */}
+                            <div>
+                                <label className="block text-xs font-semibold uppercase text-slate-600 mb-1">
+                                    Nama / Judul Kegiatan <span className="text-rose-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={editActivityModal.title_activity}
+                                    onChange={(e) =>
+                                        setEditActivityModal((prev) => ({
+                                            ...prev,
+                                            title_activity: e.target.value,
+                                        }))
+                                    }
+                                    className="w-full px-3.5 py-2 text-xs border border-slate-300 focus:outline-none focus:border-emerald-600 text-slate-800"
+                                    required
+                                    autoFocus
+                                />
+                            </div>
+
+                            {/* Deskripsi Kegiatan */}
+                            <div>
+                                <label className="block text-xs font-semibold uppercase text-slate-600 mb-1">
+                                    Deskripsi / Keterangan (Opsional)
+                                </label>
+                                <textarea
+                                    value={editActivityModal.description}
+                                    onChange={(e) =>
+                                        setEditActivityModal((prev) => ({
+                                            ...prev,
+                                            description: e.target.value,
+                                        }))
+                                    }
+                                    rows="2"
+                                    className="w-full px-3.5 py-2 text-xs border border-slate-300 focus:outline-none focus:border-emerald-600 text-slate-800"
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-200">
                                 <button
                                     type="button"
-                                    onClick={() => setAddTsFolderModal({ isOpen: false, critId: null, critCode: null, critTitle: '' })}
-                                    className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100  transition-colors"
+                                    onClick={() =>
+                                        setEditActivityModal({
+                                            isOpen: false,
+                                            activityId: null,
+                                            critId: null,
+                                            critCode: null,
+                                            critTitle: '',
+                                            title_activity: '',
+                                            description: '',
+                                            ts_key: 'all',
+                                        })
+                                    }
+                                    className="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
                                 >
                                     Batal
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-5 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700  shadow-md shadow-emerald-500/20 transition-all"
+                                    disabled={isUpdatingActivity}
+                                    className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-all cursor-pointer disabled:opacity-50"
                                 >
-                                    Tambahkan Folder
+                                    {isUpdatingActivity && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                                    <span>Perbarui Kegiatan</span>
                                 </button>
                             </div>
                         </form>
@@ -1332,71 +1341,108 @@ export default function LamIndex({ prodis = defaultProdis }) {
             )}
 
             {/* ======================================================== */}
-            {/* MODAL UPLOAD FILE PPEPP                                  */}
+            {/* MODAL 3: UPLOAD REAL BERKAS PPEPP                        */}
             {/* ======================================================== */}
             {uploadModal.isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white  max-w-lg w-full p-6 shadow-2xl border border-slate-100">
-                        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
+                    <div className="bg-white max-w-lg w-full p-6 shadow-2xl border border-slate-300">
+                        <div className="flex items-center justify-between pb-4 border-b border-slate-200">
                             <div>
                                 <h3 className="text-base font-bold text-slate-800">
-                                    Upload File Eviden PPEPP
+                                    Upload Dokumen Eviden PPEPP
                                 </h3>
-                                <p className="text-xs text-emerald-600 font-semibold mt-0.5">
+                                <p className="text-xs text-emerald-700 font-semibold mt-0.5">
                                     {uploadModal.stageLabel}
                                 </p>
                             </div>
                             <button
-                                onClick={() => setUploadModal({ isOpen: false, critId: null, activityId: null, stageKey: null, stageLabel: null, activityTitle: '' })}
-                                className="p-1 text-slate-400 hover:text-slate-600 "
+                                onClick={handleCloseUpload}
+                                className="p-1 text-slate-400 hover:text-slate-600 cursor-pointer"
                             >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
                         <form onSubmit={handleConfirmUpload} className="mt-4 space-y-4">
-                            <div className="p-3  bg-slate-50 border border-slate-200/80 text-xs">
+                            <div className="p-3 bg-slate-50 border border-slate-200 text-xs">
                                 <span className="text-slate-400 block font-medium">Kegiatan Terkait:</span>
                                 <span className="font-bold text-slate-800">{uploadModal.activityTitle}</span>
                             </div>
 
+                            {/* Dropzone File Picker */}
                             <div>
                                 <label className="block text-xs font-semibold uppercase text-slate-600 mb-1">
-                                    Nama / Judul File Dokumen <span className="text-rose-500">*</span>
+                                    Pilih Berkas Dokumen <span className="text-rose-500">*</span>
+                                </label>
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleFileChange}
+                                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.png,.jpg,.jpeg"
+                                    className="hidden"
+                                    id="file-upload-input"
+                                />
+
+                                <div
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="p-5 border-2 border-dashed border-emerald-300 hover:border-emerald-500 bg-emerald-50/40 text-center cursor-pointer transition-colors"
+                                >
+                                    <UploadCloud className="w-8 h-8 text-emerald-600 mx-auto mb-1" />
+                                    {uploadFile ? (
+                                        <div>
+                                            <p className="text-xs font-bold text-emerald-800">
+                                                {uploadFile.name}
+                                            </p>
+                                            <p className="text-[10px] text-slate-500 mt-0.5">
+                                                {(uploadFile.size / 1048576).toFixed(2)} MB • Klik untuk mengganti berkas
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            <p className="text-xs font-semibold text-emerald-800">
+                                                Klik untuk memilih berkas dari komputer
+                                            </p>
+                                            <p className="text-[10px] text-slate-500 mt-0.5">
+                                                Format: PDF, Word, Excel, PPT, ZIP, RAR, Gambar (Maks. 25 MB)
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Judul / Nama Kustom File */}
+                            <div>
+                                <label className="block text-xs font-semibold uppercase text-slate-600 mb-1">
+                                    Nama / Judul Dokumen (Opsional)
                                 </label>
                                 <input
                                     type="text"
-                                    value={fileNameInput}
-                                    onChange={(e) => setFileNameInput(e.target.value)}
-                                    placeholder="Contoh: Dokumen_RPS_OBE_Standar_ACM.pdf"
-                                    className="w-full px-3.5 py-2.5 text-sm  border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                                    required
-                                    autoFocus
+                                    value={customFileName}
+                                    onChange={(e) => setCustomFileName(e.target.value)}
+                                    placeholder="Contoh: SK_Rektor_Pedoman_Kurikulum_OBE_2024"
+                                    className="w-full px-3.5 py-2 text-xs border border-slate-300 focus:outline-none focus:border-emerald-600 text-slate-800"
                                 />
-                                <p className="text-[11px] text-slate-400 mt-1">
-                                    Format: PDF, Word (.docx), Excel (.xlsx), atau scan dokumen resmi.
+                                <p className="text-[10px] text-slate-400 mt-1">
+                                    Jika dikosongkan, nama asli berkas akan digunakan secara otomatis.
                                 </p>
                             </div>
 
-                            <div className="p-5 border-2 border-dashed border-emerald-200 hover:border-emerald-400  bg-emerald-50/30 text-center cursor-pointer transition-colors">
-                                <UploadCloud className="w-8 h-8 text-emerald-600 mx-auto mb-1" />
-                                <p className="text-xs font-semibold text-emerald-800">Pilih berkas dari komputer atau drag & drop</p>
-                                <p className="text-[10px] text-slate-400 mt-0.5">Ukuran maksimal file 25 MB</p>
-                            </div>
-
-                            <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
+                            <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-200">
                                 <button
                                     type="button"
-                                    onClick={() => setUploadModal({ isOpen: false, critId: null, activityId: null, stageKey: null, stageLabel: null, activityTitle: '' })}
-                                    className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100  transition-colors"
+                                    onClick={handleCloseUpload}
+                                    disabled={isUploading}
+                                    className="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer disabled:opacity-50"
                                 >
                                     Batal
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-5 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700  shadow-md shadow-emerald-500/20 transition-all"
+                                    disabled={isUploading || !uploadFile}
+                                    className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-all cursor-pointer disabled:opacity-50"
                                 >
-                                    Upload & Simpan
+                                    {isUploading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                                    <span>{isUploading ? 'Mengunggah...' : 'Upload & Simpan'}</span>
                                 </button>
                             </div>
                         </form>

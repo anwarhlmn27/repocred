@@ -1,7 +1,10 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Akreditasi\BanPtController;
+use App\Http\Controllers\Akreditasi\LamController;
+use App\Http\Controllers\Akreditasi\MatriksPpeppController;
 use App\Http\Controllers\Master\UnivController;
 use App\Http\Controllers\Master\FacultyController;
 use App\Http\Controllers\Master\AgencyController;
@@ -31,9 +34,7 @@ Route::get('/', function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Dokumen Akreditasi
     Route::prefix('akreditasi')->name('akreditasi.')->group(function () {
@@ -45,13 +46,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/ban-pt/dokumen/{document}', [BanPtController::class, 'destroyDocument'])->name('ban-pt.dokumen.destroy');
         Route::get('/ban-pt/dokumen/{document}/download', [BanPtController::class, 'downloadDocument'])->name('ban-pt.dokumen.download');
 
-        Route::get('/lam', function () {
-            return Inertia::render('Akreditasi/Lam/Index');
-        })->name('lam');
+        Route::get('/lam', [LamController::class, 'index'])->name('lam');
+        Route::post('/lam/kegiatan', [LamController::class, 'storeActivity'])->name('lam.kegiatan.store');
+        Route::put('/lam/kegiatan/{activity}', [LamController::class, 'updateActivity'])->name('lam.kegiatan.update');
+        Route::delete('/lam/kegiatan/{activity}', [LamController::class, 'destroyActivity'])->name('lam.kegiatan.destroy');
+        Route::post('/lam/dokumen', [LamController::class, 'uploadDocument'])->name('lam.dokumen.upload');
+        Route::delete('/lam/dokumen/{document}', [LamController::class, 'destroyDocument'])->name('lam.dokumen.destroy');
+        Route::get('/lam/dokumen/{document}/download', [LamController::class, 'downloadDocument'])->name('lam.dokumen.download');
+        Route::put('/lam/sesi/{session}', [LamController::class, 'updateSession'])->name('lam.sesi.update');
 
-        Route::get('/matriks-ppepp', function () {
-            return Inertia::render('Akreditasi/MatriksPpepp/Index');
-        })->name('matriks-ppepp');
+        Route::get('/matriks-ppepp', [MatriksPpeppController::class, 'index'])->name('matriks-ppepp');
     });
 
     // Kegiatan & Eviden

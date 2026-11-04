@@ -251,7 +251,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                         href="/akreditasi/lam"
                                         className={currentPath === '/akreditasi/lam' ? 'mm-active' : ''}
                                     >
-                                        LAM (9 Kriteria)
+                                        LAM (6 Kriteria)
                                     </Link>
                                 </li>
                                 <li className={currentPath === '/akreditasi/matriks-ppepp' ? 'mm-active' : ''}>

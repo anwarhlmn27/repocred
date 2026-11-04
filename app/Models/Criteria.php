@@ -23,6 +23,11 @@ class Criteria extends Model
         'sequence' => 'integer',
     ];
 
+    protected $appends = [
+        'code_criteria',
+        'title_criteria',
+    ];
+
     /**
      * Accessor untuk kompatibilitas kode terdahulu.
      */
