@@ -175,7 +175,7 @@ export default function ProdiIndex({ prodis = [], faculties = [], agencies = [] 
                 </div>
 
                 {/* Metric Summary Cards */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {/* <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     <div className="bg-white p-4 border border-slate-200 shadow-xs flex items-center gap-3">
                         <div className="h-10 w-10 bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
                             <GraduationCap className="w-5 h-5" />
@@ -215,7 +215,7 @@ export default function ProdiIndex({ prodis = [], faculties = [], agencies = [] 
                             <span className="text-lg font-black text-slate-800">{stats.linkedAgencies} Prodi</span>
                         </div>
                     </div>
-                </div>
+                </div> */}
 
                 {/* Filter & Search Bar */}
                 <div className="bg-white p-4 border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">

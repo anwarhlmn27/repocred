@@ -156,7 +156,7 @@ export default function FakultasIndex({ faculties = [], univs = [] }) {
                 </div>
 
                 {/* Stat Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="bg-white p-5 border border-slate-200 flex items-center justify-between">
                         <div>
                             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Fakultas</p>
@@ -186,7 +186,7 @@ export default function FakultasIndex({ faculties = [], univs = [] }) {
                             <GraduationCap className="w-5 h-5" />
                         </div>
                     </div>
-                </div>
+                </div> */}
 
                 {/* Toolbar Filter & Pencarian */}
                 <div className="bg-white p-4 border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">

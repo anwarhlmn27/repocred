@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
+use App\Models\Prodi;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,21 +19,33 @@ use Throwable;
 class UserController extends Controller
 {
     /**
-     * Menampilkan daftar pengguna sistem.
+     * Menampilkan daftar pengguna sistem beserta data role dan program studi.
      *
      * @return Response
      */
     public function index(): Response
     {
-        $users = User::latest()->get(['id', 'name', 'email', 'role', 'created_at']);
+        $users = User::with(['role', 'prodi'])
+            ->latest()
+            ->get();
+
+        $roles = Role::with('criteriaAccess')
+            ->orderBy('name')
+            ->get();
+
+        $prodis = Prodi::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'code', 'name', 'acronym']);
 
         return Inertia::render('Master/Users/Index', [
             'users' => $users,
+            'roles' => $roles,
+            'prodis' => $prodis,
         ]);
     }
 
     /**
-     * Menyimpan data pengguna baru ke dalam basis data.
+     * Menyimpan data pengguna baru ke dalam basis data sesuai desain RBAC.
      *
      * @param Request $request
      * @return RedirectResponse
@@ -42,7 +56,8 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:8',
-            'role' => 'required|string|in:admin_lpm,admin_prodi,operator,viewer,user',
+            'role_id' => 'required|uuid|exists:roles,id',
+            'prodi_id' => 'nullable|uuid|exists:prodis,id',
         ], [
             'name.required' => 'Nama lengkap pengguna wajib diisi.',
             'email.required' => 'Alamat email wajib diisi.',
@@ -50,9 +65,27 @@ class UserController extends Controller
             'email.unique' => 'Alamat email sudah terdaftar.',
             'password.required' => 'Kata sandi wajib diisi.',
             'password.min' => 'Kata sandi minimal 8 karakter.',
-            'role.required' => 'Peran / Role pengguna wajib dipilih.',
-            'role.in' => 'Peran yang dipilih tidak valid.',
+            'role_id.required' => 'Peran / Hak Akses (Role) wajib dipilih.',
+            'role_id.exists' => 'Peran yang dipilih tidak ditemukan dalam sistem.',
+            'prodi_id.exists' => 'Program Studi yang dipilih tidak valid.',
         ]);
+
+        $selectedRole = Role::findOrFail($validated['role_id']);
+
+        // Jika peran berskala prodi (misal: Kaprodi), program studi wajib ditentukan
+        if ($selectedRole->isProdiScoped() && empty($validated['prodi_id'])) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['prodi_id' => 'Program Studi wajib dipilih untuk peran tingkat program studi (Kaprodi).']);
+        }
+
+        // Jika peran berskala institusi (misal: Admin LPM, BAAK, Finance, dll), kosongkan prodi_id
+        if ($selectedRole->isInstitusiScoped()) {
+            $validated['prodi_id'] = null;
+        }
+
+        // Sinkronisasi kolom string 'role' untuk backward compatibility
+        $validated['role'] = $selectedRole->code;
 
         try {
             DB::transaction(function () use ($validated) {
@@ -74,7 +107,7 @@ class UserController extends Controller
     }
 
     /**
-     * Memperbarui data pengguna yang ada.
+     * Memperbarui data pengguna yang ada sesuai desain RBAC.
      *
      * @param Request $request
      * @param User $user
@@ -85,27 +118,52 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'role' => 'required|string|in:admin_lpm,admin_prodi,operator,viewer,user',
+            'role_id' => 'required|uuid|exists:roles,id',
+            'prodi_id' => 'nullable|uuid|exists:prodis,id',
             'password' => 'nullable|string|min:8',
         ], [
             'name.required' => 'Nama lengkap pengguna wajib diisi.',
             'email.required' => 'Alamat email wajib diisi.',
             'email.email' => 'Format email tidak valid.',
             'email.unique' => 'Alamat email sudah terdaftar.',
+            'role_id.required' => 'Peran / Hak Akses (Role) wajib dipilih.',
+            'role_id.exists' => 'Peran yang dipilih tidak ditemukan dalam sistem.',
+            'prodi_id.exists' => 'Program Studi yang dipilih tidak valid.',
             'password.min' => 'Kata sandi baru minimal 8 karakter.',
-            'role.required' => 'Peran / Role pengguna wajib dipilih.',
-            'role.in' => 'Peran yang dipilih tidak valid.',
         ]);
 
-        // Pencegahan Lockout: Jangan izinkan mengubah role admin_lpm jika ia adalah satu-satunya admin_lpm yang tersisa
-        if ($user->role === 'admin_lpm' && $validated['role'] !== 'admin_lpm') {
-            $adminCount = User::where('role', 'admin_lpm')->count();
+        $newRole = Role::findOrFail($validated['role_id']);
+
+        // Jika peran berskala prodi, prodi_id wajib diisi
+        if ($newRole->isProdiScoped() && empty($validated['prodi_id'])) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['prodi_id' => 'Program Studi wajib dipilih untuk peran tingkat program studi (Kaprodi).']);
+        }
+
+        // Jika peran berskala institusi, kosongkan prodi_id
+        if ($newRole->isInstitusiScoped()) {
+            $validated['prodi_id'] = null;
+        }
+
+        // Pencegahan Lockout: Jangan izinkan mengubah role admin_lpm jika ia adalah admin LPM terakhir
+        $isCurrentlyAdminLpm = ($user->role === 'admin_lpm' || ($user->roleRef && $user->roleRef->code === 'admin_lpm'));
+        if ($isCurrentlyAdminLpm && $newRole->code !== 'admin_lpm') {
+            $adminCount = User::where('role', 'admin_lpm')
+                ->orWhereHas('roleRef', function ($q) {
+                    $q->where('code', 'admin_lpm');
+                })
+                ->count();
+
             if ($adminCount <= 1) {
                 return redirect()->back()
                     ->withInput()
                     ->with('error', 'Tidak dapat mengubah peran Administrator LPM terakhir demi keamanan sistem.');
             }
         }
+
+        // Sinkronisasi kolom string 'role' untuk backward compatibility
+        $validated['role'] = $newRole->code;
 
         try {
             DB::transaction(function () use ($user, $validated) {
@@ -145,8 +203,14 @@ class UserController extends Controller
         }
 
         // Pencegahan Lockout: Jangan izinkan menghapus admin_lpm terakhir
-        if ($user->role === 'admin_lpm') {
-            $adminCount = User::where('role', 'admin_lpm')->count();
+        $isAdminLpm = ($user->role === 'admin_lpm' || ($user->roleRef && $user->roleRef->code === 'admin_lpm'));
+        if ($isAdminLpm) {
+            $adminCount = User::where('role', 'admin_lpm')
+                ->orWhereHas('roleRef', function ($q) {
+                    $q->where('code', 'admin_lpm');
+                })
+                ->count();
+
             if ($adminCount <= 1) {
                 return redirect()->back()->with('error', 'Tidak dapat menghapus Administrator LPM terakhir dalam sistem demi keamanan akses.');
             }

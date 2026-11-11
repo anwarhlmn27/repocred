@@ -263,7 +263,7 @@ function MobileNavItem({ item, currentPath, userRole, onClose }) {
 export default function Navbar({ user }) {
     const { url } = usePage();
     const currentPath = url.split('?')[0];
-    const userRole = user?.role ?? null;
+    const userRole = typeof user?.role === 'object' && user?.role !== null ? user.role.code : (user?.role ?? null);
     const [mobileOpen, setMobileOpen] = useState(false);
 
     return (

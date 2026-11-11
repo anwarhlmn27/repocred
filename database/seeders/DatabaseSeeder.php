@@ -2,15 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\AcademicYear;
-use App\Models\AccreditationSession;
-use App\Models\Activity;
-use App\Models\Agency;
-use App\Models\Criteria;
-use App\Models\Faculty;
 use App\Models\Ppepp;
-use App\Models\Prodi;
-use App\Models\Univ;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -24,17 +17,30 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Admin LPM User
+        // 1. Seed Roles & Hak Akses Kriteria RBAC
+        $this->call(RoleSeeder::class);
+
+        // 2. Admin LPM User
+        $adminRole = Role::where('code', 'admin_lpm')->first();
+
         $admin = User::firstOrCreate(
             ['email' => 'admin@gmail.com'],
             [
                 'name' => 'Administrator',
                 'password' => bcrypt('password'),
                 'role' => 'admin_lpm',
+                'role_id' => $adminRole?->id,
             ]
         );
 
-        // 9. PPEPP 5 Siklus Penjaminan Mutu
+        if ($admin->role_id === null && $adminRole) {
+            $admin->update([
+                'role_id' => $adminRole->id,
+                'role' => 'admin_lpm',
+            ]);
+        }
+
+        // 3. PPEPP 5 Siklus Penjaminan Mutu
         $ppeppList = [
             [1, 'Penetapan (P)'],
             [2, 'Pelaksanaan (P)'],
@@ -48,6 +54,5 @@ class DatabaseSeeder extends Seeder
                 ['title_ppepp' => $title]
             );
         }
-
     }
 }

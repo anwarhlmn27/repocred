@@ -52,4 +52,9 @@ class Prodi extends Model
     {
         return $this->hasMany(Activity::class, 'prodi_id');
     }
+
+    public function users()
+    {
+        return $this->hasMany(User::class, 'prodi_id');
+    }
 }

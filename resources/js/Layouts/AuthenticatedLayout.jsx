@@ -144,7 +144,9 @@ export default function AuthenticatedLayout({ header, children }) {
                                                 {user?.name || 'Administrator'}
                                             </span>
                                             <small className="text-muted text-capitalize">
-                                                {user?.role ? user.role.replace('_', ' ') : 'admin lpm'}
+                                                {typeof user?.role === 'object' && user?.role !== null
+                                                    ? user.role.name
+                                                    : (user?.role ? String(user.role).replace('_', ' ') : 'admin lpm')}
                                             </small>
                                         </div>
                                         <i

@@ -164,7 +164,7 @@ export default function UnivIndex({ univs = [] }) {
                 </div>
 
                 {/* Ringkasan Metrik */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="bg-white p-4 border border-slate-200 shadow-xs flex items-center gap-3.5">
                         <div className="h-11 w-11 bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
                             <Building2 className="w-5 h-5" />
@@ -194,7 +194,7 @@ export default function UnivIndex({ univs = [] }) {
                             <span className="text-lg font-black text-slate-800">{stats.totalFaculties} Fakultas</span>
                         </div>
                     </div>
-                </div>
+                </div> */}
 
                 {/* Filter & Search Bar */}
                 {/* <div className="bg-white p-4 border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
