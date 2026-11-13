@@ -28,9 +28,9 @@ export default function AuthenticatedLayout({ header, children }) {
     const [userDropdown, setUserDropdown] = useState(false);
     const userMenuRef = useRef(null);
 
-    // Auto open parent menu jika ada child aktif
-    const isAkreditasiActive = currentPath.startsWith('/akreditasi');
-    const isMasterActive = currentPath.startsWith('/master');
+    // Auto open parent menu jika ada child aktif (mendukung deployment subfolder maupun root)
+    const isAkreditasiActive = currentPath.includes('/akreditasi') || (typeof route === 'function' && route().current('akreditasi.*'));
+    const isMasterActive = currentPath.includes('/master') || (typeof route === 'function' && route().current('master.*'));
 
     const [openMenus, setOpenMenus] = useState({
         akreditasi: isAkreditasiActive,
@@ -58,7 +58,7 @@ export default function AuthenticatedLayout({ header, children }) {
         <div id="main-wrapper" className={menuToggle ? 'show menu-toggle' : 'show'}>
             {/* Nav Header (Logo & Hamburger) */}
             <div className="nav-header">
-                <Link href="/dashboard" className="brand-logo">
+                <Link href={route('dashboard')} className="brand-logo">
                     <img className="logo-abbr" src="/images/logo-white.png" alt="RepoCred" />
                     <img className="logo-compact" src="/images/logo-text-white.png" alt="RepoCred" />
                     <span
@@ -214,8 +214,8 @@ export default function AuthenticatedLayout({ header, children }) {
                         <li className="nav-label first">Menu Utama</li>
 
                         {/* Dashboard */}
-                        <li className={currentPath === '/dashboard' ? 'mm-active' : ''}>
-                            <Link href="/dashboard" className="ai-icon" aria-expanded="false">
+                        <li className={route().current('dashboard') ? 'mm-active' : ''}>
+                            <Link href={route('dashboard')} className="ai-icon" aria-expanded="false">
                                 <i className="la la-home"></i>
                                 <span className="nav-text">Dashboard</span>
                             </Link>
@@ -240,26 +240,26 @@ export default function AuthenticatedLayout({ header, children }) {
                                 className={`mm-collapse ${openMenus.akreditasi ? 'mm-show' : ''}`}
                                 style={{ display: openMenus.akreditasi ? 'block' : 'none' }}
                             >
-                                <li className={currentPath === '/akreditasi/ban-pt' ? 'mm-active' : ''}>
+                                <li className={route().current('akreditasi.ban-pt*') ? 'mm-active' : ''}>
                                     <Link
-                                        href="/akreditasi/ban-pt"
-                                        className={currentPath === '/akreditasi/ban-pt' ? 'mm-active' : ''}
+                                        href={route('akreditasi.ban-pt')}
+                                        className={route().current('akreditasi.ban-pt*') ? 'mm-active' : ''}
                                     >
                                         BAN-PT (4 Kriteria)
                                     </Link>
                                 </li>
-                                <li className={currentPath === '/akreditasi/lam' ? 'mm-active' : ''}>
+                                <li className={route().current('akreditasi.lam*') ? 'mm-active' : ''}>
                                     <Link
-                                        href="/akreditasi/lam"
-                                        className={currentPath === '/akreditasi/lam' ? 'mm-active' : ''}
+                                        href={route('akreditasi.lam')}
+                                        className={route().current('akreditasi.lam*') ? 'mm-active' : ''}
                                     >
-                                        LAM (6 Kriteria)
+                                        LAM (9 Kriteria)
                                     </Link>
                                 </li>
-                                <li className={currentPath === '/akreditasi/matriks-ppepp' ? 'mm-active' : ''}>
+                                <li className={route().current('akreditasi.matriks-ppepp*') ? 'mm-active' : ''}>
                                     <Link
-                                        href="/akreditasi/matriks-ppepp"
-                                        className={currentPath === '/akreditasi/matriks-ppepp' ? 'mm-active' : ''}
+                                        href={route('akreditasi.matriks-ppepp')}
+                                        className={route().current('akreditasi.matriks-ppepp*') ? 'mm-active' : ''}
                                     >
                                         Matriks PPEPP
                                     </Link>
@@ -288,66 +288,66 @@ export default function AuthenticatedLayout({ header, children }) {
                                 className={`mm-collapse ${openMenus.master ? 'mm-show' : ''}`}
                                 style={{ display: openMenus.master ? 'block' : 'none' }}
                             >
-                                <li className={currentPath === '/master/univ' ? 'mm-active' : ''}>
+                                <li className={route().current('master.univ.*') ? 'mm-active' : ''}>
                                     <Link
-                                        href="/master/univ"
-                                        className={currentPath === '/master/univ' ? 'mm-active' : ''}
+                                        href={route('master.univ.index')}
+                                        className={route().current('master.univ.*') ? 'mm-active' : ''}
                                     >
                                         Universitas
                                     </Link>
                                 </li>
-                                <li className={currentPath === '/master/fakultas' ? 'mm-active' : ''}>
+                                <li className={route().current('master.fakultas.*') ? 'mm-active' : ''}>
                                     <Link
-                                        href="/master/fakultas"
-                                        className={currentPath === '/master/fakultas' ? 'mm-active' : ''}
+                                        href={route('master.fakultas.index')}
+                                        className={route().current('master.fakultas.*') ? 'mm-active' : ''}
                                     >
                                         Fakultas
                                     </Link>
                                 </li>
-                                <li className={currentPath === '/master/agency' ? 'mm-active' : ''}>
+                                <li className={route().current('master.agency.*') ? 'mm-active' : ''}>
                                     <Link
-                                        href="/master/agency"
-                                        className={currentPath === '/master/agency' ? 'mm-active' : ''}
+                                        href={route('master.agency.index')}
+                                        className={route().current('master.agency.*') ? 'mm-active' : ''}
                                     >
                                         Agency
                                     </Link>
                                 </li>
-                                <li className={currentPath === '/master/prodi' ? 'mm-active' : ''}>
+                                <li className={route().current('master.prodi.*') ? 'mm-active' : ''}>
                                     <Link
-                                        href="/master/prodi"
-                                        className={currentPath === '/master/prodi' ? 'mm-active' : ''}
+                                        href={route('master.prodi.index')}
+                                        className={route().current('master.prodi.*') ? 'mm-active' : ''}
                                     >
                                         Prodi
                                     </Link>
                                 </li>
-                                <li className={currentPath === '/master/tahun-akademik' ? 'mm-active' : ''}>
+                                <li className={route().current('master.tahun-akademik.*') ? 'mm-active' : ''}>
                                     <Link
-                                        href="/master/tahun-akademik"
-                                        className={currentPath === '/master/tahun-akademik' ? 'mm-active' : ''}
+                                        href={route('master.tahun-akademik.index')}
+                                        className={route().current('master.tahun-akademik.*') ? 'mm-active' : ''}
                                     >
                                         Tahun Akademik
                                     </Link>
                                 </li>
-                                <li className={currentPath === '/master/sesi-akreditasi' ? 'mm-active' : ''}>
+                                <li className={route().current('master.sesi-akreditasi.*') ? 'mm-active' : ''}>
                                     <Link
-                                        href="/master/sesi-akreditasi"
-                                        className={currentPath === '/master/sesi-akreditasi' ? 'mm-active' : ''}
+                                        href={route('master.sesi-akreditasi.index')}
+                                        className={route().current('master.sesi-akreditasi.*') ? 'mm-active' : ''}
                                     >
                                         Sesi Akreditasi
                                     </Link>
                                 </li>
-                                <li className={currentPath === '/master/kriteria' ? 'mm-active' : ''}>
+                                <li className={route().current('master.kriteria.*') ? 'mm-active' : ''}>
                                     <Link
-                                        href="/master/kriteria"
-                                        className={currentPath === '/master/kriteria' ? 'mm-active' : ''}
+                                        href={route('master.kriteria.index')}
+                                        className={route().current('master.kriteria.*') ? 'mm-active' : ''}
                                     >
                                         Kriteria Akreditasi
                                     </Link>
                                 </li>
-                                <li className={currentPath === '/master/users' ? 'mm-active' : ''}>
+                                <li className={route().current('master.users.*') ? 'mm-active' : ''}>
                                     <Link
-                                        href="/master/users"
-                                        className={currentPath === '/master/users' ? 'mm-active' : ''}
+                                        href={route('master.users.index')}
+                                        className={route().current('master.users.*') ? 'mm-active' : ''}
                                     >
                                         Pengguna
                                     </Link>

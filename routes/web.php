@@ -44,6 +44,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/ban-pt/kegiatan/{activity}', [BanPtController::class, 'destroyActivity'])->name('ban-pt.kegiatan.destroy');
         Route::post('/ban-pt/dokumen', [BanPtController::class, 'uploadDocument'])->name('ban-pt.dokumen.upload');
         Route::delete('/ban-pt/dokumen/{document}', [BanPtController::class, 'destroyDocument'])->name('ban-pt.dokumen.destroy');
+        Route::get('/ban-pt/dokumen/{document}/preview', [BanPtController::class, 'previewDocument'])->name('ban-pt.dokumen.preview');
         Route::get('/ban-pt/dokumen/{document}/download', [BanPtController::class, 'downloadDocument'])->name('ban-pt.dokumen.download');
 
         Route::get('/lam', [LamController::class, 'index'])->name('lam');
@@ -52,6 +53,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/lam/kegiatan/{activity}', [LamController::class, 'destroyActivity'])->name('lam.kegiatan.destroy');
         Route::post('/lam/dokumen', [LamController::class, 'uploadDocument'])->name('lam.dokumen.upload');
         Route::delete('/lam/dokumen/{document}', [LamController::class, 'destroyDocument'])->name('lam.dokumen.destroy');
+        Route::get('/lam/dokumen/{document}/preview', [LamController::class, 'previewDocument'])->name('lam.dokumen.preview');
         Route::get('/lam/dokumen/{document}/download', [LamController::class, 'downloadDocument'])->name('lam.dokumen.download');
         Route::put('/lam/sesi/{session}', [LamController::class, 'updateSession'])->name('lam.sesi.update');
 

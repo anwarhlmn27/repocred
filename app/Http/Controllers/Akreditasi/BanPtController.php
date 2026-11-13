@@ -115,6 +115,8 @@ class BanPtController extends Controller
                             'file_size' => $doc->file_size,
                             'date' => $doc->created_at ? $doc->created_at->translatedFormat('d M Y') : '-',
                             'url' => $doc->url,
+                            'preview_url' => route('akreditasi.ban-pt.dokumen.preview', ['document' => $doc->id]),
+                            'download_url' => route('akreditasi.ban-pt.dokumen.download', ['document' => $doc->id]),
                             'uploader' => $doc->uploader?->name ?? 'Pengguna',
                         ];
                     }
@@ -402,6 +404,27 @@ class BanPtController extends Controller
 
             return redirect()->back()->with('error', 'Terjadi kesalahan sistem saat menghapus dokumen.');
         }
+    }
+
+    /**
+     * Menampilkan pratinjau inline dokumen eviden (PDF / Gambar) langsung di browser.
+     *
+     * @param ActivityDocument $document
+     * @return \Symfony\Component\HttpFoundation\Response|RedirectResponse
+     */
+    public function previewDocument(ActivityDocument $document)
+    {
+        if (!$document->file_path || !Storage::disk('public')->exists($document->file_path)) {
+            abort(404, 'Berkas dokumen tidak ditemukan di penyimpanan server.');
+        }
+
+        $mimeType = Storage::disk('public')->mimeType($document->file_path) ?: 'application/octet-stream';
+
+        return Storage::disk('public')->response($document->file_path, $document->filename, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline; filename="' . $document->filename . '"',
+            'Cache-Control' => 'public, max-age=3600',
+        ]);
     }
 
     /**

@@ -866,7 +866,7 @@ export default function MatriksPpeppIndex({
                                     </p>
                                     <div className="mt-4">
                                         <Link
-                                            href="/akreditasi/lam"
+                                            href={route('akreditasi.lam')}
                                             className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 px-3.5 py-2 text-xs font-semibold text-white shadow-xs transition-colors"
                                         >
                                             <UploadCloud className="h-3.5 w-3.5" />
@@ -946,7 +946,7 @@ export default function MatriksPpeppIndex({
                             </span>
                             <div className="flex items-center gap-1.5">
                                 <Link
-                                    href="/akreditasi/lam"
+                                    href={route('akreditasi.lam')}
                                     className="inline-flex items-center gap-1 border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
                                 >
                                     <ExternalLink className="h-3.5 w-3.5 text-slate-500" />

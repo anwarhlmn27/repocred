@@ -116,21 +116,21 @@ export default function Dashboard({
                         {/* Pintasan Aksi Header */}
                         <div className="flex flex-wrap gap-2.5 shrink-0">
                             <Link
-                                href="/akreditasi/ban-pt"
+                                href={route('akreditasi.ban-pt')}
                                 className="inline-flex items-center gap-2 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition-colors"
                             >
                                 <Landmark className="w-3.5 h-3.5" />
                                 <span>Instrumen BAN-PT</span>
                             </Link>
                             <Link
-                                href="/akreditasi/lam"
+                                href={route('akreditasi.lam')}
                                 className="inline-flex items-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition-colors"
                             >
                                 <Layers className="w-3.5 h-3.5" />
                                 <span>Instrumen LAM</span>
                             </Link>
                             <Link
-                                href="/kegiatan"
+                                href={route('kegiatan.index')}
                                 className="inline-flex items-center gap-2 px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors"
                             >
                                 <FileSpreadsheet className="w-3.5 h-3.5" />
@@ -235,7 +235,7 @@ export default function Dashboard({
                                 *Acuan standar audit mutu SPMI Permendikbudristek & LAM
                             </span>
                             <Link
-                                href="/akreditasi/matriks-ppepp"
+                                href={route('akreditasi.matriks-ppepp')}
                                 className="font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
                             >
                                 Lihat Matriks PPEPP <ArrowUpRight className="w-3.5 h-3.5" />
@@ -303,7 +303,7 @@ export default function Dashboard({
 
                         <div className="pt-4 border-t border-slate-100">
                             <Link
-                                href="/kegiatan"
+                                href={route('kegiatan.index')}
                                 className="w-full flex items-center justify-center gap-2 py-2 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors"
                             >
                                 <span>Kelola Seluruh Kegiatan & Eviden</span>
@@ -326,7 +326,7 @@ export default function Dashboard({
                             </p>
                         </div>
                         <Link
-                            href="/master/sesi"
+                            href={route('master.sesi-akreditasi.index')}
                             className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
                         >
                             Konfigurasi Sesi <ArrowUpRight className="w-3.5 h-3.5" />
@@ -341,7 +341,7 @@ export default function Dashboard({
                                 Buat dan aktifkan sesi akreditasi BAN-PT atau LAM melalui menu Master Data Sesi.
                             </p>
                             <Link
-                                href="/master/sesi"
+                                href={route('master.sesi-akreditasi.index')}
                                 className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-xs"
                             >
                                 <Plus className="w-3.5 h-3.5" />
@@ -353,8 +353,8 @@ export default function Dashboard({
                             {activeSessions.map((session) => {
                                 const isBanPt = session.agency_code === 'BAN-PT' || session.agency_level === 'univs';
                                 const targetUrl = isBanPt
-                                    ? `/akreditasi/ban-pt?session_id=${session.id}`
-                                    : `/akreditasi/lam`;
+                                    ? route('akreditasi.ban-pt', { session_id: session.id })
+                                    : route('akreditasi.lam');
 
                                 return (
                                     <div
@@ -419,7 +419,7 @@ export default function Dashboard({
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                         <Link
-                            href="/akreditasi/ban-pt"
+                            href={route('akreditasi.ban-pt')}
                             className="group p-4 border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/20 transition-all flex flex-col justify-between"
                         >
                             <div className="flex items-center gap-3">
@@ -439,7 +439,7 @@ export default function Dashboard({
                         </Link>
 
                         <Link
-                            href="/akreditasi/lam"
+                            href={route('akreditasi.lam')}
                             className="group p-4 border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/20 transition-all flex flex-col justify-between"
                         >
                             <div className="flex items-center gap-3">
@@ -459,7 +459,7 @@ export default function Dashboard({
                         </Link>
 
                         <Link
-                            href="/akreditasi/matriks-ppepp"
+                            href={route('akreditasi.matriks-ppepp')}
                             className="group p-4 border border-slate-200 hover:border-purple-300 hover:bg-purple-50/20 transition-all flex flex-col justify-between"
                         >
                             <div className="flex items-center gap-3">
@@ -479,7 +479,7 @@ export default function Dashboard({
                         </Link>
 
                         <Link
-                            href="/master/prodi"
+                            href={route('master.prodi.index')}
                             className="group p-4 border border-slate-200 hover:border-amber-300 hover:bg-amber-50/20 transition-all flex flex-col justify-between"
                         >
                             <div className="flex items-center gap-3">
@@ -507,7 +507,7 @@ export default function Dashboard({
                             <FileSpreadsheet className="w-4 h-4 text-indigo-600" />
                             Aktivitas & Eviden Kegiatan Terbaru
                         </h2>
-                        <Link href="/kegiatan" className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+                        <Link href={route('kegiatan.index')} className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
                             Lihat Semua <ArrowUpRight className="w-3.5 h-3.5" />
                         </Link>
                     </div>
@@ -520,7 +520,7 @@ export default function Dashboard({
                                 Tambahkan kegiatan pemenuhan mutu melalui instrumen BAN-PT atau LAM.
                             </p>
                             <Link
-                                href="/akreditasi/lam"
+                                href={route('akreditasi.lam')}
                                 className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs"
                             >
                                 <Plus className="w-3.5 h-3.5" />

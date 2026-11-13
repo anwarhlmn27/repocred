@@ -23,37 +23,48 @@ const iconMap = {
 };
 
 const menuItems = [
-    { title: 'Dashboard', icon: 'LayoutDashboard', path: '/dashboard' },
+    { title: 'Dashboard', icon: 'LayoutDashboard', path: '/dashboard', routeName: 'dashboard' },
     {
         title: 'Dokumen Akreditasi',
         icon: 'FolderFolder',
         children: [
-            { title: 'BAN-PT', path: '/akreditasi/ban-pt' },
-            { title: 'LAM', path: '/akreditasi/lam' },
-            { title: 'Matriks PPEPP', path: '/akreditasi/matriks-ppepp' },
+            { title: 'BAN-PT', path: '/akreditasi/ban-pt', routeName: 'akreditasi.ban-pt' },
+            { title: 'LAM', path: '/akreditasi/lam', routeName: 'akreditasi.lam' },
+            { title: 'Matriks PPEPP', path: '/akreditasi/matriks-ppepp', routeName: 'akreditasi.matriks-ppepp' },
         ],
     },
-    // { title: 'Kegiatan & Eviden', icon: 'FileText', path: '/kegiatan' },
+    // { title: 'Kegiatan & Eviden', icon: 'FileText', path: '/kegiatan', routeName: 'kegiatan.index' },
     // { title: 'Audit Internal', icon: 'ClipboardCheck', path: '/audit' },
     {
         title: 'Master Data',
         icon: 'Database',
         children: [
-            { title: 'Universitas', path: '/master/univ' },
-            { title: 'Fakultas', path: '/master/fakultas' },
-            { title: 'Agency', path: '/master/agency' },
-            { title: 'Prodi', path: '/master/prodi' },
-            { title: 'Tahun Akademik', path: '/master/tahun-akademik' },
-            { title: 'Sesi Akreditasi', path: '/master/sesi-akreditasi' },
-            { title: 'Kriteria Akreditasi', path: '/master/kriteria' },
-            { title: 'Pengguna', path: '/master/users' },
+            { title: 'Universitas', path: '/master/univ', routeName: 'master.univ.index' },
+            { title: 'Fakultas', path: '/master/fakultas', routeName: 'master.fakultas.index' },
+            { title: 'Agency', path: '/master/agency', routeName: 'master.agency.index' },
+            { title: 'Prodi', path: '/master/prodi', routeName: 'master.prodi.index' },
+            { title: 'Tahun Akademik', path: '/master/tahun-akademik', routeName: 'master.tahun-akademik.index' },
+            { title: 'Sesi Akreditasi', path: '/master/sesi-akreditasi', routeName: 'master.sesi-akreditasi.index' },
+            { title: 'Kriteria Akreditasi', path: '/master/kriteria', routeName: 'master.kriteria.index' },
+            { title: 'Pengguna', path: '/master/users', routeName: 'master.users.index' },
         ],
     },
 ];
 
 function isActivePath(currentPath, itemPath) {
     if (!itemPath) return false;
-    return currentPath === itemPath || currentPath.startsWith(itemPath + '/');
+    return currentPath === itemPath || currentPath.startsWith(itemPath + '/') || currentPath.endsWith(itemPath);
+}
+
+function resolveItemUrl(item) {
+    if (item.routeName && typeof route === 'function') {
+        try {
+            return route(item.routeName);
+        } catch (e) {
+            return item.path;
+        }
+    }
+    return item.path;
 }
 
 function hasActiveChild(children, currentPath) {
@@ -84,7 +95,7 @@ function NavItem({ item, currentPath, userRole }) {
     if (!hasChildren) {
         return (
             <Link
-                href={item.path}
+                href={resolveItemUrl(item)}
                 className={`nav-item ${active ? 'nav-item--active' : ''}`}
             >
                 {Icon && <Icon size={15} className="nav-item-icon" />}
@@ -112,7 +123,7 @@ function NavItem({ item, currentPath, userRole }) {
                     {item.children.map((child) => (
                         <Link
                             key={child.path}
-                            href={child.path}
+                            href={resolveItemUrl(child)}
                             className={`nav-dropdown-item ${isActivePath(currentPath, child.path)
                                 ? 'nav-dropdown-item--active'
                                 : ''
@@ -213,7 +224,7 @@ function MobileNavItem({ item, currentPath, userRole, onClose }) {
     if (!hasChildren) {
         return (
             <Link
-                href={item.path}
+                href={resolveItemUrl(item)}
                 onClick={onClose}
                 className={`mobile-nav-item ${active ? 'mobile-nav-item--active' : ''}`}
             >
@@ -243,7 +254,7 @@ function MobileNavItem({ item, currentPath, userRole, onClose }) {
                     {item.children.map((child) => (
                         <Link
                             key={child.path}
-                            href={child.path}
+                            href={resolveItemUrl(child)}
                             onClick={onClose}
                             className={`mobile-submenu-item ${isActivePath(currentPath, child.path)
                                 ? 'mobile-submenu-item--active'
